@@ -1,3 +1,4 @@
+use crate::ftw_error::FtwError;
 use crate::traits::Processor;
 use crate::type_alias::Commands;
 use std::io::{self, Write};
@@ -8,21 +9,21 @@ pub struct ProcessCommand<'a> {
 }
 
 impl Processor for ProcessCommand<'_> {
-    fn process(&self) {
+    fn process(&self) -> Result<(), FtwError> {
         for xs in &self.commands {
             let out = match xs.split_at(1) {
                 (&[cmd], args) => args
                     .iter()
                     .fold(&mut Command::new(cmd), |s, i| s.arg(i))
-                    .output()
-                    .expect("failed to execute process"),
-                _ => panic!("this should not happen"),
+                    .output()?,
+                _ => unreachable!(),
             };
             if out.status.success() {
-                io::stdout().write_all(&out.stdout).unwrap();
+                io::stdout().write_all(&out.stdout)?;
             } else {
-                io::stderr().write_all(&out.stderr).unwrap();
+                io::stderr().write_all(&out.stderr)?;
             }
         }
+        Ok(())
     }
 }

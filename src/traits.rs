@@ -1,7 +1,8 @@
+use crate::ftw_error::FtwError;
 use crate::type_alias::GitUrl;
 
 pub trait Processor {
-    fn process(&self);
+    fn process(&self) -> Result<(), FtwError>;
 }
 
 pub trait ToGitUrl {

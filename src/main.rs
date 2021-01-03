@@ -1,4 +1,5 @@
 mod ftw_command;
+mod ftw_error;
 mod ftw_template;
 mod node_type;
 mod process_command;
@@ -29,35 +30,38 @@ fn main() {
     .get_matches();
     let command: FtwCommand = match matches.subcommand() {
         Some(("new", args)) => {
-            let template: FtwTemplate = match args
+            let project_name = args
+                .value_of("project_name")
+                .unwrap_or_else(|| "my-awesome-game")
+                .to_string();
+            let template: FtwTemplate = args
                 .value_of("template")
-                .and_then(|template| Some(template))
-            {
-                Some(template) => template.parse().unwrap(),
-                None => FtwTemplate::Default,
-            };
+                .unwrap_or_else(|| "")
+                .parse()
+                .unwrap_or_else(|_| FtwTemplate::Default);
             FtwCommand::New {
-                project_name: args.value_of("project_name").unwrap().to_string(),
+                project_name: project_name,
                 template: template,
             }
         }
         Some(("class", args)) => {
-            let node_type: NodeType = match args
+            let class_name = args
+                .value_of("class_name")
+                .unwrap_or_else(|| "MyClass")
+                .to_string();
+            let node_type: NodeType = args
                 .value_of("node_type")
-                .and_then(|node_type| Some(node_type))
-            {
-                Some(node_type) => match node_type.parse() {
-                    Ok(nt) => nt,
-                    Err(_) => NodeType::Node,
-                },
-                None => NodeType::Node,
-            };
+                .unwrap_or_else(|| "")
+                .parse()
+                .unwrap_or_else(|_| NodeType::Node);
             FtwCommand::Class {
-                class_name: args.value_of("class_name").unwrap().to_string(),
+                class_name: class_name,
                 node_type: node_type,
             }
         }
-        _ => panic!("this should not happen!"),
+        _ => unreachable!(),
     };
-    command.process();
+    if let Err(e) = command.process() {
+        eprintln!("{}", e);
+    }
 }
