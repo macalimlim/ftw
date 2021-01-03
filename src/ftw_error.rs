@@ -2,7 +2,7 @@ use thiserror::Error;
 
 #[derive(Debug, Error)]
 pub enum FtwError {
-    #[error("File error: {0}")]
+    #[error("Error: {0}")]
     Error(#[from] std::io::Error),
     #[error("Invalid project")]
     InvalidProject,
