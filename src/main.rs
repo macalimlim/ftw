@@ -25,8 +25,11 @@ fn main() {
                              (@arg template: !required "set the template to be used in your project"))
                             (@subcommand class =>
                              (about: "create a new class to be used by a node")
-                             (@arg class_name: +required "set the name of your project")
-                             (@arg node_type: !required "the type of the node that this class inherits from")))
+                             (@arg class_name: +required "the name of this class")
+                             (@arg node_type: !required "the type of the node that this class inherits from"))
+                            (@subcommand singleton =>
+                             (about: "create a singleton (autoloaded) class")
+                             (@arg class_name: +required "the name of this class")))
     .get_matches();
     let command: FtwCommand = match matches.subcommand() {
         Some(("new", args)) => {
@@ -57,6 +60,15 @@ fn main() {
             FtwCommand::Class {
                 class_name: class_name,
                 node_type: node_type,
+            }
+        }
+        Some(("singleton", args)) => {
+            let class_name = args
+                .value_of("class_name")
+                .unwrap_or_else(|| "MySingletonClass")
+                .to_string();
+            FtwCommand::Singleton {
+                class_name: class_name,
             }
         }
         _ => unreachable!(),
