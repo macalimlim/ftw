@@ -1,4 +1,3 @@
-use liquid_core;
 use thiserror::Error;
 
 #[derive(Debug, Error)]

@@ -32,8 +32,8 @@ pub enum FtwCommand {
 
 impl FtwCommand {
     fn create_file(
-        template_contents: &String,
-        target_file_path: &String,
+        template_contents: &str,
+        target_file_path: &str,
         template_globals: &Object,
     ) -> Result<(), FtwError> {
         let builder = ParserBuilder::with_stdlib().build()?;
@@ -53,9 +53,9 @@ impl FtwCommand {
             "rust/src/lib.rs",
             "rust/Cargo.toml",
         ];
-        let is_valid_project = project_files.iter().fold(true, |s, i| {
-            s && Path::new(&format!("{}/{}", project_directory.display(), i)).exists()
-        });
+        let is_valid_project = project_files
+            .iter()
+            .all(|i| Path::new(&format!("{}/{}", project_directory.display(), i)).exists());
         if is_valid_project {
             println!("Project is valid...");
             Ok(true)
@@ -68,11 +68,7 @@ impl FtwCommand {
         files_to_be_generated: Vec<(Cow<'_, str>, String, &Object)>,
     ) -> Result<(), FtwError> {
         for (template_contents, target_file_path, template_globals) in files_to_be_generated {
-            FtwCommand::create_file(
-                &template_contents.to_string(),
-                &target_file_path,
-                &template_globals,
-            )?
+            FtwCommand::create_file(&template_contents, &target_file_path, &template_globals)?
         }
         Ok(())
     }
@@ -85,13 +81,13 @@ impl FtwCommand {
             if Path::new(&file.path())
                 .extension()
                 .and_then(OsStr::to_str)
-                .ok_or_else(|| FtwError::Utf8ConversionError)?
+                .ok_or(FtwError::Utf8ConversionError)?
                 == "gdns"
             {
                 let class_name = file
                     .file_name()
                     .to_str()
-                    .ok_or_else(|| FtwError::Utf8ConversionError)?
+                    .ok_or(FtwError::Utf8ConversionError)?
                     .replace(".gdns", "");
                 let module = class_name._snake_case();
                 let pair = format!("{},{}", module, class_name);
@@ -109,7 +105,7 @@ impl FtwCommand {
             "module_class_name_pairs": module_class_name_pairs,
         });
         FtwCommand::create_file(
-            &String::from_utf8_lossy(include_bytes!("lib_tmpl.rs")).to_string(),
+            &String::from_utf8_lossy(include_bytes!("lib_tmpl.rs")),
             &"rust/src/lib.rs".to_string(),
             &tmpl_globals,
         )
@@ -133,7 +129,7 @@ impl Processor for FtwCommand {
                     "--git",
                     git_url,
                 ]];
-                (ProcessCommand { commands: commands }).process()?;
+                (ProcessCommand { commands }).process()?;
                 let mut gitignore_file = OpenOptions::new().append(true).open(gitignore_path)?;
                 Ok(writeln!(gitignore_file, "godot/export_presets.cfg")?)
             }

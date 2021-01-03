@@ -35,41 +35,36 @@ fn main() {
         Some(("new", args)) => {
             let project_name = args
                 .value_of("project_name")
-                .unwrap_or_else(|| "my-awesome-game")
+                .unwrap_or("my-awesome-game")
                 .to_string();
             let template: FtwTemplate = args
                 .value_of("template")
-                .unwrap_or_else(|| "")
+                .unwrap_or("")
                 .parse()
-                .unwrap_or_else(|_| FtwTemplate::Default);
+                .unwrap_or(FtwTemplate::Default);
             FtwCommand::New {
-                project_name: project_name,
-                template: template,
+                project_name,
+                template,
             }
         }
         Some(("class", args)) => {
-            let class_name = args
-                .value_of("class_name")
-                .unwrap_or_else(|| "MyClass")
-                .to_string();
+            let class_name = args.value_of("class_name").unwrap_or("MyClass").to_string();
             let node_type: NodeType = args
                 .value_of("node_type")
-                .unwrap_or_else(|| "")
+                .unwrap_or("")
                 .parse()
-                .unwrap_or_else(|_| NodeType::Node);
+                .unwrap_or(NodeType::Node);
             FtwCommand::Class {
-                class_name: class_name,
-                node_type: node_type,
+                class_name,
+                node_type,
             }
         }
         Some(("singleton", args)) => {
             let class_name = args
                 .value_of("class_name")
-                .unwrap_or_else(|| "MySingletonClass")
+                .unwrap_or("MySingletonClass")
                 .to_string();
-            FtwCommand::Singleton {
-                class_name: class_name,
-            }
+            FtwCommand::Singleton { class_name }
         }
         _ => unreachable!(),
     };
