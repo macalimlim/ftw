@@ -3,6 +3,9 @@ name = "ftw"
 version = "0.1.0"
 authors = ["Michael Angelo Calimlim <macalimlim@gmail.com>"]
 edition = "2018"
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/macalimlim/ftw"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
