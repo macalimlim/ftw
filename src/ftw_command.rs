@@ -200,12 +200,12 @@ impl Processor for FtwCommand {
                     ),
                     (
                         String::from_utf8_lossy(include_bytes!("gdns_tmpl.gdns")),
-                        format!("godot/native/{}.gdns", class_name),
+                        format!("godot/native/{}.gdns", class_name._pascal_case()),
                         &tmpl_globals,
                     ),
                     (
                         String::from_utf8_lossy(include_bytes!("tscn_tmpl.tscn")),
-                        format!("godot/scenes/{}.tscn", class_name),
+                        format!("godot/scenes/{}.tscn", class_name._pascal_case()),
                         &tmpl_globals,
                     ),
                 ];
@@ -227,7 +227,7 @@ impl Processor for FtwCommand {
                     ),
                     (
                         String::from_utf8_lossy(include_bytes!("gdns_tmpl.gdns")),
-                        format!("godot/native/{}.gdns", class_name),
+                        format!("godot/native/{}.gdns", class_name._pascal_case()),
                         &tmpl_globals,
                     ),
                 ];
