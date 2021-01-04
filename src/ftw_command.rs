@@ -33,6 +33,10 @@ pub enum FtwCommand {
     Run {
         target: FtwTarget,
     },
+    Build {
+        target: FtwTarget,
+        build_type: FtwBuildType,
+    },
 }
 
 impl FtwCommand {
@@ -230,6 +234,7 @@ impl Processor for FtwCommand {
                 let commands: Commands = vec![vec!["godot", "--path", "godot/", "-d"]];
                 (ProcessCommand { commands }).process()
             }
+            FtwCommand::Build { target, build_type } => FtwCommand::build_lib(target, build_type),
         }
     }
 }

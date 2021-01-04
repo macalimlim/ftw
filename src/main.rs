@@ -8,6 +8,7 @@ mod process_command;
 mod traits;
 mod type_alias;
 
+use crate::ftw_build_type::FtwBuildType;
 use crate::ftw_command::FtwCommand;
 use crate::ftw_target::FtwTarget;
 use crate::ftw_template::FtwTemplate;
@@ -35,7 +36,11 @@ fn main() {
                              (about: "create a singleton (autoloaded) class")
                              (@arg class_name: +required "the name of this class"))
                             (@subcommand run =>
-                             (about: "run a debug version of the game")))
+                             (about: "run a debug version of the game"))
+                            (@subcommand build =>
+                             (about: "build the library for a particular platform")
+                             (@arg target: !required "target platform to build")
+                             (@arg build_type: !required "either a debug or release")))
     .get_matches();
     let command: FtwCommand = match matches.subcommand() {
         Some(("new", args)) => {
@@ -76,6 +81,20 @@ fn main() {
             let target = format!("{}-{}", env::consts::OS, env::consts::ARCH);
             let target = target.parse().unwrap_or(FtwTarget::WindowsX86_64Msvc);
             FtwCommand::Run { target }
+        }
+        Some(("build", args)) => {
+            let current_platform = format!("{}-{}", env::consts::OS, env::consts::ARCH);
+            let target = args
+                .value_of("target")
+                .unwrap_or(&current_platform)
+                .parse()
+                .unwrap_or(FtwTarget::WindowsX86_64Msvc);
+            let build_type = args
+                .value_of("build_type")
+                .unwrap_or("debug")
+                .parse()
+                .unwrap_or(FtwBuildType::Debug);
+            FtwCommand::Build { target, build_type }
         }
         _ => unreachable!(),
     };
