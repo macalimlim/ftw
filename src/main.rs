@@ -1,5 +1,7 @@
+mod ftw_build_type;
 mod ftw_command;
 mod ftw_error;
+mod ftw_target;
 mod ftw_template;
 mod node_type;
 mod process_command;
@@ -7,10 +9,12 @@ mod traits;
 mod type_alias;
 
 use crate::ftw_command::FtwCommand;
+use crate::ftw_target::FtwTarget;
 use crate::ftw_template::FtwTemplate;
 use crate::node_type::NodeType;
 use crate::traits::Processor;
 use clap::{clap_app, crate_authors, crate_version};
+use std::env;
 
 fn main() {
     let version = crate_version!();
@@ -29,7 +33,9 @@ fn main() {
                              (@arg node_type: !required "the type of the node that this class inherits from"))
                             (@subcommand singleton =>
                              (about: "create a singleton (autoloaded) class")
-                             (@arg class_name: +required "the name of this class")))
+                             (@arg class_name: +required "the name of this class"))
+                            (@subcommand run =>
+                             (about: "run a debug version of the game")))
     .get_matches();
     let command: FtwCommand = match matches.subcommand() {
         Some(("new", args)) => {
@@ -65,6 +71,11 @@ fn main() {
                 .unwrap_or("MySingletonClass")
                 .to_string();
             FtwCommand::Singleton { class_name }
+        }
+        Some(("run", _)) => {
+            let target = format!("{}-{}", env::consts::OS, env::consts::ARCH);
+            let target = target.parse().unwrap_or(FtwTarget::WindowsX86_64Msvc);
+            FtwCommand::Run { target }
         }
         _ => unreachable!(),
     };

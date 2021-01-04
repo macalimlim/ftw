@@ -7,7 +7,9 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+cargo-edit = "0.7.0"
 clap = "3.0.0-beta.2"
+fs_extra = "1.2.0"
 liquid = "0.21.4"
 liquid-core = "0.21.2"
 thiserror = "1.0.23"

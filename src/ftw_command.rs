@@ -1,12 +1,14 @@
+use crate::ftw_build_type::FtwBuildType;
 use crate::ftw_error::FtwError;
+use crate::ftw_target::FtwTarget;
 use crate::ftw_template::FtwTemplate;
 use crate::node_type::NodeType;
 use crate::process_command::ProcessCommand;
-use crate::traits::Processor;
-use crate::traits::ToGitUrl;
-use crate::type_alias::ClassName;
-use crate::type_alias::Commands;
-use crate::type_alias::ProjectName;
+use crate::traits::{Processor, ToCliArg, ToGitUrl, ToLibExt, ToLibPrefix};
+use crate::type_alias::{ClassName, Commands, ProjectName};
+use cargo_edit::get_crate_name_from_path;
+use fs_extra::dir::CopyOptions;
+use fs_extra::move_items;
 use liquid::{object, Object, ParserBuilder};
 use std::borrow::Cow;
 use std::env;
@@ -27,6 +29,9 @@ pub enum FtwCommand {
     },
     Singleton {
         class_name: ClassName,
+    },
+    Run {
+        target: FtwTarget,
     },
 }
 
@@ -110,6 +115,37 @@ impl FtwCommand {
             &tmpl_globals,
         )
     }
+
+    fn build_lib(target: &FtwTarget, build_type: &FtwBuildType) -> Result<(), FtwError> {
+        let crate_name = get_crate_name_from_path("./rust/")?;
+        let target_cli_arg = target.to_cli_arg();
+        let build_type_cli_arg = build_type.to_cli_arg();
+        let target_lib_ext = target.to_lib_ext();
+        let source_path = format!(
+            "./target/{}/{}/{}{}.{}",
+            &target_cli_arg,
+            build_type.to_string().to_lowercase(),
+            target.to_lib_prefix(),
+            crate_name,
+            &target_lib_ext
+        );
+        let target_path = format!("./lib/{}", &target_cli_arg);
+        let commands: Commands = vec![match build_type {
+            FtwBuildType::Debug => vec!["cargo", "build", "--target", &target_cli_arg],
+            FtwBuildType::Release => vec![
+                "cargo",
+                "build",
+                "--target",
+                &target_cli_arg,
+                &build_type_cli_arg,
+            ],
+        }];
+        (ProcessCommand { commands }).process()?;
+        let options = CopyOptions::new();
+        let source_paths = vec![source_path];
+        move_items(&source_paths, target_path, &options)?;
+        Ok(())
+    }
 }
 
 impl Processor for FtwCommand {
@@ -186,6 +222,13 @@ impl Processor for FtwCommand {
                 println!("Open Project -> Project Settings -> Autoload and then add the newly created *.gdns file as an autoload");
                 // TODO: parse and modify project.godot file to include the newly created *.gdns file as an autoload
                 Ok(())
+            }
+            FtwCommand::Run { target } => {
+                FtwCommand::is_valid_project()?;
+                let build_type = FtwBuildType::Debug;
+                FtwCommand::build_lib(target, &build_type)?;
+                let commands: Commands = vec![vec!["godot", "--path", "godot/", "-d"]];
+                (ProcessCommand { commands }).process()
             }
         }
     }
