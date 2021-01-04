@@ -118,7 +118,7 @@ impl FtwCommand {
         });
         FtwCommand::create_file(
             &String::from_utf8_lossy(include_bytes!("lib_tmpl.rs")),
-            &"rust/src/lib.rs".to_string(),
+            "rust/src/lib.rs",
             &tmpl_globals,
         )
     }
@@ -199,7 +199,7 @@ impl Processor for FtwCommand {
                 let files_to_be_generated = vec![
                     (
                         String::from_utf8_lossy(include_bytes!("class_tmpl.rs")),
-                        format!("rust/src/{}.rs", class_name.as_str()._snake_case()),
+                        format!("rust/src/{}.rs", class_name._snake_case()),
                         &tmpl_globals,
                     ),
                     (
@@ -226,7 +226,7 @@ impl Processor for FtwCommand {
                 let files_to_be_generated = vec![
                     (
                         String::from_utf8_lossy(include_bytes!("class_tmpl.rs")),
-                        format!("rust/src/{}.rs", class_name.as_str()._snake_case()),
+                        format!("rust/src/{}.rs", class_name._snake_case()),
                         &tmpl_globals,
                     ),
                     (
