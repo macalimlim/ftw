@@ -57,6 +57,9 @@ impl FtwCommand {
         let project_directory = env::current_dir()?;
         let project_files: Vec<&str> = vec![
             "Cargo.toml",
+            "Makefile",
+            "godot/default_env.tres",
+            "godot/export_presets.cfg",
             "godot/native/game.gdnlib",
             "godot/project.godot",
             "rust/src/lib.rs",
