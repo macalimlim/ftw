@@ -50,7 +50,7 @@ fn main() {
                 .to_string();
             let template: FtwTemplate = args
                 .value_of("template")
-                .unwrap_or("")
+                .unwrap_or("default")
                 .parse()
                 .unwrap_or(FtwTemplate::Default);
             FtwCommand::New {
@@ -62,7 +62,7 @@ fn main() {
             let class_name = args.value_of("class_name").unwrap_or("MyClass").to_string();
             let node_type: NodeType = args
                 .value_of("node_type")
-                .unwrap_or("")
+                .unwrap_or("node")
                 .parse()
                 .unwrap_or(NodeType::Node);
             FtwCommand::Class {
