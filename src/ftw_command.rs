@@ -137,16 +137,12 @@ impl FtwCommand {
             &target_lib_ext
         );
         let target_path = format!("./lib/{}", &target_cli_arg);
-        let commands: Commands = vec![match build_type {
-            FtwBuildType::Debug => vec!["cargo", "build", "--target", &target_cli_arg],
-            FtwBuildType::Release => vec![
-                "cargo",
-                "build",
-                "--target",
-                &target_cli_arg,
-                &build_type_cli_arg,
-            ],
-        }];
+        let mut cargo_build_cmd = vec!["cargo", "build", "--target", &target_cli_arg];
+        cargo_build_cmd.append(&mut match build_type {
+            FtwBuildType::Debug => vec![],
+            FtwBuildType::Release => vec![&build_type_cli_arg],
+        });
+        let commands: Commands = vec![cargo_build_cmd];
         (ProcessCommand { commands }).process()?;
         let target_lib_file = format!(
             "{}/{}{}.{}",

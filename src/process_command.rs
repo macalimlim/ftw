@@ -1,8 +1,7 @@
 use crate::ftw_error::FtwError;
 use crate::traits::Processor;
 use crate::type_alias::Commands;
-use std::io::{self, Write};
-use std::process::Command;
+use std::process::{Command, Stdio};
 
 pub struct ProcessCommand<'a> {
     pub commands: Commands<'a>,
@@ -15,13 +14,13 @@ impl Processor for ProcessCommand<'_> {
                 (&[cmd], args) => args
                     .iter()
                     .fold(&mut Command::new(cmd), |s, i| s.arg(i))
+                    .stdout(Stdio::inherit())
+                    .stderr(Stdio::inherit())
                     .output()?,
-                _ => unreachable!(),
+                _ => return Err(FtwError::InvalidCommandError),
             };
-            if out.status.success() {
-                io::stdout().write_all(&out.stdout)?;
-            } else {
-                io::stderr().write_all(&out.stderr)?;
+            if !out.status.success() {
+                return Err(FtwError::ProcessCommandError);
             }
         }
         Ok(())
