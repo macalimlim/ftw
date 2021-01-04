@@ -8,7 +8,7 @@ use crate::traits::{Processor, ToCliArg, ToGitUrl, ToLibExt, ToLibPrefix};
 use crate::type_alias::{ClassName, Commands, ProjectName};
 use cargo_edit::get_crate_name_from_path;
 use fs_extra::dir::CopyOptions;
-use fs_extra::move_items;
+use fs_extra::{move_items, remove_items};
 use liquid::{object, Object, ParserBuilder};
 use std::borrow::Cow;
 use std::env;
@@ -145,6 +145,17 @@ impl FtwCommand {
             ],
         }];
         (ProcessCommand { commands }).process()?;
+        let target_lib_file = format!(
+            "{}/{}{}.{}",
+            target_path,
+            target.to_lib_prefix(),
+            crate_name,
+            target.to_lib_ext()
+        );
+        if Path::new(&target_lib_file).exists() {
+            let target_lib_files = vec![target_lib_file];
+            remove_items(&target_lib_files)?;
+        }
         let options = CopyOptions::new();
         let source_paths = vec![source_path];
         move_items(&source_paths, target_path, &options)?;
@@ -234,7 +245,10 @@ impl Processor for FtwCommand {
                 let commands: Commands = vec![vec!["godot", "--path", "godot/", "-d"]];
                 (ProcessCommand { commands }).process()
             }
-            FtwCommand::Build { target, build_type } => FtwCommand::build_lib(target, build_type),
+            FtwCommand::Build { target, build_type } => {
+                FtwCommand::is_valid_project()?;
+                FtwCommand::build_lib(target, build_type)
+            }
         }
     }
 }
