@@ -19,7 +19,7 @@ $ cargo install ftw
 ```
 
 ## Usage
-### ftw new `<project-name>` [template]
+### ftw new &lt;project-name&gt; [template]
 #### Creates a new project directory
 ```shell
 $ ftw new my-awesome-game # this creates a new project using the default template
@@ -28,7 +28,7 @@ $ ftw new my-awesome-game /path/to/custom/template # creates a new project using
 ```
 > Note: The custom template should have same structure as the [default template](https://github.com/godot-rust/godot-rust-template)
 
-### ftw class `<class-name>` [node-type]
+### ftw class &lt;class-name&gt; [node-type]
 #### Creates a class
 ```shell
 $ ftw class MyHero # creates a class called `MyHero` that is deriving from `Node` as default
@@ -36,7 +36,7 @@ $ ftw class MyHero Area2D # creates a class that derives from `Area2D`
 ```
 > Note: This creates the following files `rust/src/my_hero.rs`, `godot/scenes/MyHero.tscn` and `godot/native/MyHero.gdns` then adds the class inside `rust/src/lib.rs`
 
-### ftw singleton `<class-name>`
+### ftw singleton &lt;class-name&gt;
 #### Creates a singleton class for autoloading
 ```shell
 $ ftw singleton MySingleton # creates a class called `MySingleton` that derives from `Node`
@@ -51,6 +51,22 @@ $ ftw build linux-x86_64 # builds the library for the `linux-x86_64` platform us
 $ ftw build linux-x86_64 debug # same as above
 $ ftw build linux-x86_64 release # builds the library for the `linux-x86_64` platform using `release`
 ```
+#### [target] can be one of the following
+- android-aarch64
+- android-arm
+- android-x86
+- android-x86_64
+- ios-aarch64
+- ios-x86_64
+- linux-x86
+- linux-x86_64
+- macos-x86_64
+- windows-x86-gnu
+- windows-x86-msvc
+- windows-x86
+- windows-x86_64-gnu
+- windows-x86_64-msvc
+- windows-x86_64
 
 ### ftw run
 #### Builds the library using `debug` then runs your game
