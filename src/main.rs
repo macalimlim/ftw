@@ -7,6 +7,7 @@ mod node_type;
 mod process_command;
 mod traits;
 mod type_alias;
+mod util;
 
 use crate::ftw_build_type::FtwBuildType;
 use crate::ftw_command::FtwCommand;
@@ -79,7 +80,7 @@ fn main() {
         }
         Some(("run", _)) => FtwCommand::Run,
         Some(("build", args)) => {
-            let current_platform = format!("{}-{}", env::consts::OS, env::consts::ARCH);
+            let current_platform = util::get_current_platform();
             let target = args
                 .value_of("target")
                 .unwrap_or(&current_platform)

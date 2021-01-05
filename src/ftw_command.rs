@@ -6,6 +6,7 @@ use crate::node_type::NodeType;
 use crate::process_command::ProcessCommand;
 use crate::traits::{Processor, ToCliArg, ToGitUrl, ToLibExt, ToLibPrefix};
 use crate::type_alias::{ClassName, Commands, ProjectName};
+use crate::util;
 use cargo_edit::get_crate_name_from_path;
 use fs_extra::dir::CopyOptions;
 use fs_extra::{move_items, remove_items};
@@ -229,7 +230,7 @@ impl Processor for FtwCommand {
             FtwCommand::Run => {
                 FtwCommand::is_valid_project()?;
                 let build_type = FtwBuildType::Debug;
-                let current_platform = format!("{}-{}", env::consts::OS, env::consts::ARCH);
+                let current_platform = util::get_current_platform();
                 let target = current_platform
                     .parse()
                     .unwrap_or(FtwTarget::WindowsX86_64Msvc);
