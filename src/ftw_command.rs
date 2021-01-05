@@ -9,8 +9,9 @@ use crate::type_alias::{ClassName, Commands, ProjectName};
 use cargo_edit::get_crate_name_from_path;
 use fs_extra::dir::CopyOptions;
 use fs_extra::{move_items, remove_items};
+use kstring::KString;
 use liquid::{object, Object, ParserBuilder};
-use std::borrow::Cow;
+use liquid_core::model::{ScalarCow, Value};
 use std::env;
 use std::ffi::OsStr;
 use std::fs::{read_dir, write, OpenOptions};
@@ -74,15 +75,6 @@ impl FtwCommand {
         }
     }
 
-    fn create_files(
-        files_to_be_generated: Vec<(Cow<'_, str>, String, &Object)>,
-    ) -> Result<(), FtwError> {
-        for (template_contents, target_file_path, template_globals) in files_to_be_generated {
-            FtwCommand::create_file(&template_contents, &target_file_path, &template_globals)?
-        }
-        Ok(())
-    }
-
     fn generate_module_class_name_pairs() -> Result<String, FtwError> {
         let godot_native_files = read_dir("godot/native/")?;
         let mut module_class_name_pairs = vec![];
@@ -107,16 +99,49 @@ impl FtwCommand {
         Ok(module_class_name_pairs.join("|"))
     }
 
-    fn create_lib_rs_file(class_name: &str, node_type: NodeType) -> Result<(), FtwError> {
-        let module_class_name_pairs = FtwCommand::generate_module_class_name_pairs()?;
-        let tmpl_globals = object!({
+    fn get_tmpl_globals(class_name: &str, node_type: &NodeType) -> Object {
+        object!({
             "class_name": class_name,
             "node_type": node_type.to_string(),
-            "module_class_name_pairs": module_class_name_pairs,
-        });
+        })
+    }
+
+    fn create_lib_rs_file(class_name: &str, node_type: &NodeType) -> Result<(), FtwError> {
+        let mut tmpl_globals = FtwCommand::get_tmpl_globals(class_name, node_type);
+        let module_class_name_pairs = FtwCommand::generate_module_class_name_pairs()?;
+        let k = KString::from_ref("module_class_name_pairs");
+        let v = Value::Scalar(ScalarCow::from(module_class_name_pairs));
+        tmpl_globals.insert(k, v);
         FtwCommand::create_file(
             &String::from_utf8_lossy(include_bytes!("lib_tmpl.rs")),
             "rust/src/lib.rs",
+            &tmpl_globals,
+        )
+    }
+
+    fn create_class_rs_file(class_name: &str, node_type: &NodeType) -> Result<(), FtwError> {
+        let tmpl_globals = FtwCommand::get_tmpl_globals(class_name, node_type);
+        FtwCommand::create_file(
+            &String::from_utf8_lossy(include_bytes!("class_tmpl.rs")),
+            &format!("rust/src/{}.rs", class_name._snake_case()),
+            &tmpl_globals,
+        )
+    }
+
+    fn create_gdns_file(class_name: &str, node_type: &NodeType) -> Result<(), FtwError> {
+        let tmpl_globals = FtwCommand::get_tmpl_globals(class_name, node_type);
+        FtwCommand::create_file(
+            &String::from_utf8_lossy(include_bytes!("gdns_tmpl.gdns")),
+            &format!("godot/native/{}.gdns", class_name._pascal_case()),
+            &tmpl_globals,
+        )
+    }
+
+    fn create_tscn_file(class_name: &str, node_type: &NodeType) -> Result<(), FtwError> {
+        let tmpl_globals = FtwCommand::get_tmpl_globals(class_name, node_type);
+        FtwCommand::create_file(
+            &String::from_utf8_lossy(include_bytes!("tscn_tmpl.tscn")),
+            &format!("godot/scenes/{}.tscn", class_name._pascal_case()),
             &tmpl_globals,
         )
     }
@@ -186,51 +211,17 @@ impl Processor for FtwCommand {
                 node_type,
             } => {
                 FtwCommand::is_valid_project()?;
-                let tmpl_globals = object!({
-                    "class_name": class_name,
-                    "node_type": node_type.to_string(),
-                });
-                let files_to_be_generated = vec![
-                    (
-                        String::from_utf8_lossy(include_bytes!("class_tmpl.rs")),
-                        format!("rust/src/{}.rs", class_name._snake_case()),
-                        &tmpl_globals,
-                    ),
-                    (
-                        String::from_utf8_lossy(include_bytes!("gdns_tmpl.gdns")),
-                        format!("godot/native/{}.gdns", class_name._pascal_case()),
-                        &tmpl_globals,
-                    ),
-                    (
-                        String::from_utf8_lossy(include_bytes!("tscn_tmpl.tscn")),
-                        format!("godot/scenes/{}.tscn", class_name._pascal_case()),
-                        &tmpl_globals,
-                    ),
-                ];
-                FtwCommand::create_files(files_to_be_generated)?;
-                FtwCommand::create_lib_rs_file(class_name, *node_type)
+                FtwCommand::create_class_rs_file(class_name, &node_type)?;
+                FtwCommand::create_gdns_file(class_name, &node_type)?;
+                FtwCommand::create_tscn_file(class_name, &node_type)?;
+                FtwCommand::create_lib_rs_file(class_name, &node_type)
             }
             FtwCommand::Singleton { class_name } => {
                 FtwCommand::is_valid_project()?;
                 let node_type = NodeType::Node;
-                let tmpl_globals = object!({
-                    "class_name": class_name,
-                    "node_type": node_type.to_string(),
-                });
-                let files_to_be_generated = vec![
-                    (
-                        String::from_utf8_lossy(include_bytes!("class_tmpl.rs")),
-                        format!("rust/src/{}.rs", class_name._snake_case()),
-                        &tmpl_globals,
-                    ),
-                    (
-                        String::from_utf8_lossy(include_bytes!("gdns_tmpl.gdns")),
-                        format!("godot/native/{}.gdns", class_name._pascal_case()),
-                        &tmpl_globals,
-                    ),
-                ];
-                FtwCommand::create_files(files_to_be_generated)?;
-                FtwCommand::create_lib_rs_file(class_name, node_type)?;
+                FtwCommand::create_class_rs_file(class_name, &node_type)?;
+                FtwCommand::create_gdns_file(class_name, &node_type)?;
+                FtwCommand::create_lib_rs_file(class_name, &node_type)?;
                 println!("Open Project -> Project Settings -> Autoload and then add the newly created *.gdns file as an autoload");
                 // TODO: parse and modify project.godot file to include the newly created *.gdns file as an autoload
                 Ok(())
