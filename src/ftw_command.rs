@@ -30,9 +30,7 @@ pub enum FtwCommand {
     Singleton {
         class_name: ClassName,
     },
-    Run {
-        target: FtwTarget,
-    },
+    Run,
     Build {
         target: FtwTarget,
         build_type: FtwBuildType,
@@ -237,10 +235,14 @@ impl Processor for FtwCommand {
                 // TODO: parse and modify project.godot file to include the newly created *.gdns file as an autoload
                 Ok(())
             }
-            FtwCommand::Run { target } => {
+            FtwCommand::Run => {
                 FtwCommand::is_valid_project()?;
                 let build_type = FtwBuildType::Debug;
-                FtwCommand::build_lib(target, &build_type)?;
+                let current_platform = format!("{}-{}", env::consts::OS, env::consts::ARCH);
+                let target = current_platform
+                    .parse()
+                    .unwrap_or(FtwTarget::WindowsX86_64Msvc);
+                FtwCommand::build_lib(&target, &build_type)?;
                 let commands: Commands = vec![vec!["godot", "--path", "godot/", "-d"]];
                 (ProcessCommand { commands }).process()
             }

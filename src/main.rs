@@ -77,11 +77,7 @@ fn main() {
                 .to_string();
             FtwCommand::Singleton { class_name }
         }
-        Some(("run", _)) => {
-            let target = format!("{}-{}", env::consts::OS, env::consts::ARCH);
-            let target = target.parse().unwrap_or(FtwTarget::WindowsX86_64Msvc);
-            FtwCommand::Run { target }
-        }
+        Some(("run", _)) => FtwCommand::Run,
         Some(("build", args)) => {
             let current_platform = format!("{}-{}", env::consts::OS, env::consts::ARCH);
             let target = args
