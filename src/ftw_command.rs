@@ -13,11 +13,11 @@ use fs_extra::{move_items, remove_items};
 use kstring::KString;
 use liquid::{object, Object, ParserBuilder};
 use liquid_core::model::{ScalarCow, Value};
-use std::env;
 use std::ffi::OsStr;
 use std::fs::{read_dir, write, OpenOptions};
 use std::io::prelude::*;
 use std::path::Path;
+use strum::IntoEnumIterator;
 use voca_rs::Voca;
 
 pub enum FtwCommand {
@@ -54,7 +54,6 @@ impl FtwCommand {
     }
 
     fn is_valid_project() -> Result<bool, FtwError> {
-        let project_directory = env::current_dir()?;
         let project_files: Vec<&str> = vec![
             "Cargo.toml",
             "Makefile",
@@ -65,10 +64,28 @@ impl FtwCommand {
             "rust/src/lib.rs",
             "rust/Cargo.toml",
         ];
-        let is_valid_project = project_files
-            .iter()
-            .all(|i| Path::new(&format!("{}/{}", project_directory.display(), i)).exists());
-        if is_valid_project {
+        let targets_to_filter = vec![
+            FtwTarget::IosAarch64,
+            FtwTarget::IosX64_64,
+            FtwTarget::MacOsX86_64,
+            FtwTarget::WindowsX86Gnu,
+            FtwTarget::WindowsX86Msvc,
+            FtwTarget::WindowsX86_64Gnu,
+            FtwTarget::WindowsX86_64Msvc,
+        ];
+        let targets: Vec<String> = FtwTarget::iter()
+            .filter(|t| !targets_to_filter.iter().any(|tf| t == tf))
+            .map(|t| {
+                let gitkeep = format!("{}/.gitkeep", t.to_cli_arg());
+                let bin_gitkeep = format!("bin/{}", gitkeep);
+                let lib_gitkeep = format!("lib/{}", gitkeep);
+                vec![bin_gitkeep, lib_gitkeep]
+            })
+            .flatten()
+            .collect();
+        let is_valid_project = project_files.iter().all(|i| Path::new(i).exists());
+        let is_valid_targets = targets.iter().all(|t| Path::new(&t).exists());
+        if is_valid_project && is_valid_targets {
             println!("Project is valid...");
             Ok(true)
         } else {

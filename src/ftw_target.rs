@@ -2,8 +2,9 @@ use crate::ftw_error::FtwError;
 use crate::traits::{ToCliArg, ToLibExt, ToLibPrefix};
 use crate::type_alias::{CliArg, LibExt, LibPrefix};
 use std::str::FromStr;
+use strum_macros::EnumIter;
 
-#[derive(Debug)]
+#[derive(Debug, EnumIter, PartialEq)]
 pub enum FtwTarget {
     AndroidLinuxAarch64,
     AndroidLinuxArmV7,

@@ -16,6 +16,8 @@ fs_extra = "1.2.0"
 kstring = "1.0.0"
 liquid = "0.21.4"
 liquid-core = "0.21.2"
+strum = "0.20"
+strum_macros = "0.20"
 thiserror = "1.0.23"
 voca_rs = "1.13.0"
 
