@@ -68,6 +68,15 @@ $ ftw build linux-x86_64 release # builds the library for the `linux-x86_64` pla
 - windows-x86_64-msvc
 - windows-x86_64
 
+### ftw export [target] [build-type]
+#### Exports the game for a particular target
+```shell
+$ ftw export # exports the game for your current platform as target using `debug` as default
+$ ftw export linux-x86_64 # exports the game for the `linux-x86_64` platform using `debug` as default
+$ ftw export linux-x86_64 debug # same as above
+$ ftw export linux-x86_64 release # exports the game for the `linux-x86_64` platform using `release`
+```
+
 ### ftw run
 #### Builds the library using `debug` then runs your game
 ```shell

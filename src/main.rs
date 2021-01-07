@@ -41,6 +41,10 @@ fn main() {
                             (@subcommand build =>
                              (about: "build the library for a particular platform")
                              (@arg target: !required "target platform to build")
+                             (@arg build_type: !required "either a debug or release"))
+                            (@subcommand export =>
+                             (about: "export the game for a particular platform")
+                             (@arg target: !required "target platform to build")
                              (@arg build_type: !required "either a debug or release")))
     .get_matches();
     let command: FtwCommand = match matches.subcommand() {
@@ -92,6 +96,20 @@ fn main() {
                 .parse()
                 .unwrap_or(FtwBuildType::Debug);
             FtwCommand::Build { target, build_type }
+        }
+        Some(("export", args)) => {
+            let current_platform = util::get_current_platform();
+            let target = args
+                .value_of("target")
+                .unwrap_or(&current_platform)
+                .parse()
+                .unwrap_or(FtwTarget::WindowsX86_64Msvc);
+            let build_type = args
+                .value_of("build_type")
+                .unwrap_or("debug")
+                .parse()
+                .unwrap_or(FtwBuildType::Debug);
+            FtwCommand::Export { target, build_type }
         }
         _ => unreachable!(),
     };

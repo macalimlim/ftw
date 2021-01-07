@@ -4,7 +4,9 @@ use crate::ftw_target::FtwTarget;
 use crate::ftw_template::FtwTemplate;
 use crate::node_type::NodeType;
 use crate::process_command::ProcessCommand;
-use crate::traits::{Processor, ToCliArg, ToGitUrl, ToLibExt, ToLibPrefix};
+use crate::traits::{
+    Processor, ToAppExt, ToCliArg, ToExportArg, ToExportName, ToGitUrl, ToLibExt, ToLibPrefix,
+};
 use crate::type_alias::{ClassName, Commands, ProjectName};
 use crate::util;
 use cargo_edit::get_crate_name_from_path;
@@ -13,6 +15,7 @@ use fs_extra::{move_items, remove_items};
 use kstring::KString;
 use liquid::{object, Object, ParserBuilder};
 use liquid_core::model::{ScalarCow, Value};
+use std::env;
 use std::ffi::OsStr;
 use std::fs::{read_dir, write, OpenOptions};
 use std::io::prelude::*;
@@ -34,6 +37,10 @@ pub enum FtwCommand {
     },
     Run,
     Build {
+        target: FtwTarget,
+        build_type: FtwBuildType,
+    },
+    Export {
         target: FtwTarget,
         build_type: FtwBuildType,
     },
@@ -201,6 +208,29 @@ impl FtwCommand {
         move_items(&source_paths, target_path, &options)?;
         Ok(())
     }
+
+    fn export_game(target: &FtwTarget, build_type: &FtwBuildType) -> Result<(), FtwError> {
+        let crate_name = get_crate_name_from_path("./rust/")?;
+        let target_cli_arg = target.to_cli_arg();
+        let target_export_name = target.to_export_name();
+        let build_type_export_arg = build_type.to_export_arg();
+        let build_type = build_type.to_string().to_lowercase();
+        let target_app_ext = target.to_app_ext();
+        let export_preset_name =
+            format!("{}.{}.{}", target_export_name, target_cli_arg, build_type);
+        let export_path = format!(
+            "../bin/{}/{}.{}.{}{}",
+            &target_cli_arg, &crate_name, build_type, &target_cli_arg, &target_app_ext
+        );
+        let commands = vec![vec![
+            "godot-headless",
+            &build_type_export_arg,
+            &export_preset_name,
+            &export_path,
+        ]];
+        env::set_current_dir(Path::new("./godot"))?;
+        (ProcessCommand { commands }).process()
+    }
 }
 
 impl Processor for FtwCommand {
@@ -258,6 +288,12 @@ impl Processor for FtwCommand {
             FtwCommand::Build { target, build_type } => {
                 FtwCommand::is_valid_project()?;
                 FtwCommand::build_lib(target, build_type)
+            }
+
+            FtwCommand::Export { target, build_type } => {
+                FtwCommand::is_valid_project()?;
+                FtwCommand::build_lib(target, build_type)?;
+                FtwCommand::export_game(target, build_type)
             }
         }
     }

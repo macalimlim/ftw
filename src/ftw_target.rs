@@ -1,6 +1,6 @@
 use crate::ftw_error::FtwError;
-use crate::traits::{ToCliArg, ToLibExt, ToLibPrefix};
-use crate::type_alias::{CliArg, LibExt, LibPrefix};
+use crate::traits::{ToAppExt, ToCliArg, ToExportName, ToLibExt, ToLibPrefix};
+use crate::type_alias::{AppExt, CliArg, ExportName, LibExt, LibPrefix};
 use std::str::FromStr;
 use strum_macros::EnumIter;
 
@@ -37,6 +37,44 @@ impl ToCliArg for FtwTarget {
             FtwTarget::WindowsX86Msvc => "i686-pc-windows-msvc",
             FtwTarget::WindowsX86_64Gnu => "x86_64-pc-windows-gnu",
             FtwTarget::WindowsX86_64Msvc => "x86_64-pc-windows-msvc",
+        }
+        .to_string()
+    }
+}
+
+impl ToExportName for FtwTarget {
+    fn to_export_name(&self) -> ExportName {
+        match self {
+            FtwTarget::AndroidLinuxAarch64
+            | FtwTarget::AndroidLinuxArmV7
+            | FtwTarget::AndroidLinuxX86
+            | FtwTarget::AndroidLinuxX86_64 => "Android",
+            FtwTarget::IosAarch64 | FtwTarget::IosX64_64 => "iOS",
+            FtwTarget::LinuxX86 | FtwTarget::LinuxX86_64 => "Linux/X11",
+            FtwTarget::MacOsX86_64 => "Mac OSX",
+            FtwTarget::WindowsX86Gnu
+            | FtwTarget::WindowsX86Msvc
+            | FtwTarget::WindowsX86_64Gnu
+            | FtwTarget::WindowsX86_64Msvc => "Windows",
+        }
+        .to_string()
+    }
+}
+
+impl ToAppExt for FtwTarget {
+    fn to_app_ext(&self) -> AppExt {
+        match self {
+            FtwTarget::AndroidLinuxAarch64
+            | FtwTarget::AndroidLinuxArmV7
+            | FtwTarget::AndroidLinuxX86
+            | FtwTarget::AndroidLinuxX86_64 => ".apk",
+            FtwTarget::IosAarch64 | FtwTarget::IosX64_64 => ".ipa",
+            FtwTarget::LinuxX86 | FtwTarget::LinuxX86_64 => "",
+            FtwTarget::MacOsX86_64 => "",
+            FtwTarget::WindowsX86Gnu
+            | FtwTarget::WindowsX86Msvc
+            | FtwTarget::WindowsX86_64Gnu
+            | FtwTarget::WindowsX86_64Msvc => ".exe",
         }
         .to_string()
     }

@@ -1,6 +1,6 @@
 use crate::ftw_error::FtwError;
-use crate::traits::ToCliArg;
-use crate::type_alias::CliArg;
+use crate::traits::{ToCliArg, ToExportArg};
+use crate::type_alias::{CliArg, ExportArg};
 use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
@@ -15,6 +15,16 @@ impl ToCliArg for FtwBuildType {
         match self {
             FtwBuildType::Debug => "",
             FtwBuildType::Release => "--release",
+        }
+        .to_string()
+    }
+}
+
+impl ToExportArg for FtwBuildType {
+    fn to_export_arg(&self) -> ExportArg {
+        match self {
+            FtwBuildType::Debug => "--export-debug",
+            FtwBuildType::Release => "--export",
         }
         .to_string()
     }
