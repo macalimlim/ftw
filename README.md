@@ -8,7 +8,7 @@
 * [Contact](#contact)
 
 ## General Information
-This is a tool to help you manage your game project by providing commands to (1) create a project, (2) create a class, (3) create a singleton class, (4) build the library, (5) run your project (and more to come in the future!). Its like [rails](https://rubyonrails.org/) but for game development :wink:
+This is a tool to help you manage your game project by providing commands to (1) create a project, (2) create a class, (3) create a singleton class, (4) build the library, (5) export your game, (6) run your project (and more to come in the future!). Its like [rails](https://rubyonrails.org/) but for game development :wink:
 
 ## Setup
 It leverages tools like [cargo-generate](https://github.com/ashleygwilliams/cargo-generate) and [godot](https://godotengine.org/) (obviously!) to make it all work!
