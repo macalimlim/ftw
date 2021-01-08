@@ -74,7 +74,6 @@ impl FtwCommand {
         let targets_to_filter = vec![
             FtwTarget::IosAarch64,
             FtwTarget::IosX64_64,
-            FtwTarget::MacOsX86_64,
             FtwTarget::WindowsX86Gnu,
             FtwTarget::WindowsX86Msvc,
             FtwTarget::WindowsX86_64Gnu,
