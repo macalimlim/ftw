@@ -1,8 +1,8 @@
 use crate::ftw_build_type::FtwBuildType;
 use crate::ftw_error::FtwError;
+use crate::ftw_node_type::FtwNodeType;
 use crate::ftw_target::FtwTarget;
 use crate::ftw_template::FtwTemplate;
-use crate::node_type::NodeType;
 use crate::process_command::ProcessCommand;
 use crate::traits::{
     Processor, ToAppExt, ToCliArg, ToExportArg, ToExportName, ToGitUrl, ToLibExt, ToLibPrefix,
@@ -30,7 +30,7 @@ pub enum FtwCommand {
     },
     Class {
         class_name: ClassName,
-        node_type: NodeType,
+        node_type: FtwNodeType,
     },
     Singleton {
         class_name: ClassName,
@@ -123,14 +123,14 @@ impl FtwCommand {
         Ok(module_class_name_pairs.join("|"))
     }
 
-    fn get_tmpl_globals(class_name: &str, node_type: &NodeType) -> Object {
+    fn get_tmpl_globals(class_name: &str, node_type: &FtwNodeType) -> Object {
         object!({
             "class_name": class_name,
             "node_type": node_type.to_string(),
         })
     }
 
-    fn create_lib_rs_file(class_name: &str, node_type: &NodeType) -> Result<(), FtwError> {
+    fn create_lib_rs_file(class_name: &str, node_type: &FtwNodeType) -> Result<(), FtwError> {
         let mut tmpl_globals = FtwCommand::get_tmpl_globals(class_name, node_type);
         let module_class_name_pairs = FtwCommand::generate_module_class_name_pairs()?;
         let k = KString::from_ref("module_class_name_pairs");
@@ -143,7 +143,7 @@ impl FtwCommand {
         )
     }
 
-    fn create_class_rs_file(class_name: &str, node_type: &NodeType) -> Result<(), FtwError> {
+    fn create_class_rs_file(class_name: &str, node_type: &FtwNodeType) -> Result<(), FtwError> {
         let tmpl_globals = FtwCommand::get_tmpl_globals(class_name, node_type);
         FtwCommand::create_file(
             &String::from_utf8_lossy(include_bytes!("class_tmpl.rs")),
@@ -152,7 +152,7 @@ impl FtwCommand {
         )
     }
 
-    fn create_gdns_file(class_name: &str, node_type: &NodeType) -> Result<(), FtwError> {
+    fn create_gdns_file(class_name: &str, node_type: &FtwNodeType) -> Result<(), FtwError> {
         let tmpl_globals = FtwCommand::get_tmpl_globals(class_name, node_type);
         FtwCommand::create_file(
             &String::from_utf8_lossy(include_bytes!("gdns_tmpl.gdns")),
@@ -161,7 +161,7 @@ impl FtwCommand {
         )
     }
 
-    fn create_tscn_file(class_name: &str, node_type: &NodeType) -> Result<(), FtwError> {
+    fn create_tscn_file(class_name: &str, node_type: &FtwNodeType) -> Result<(), FtwError> {
         let tmpl_globals = FtwCommand::get_tmpl_globals(class_name, node_type);
         FtwCommand::create_file(
             &String::from_utf8_lossy(include_bytes!("tscn_tmpl.tscn")),
@@ -265,7 +265,7 @@ impl Processor for FtwCommand {
             }
             FtwCommand::Singleton { class_name } => {
                 FtwCommand::is_valid_project()?;
-                let node_type = NodeType::Node;
+                let node_type = FtwNodeType::Node;
                 FtwCommand::create_class_rs_file(class_name, &node_type)?;
                 FtwCommand::create_gdns_file(class_name, &node_type)?;
                 FtwCommand::create_lib_rs_file(class_name, &node_type)?;

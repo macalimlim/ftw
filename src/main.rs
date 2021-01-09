@@ -1,9 +1,9 @@
 mod ftw_build_type;
 mod ftw_command;
 mod ftw_error;
+mod ftw_node_type;
 mod ftw_target;
 mod ftw_template;
-mod node_type;
 mod process_command;
 mod traits;
 mod type_alias;
@@ -11,9 +11,9 @@ mod util;
 
 use crate::ftw_build_type::FtwBuildType;
 use crate::ftw_command::FtwCommand;
+use crate::ftw_node_type::FtwNodeType;
 use crate::ftw_target::FtwTarget;
 use crate::ftw_template::FtwTemplate;
-use crate::node_type::NodeType;
 use crate::traits::Processor;
 use clap::{clap_app, crate_authors, crate_version};
 use std::env;
@@ -65,11 +65,11 @@ fn main() {
         }
         Some(("class", args)) => {
             let class_name = args.value_of("class_name").unwrap_or("MyClass").to_string();
-            let node_type: NodeType = args
+            let node_type: FtwNodeType = args
                 .value_of("node_type")
                 .unwrap_or("node")
                 .parse()
-                .unwrap_or(NodeType::Node);
+                .unwrap_or(FtwNodeType::Node);
             FtwCommand::Class {
                 class_name,
                 node_type,
