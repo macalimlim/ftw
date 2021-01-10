@@ -47,6 +47,25 @@ pub enum FtwCommand {
 }
 
 impl FtwCommand {
+    fn generate_project(project_name: &str, template: &FtwTemplate) -> Result<(), FtwError> {
+        let git_url = &template.to_git_url();
+        let commands: Commands = vec![vec![
+            "cargo",
+            "generate",
+            "--name",
+            project_name,
+            "--git",
+            git_url,
+        ]];
+        (ProcessCommand { commands }).process()
+    }
+
+    fn append_to_gitignore(project_name: &str) -> Result<(), FtwError> {
+        let gitignore_path: String = format!("{}/.gitignore", project_name);
+        let mut gitignore_file = OpenOptions::new().append(true).open(gitignore_path)?;
+        Ok(writeln!(gitignore_file, "godot/export_presets.cfg")?)
+    }
+
     fn create_file(
         template_contents: &str,
         target_file_path: &str,
@@ -239,19 +258,8 @@ impl Processor for FtwCommand {
                 project_name,
                 template,
             } => {
-                let git_url = &template.to_git_url();
-                let gitignore_path: String = format!("{}/.gitignore", project_name);
-                let commands: Commands = vec![vec![
-                    "cargo",
-                    "generate",
-                    "--name",
-                    project_name,
-                    "--git",
-                    git_url,
-                ]];
-                (ProcessCommand { commands }).process()?;
-                let mut gitignore_file = OpenOptions::new().append(true).open(gitignore_path)?;
-                Ok(writeln!(gitignore_file, "godot/export_presets.cfg")?)
+                FtwCommand::generate_project(project_name, &template)?;
+                FtwCommand::append_to_gitignore(project_name)
             }
             FtwCommand::Class {
                 class_name,
