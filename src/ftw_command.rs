@@ -91,7 +91,6 @@ impl FtwCommand {
             "rust/Cargo.toml",
         ];
         let targets_to_filter = vec![
-            FtwTarget::IosAarch64,
             FtwTarget::IosX64_64,
             FtwTarget::WindowsX86Gnu,
             FtwTarget::WindowsX86Msvc,
