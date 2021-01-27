@@ -11,7 +11,6 @@ pub enum FtwTarget {
     AndroidLinuxX86,
     AndroidLinuxX86_64,
     IosAarch64,
-    IosX64_64,
     LinuxX86,
     LinuxX86_64,
     MacOsX86_64,
@@ -29,7 +28,6 @@ impl ToCliArg for FtwTarget {
             FtwTarget::AndroidLinuxX86 => "i686-linux-android",
             FtwTarget::AndroidLinuxX86_64 => "x86_64-linux-android",
             FtwTarget::IosAarch64 => "aarch64-apple-ios",
-            FtwTarget::IosX64_64 => "x86_64-apple-ios",
             FtwTarget::LinuxX86 => "i686-unknown-linux-gnu",
             FtwTarget::LinuxX86_64 => "x86_64-unknown-linux-gnu",
             FtwTarget::MacOsX86_64 => "x86_64-apple-darwin",
@@ -49,7 +47,7 @@ impl ToExportName for FtwTarget {
             | FtwTarget::AndroidLinuxArmV7
             | FtwTarget::AndroidLinuxX86
             | FtwTarget::AndroidLinuxX86_64 => "Android",
-            FtwTarget::IosAarch64 | FtwTarget::IosX64_64 => "iOS",
+            FtwTarget::IosAarch64 => "iOS",
             FtwTarget::LinuxX86 | FtwTarget::LinuxX86_64 => "Linux/X11",
             FtwTarget::MacOsX86_64 => "Mac OSX",
             FtwTarget::WindowsX86Gnu
@@ -68,7 +66,7 @@ impl ToAppExt for FtwTarget {
             | FtwTarget::AndroidLinuxArmV7
             | FtwTarget::AndroidLinuxX86
             | FtwTarget::AndroidLinuxX86_64 => ".apk",
-            FtwTarget::IosAarch64 | FtwTarget::IosX64_64 => ".ipa",
+            FtwTarget::IosAarch64 => ".ipa",
             FtwTarget::LinuxX86 | FtwTarget::LinuxX86_64 => "",
             FtwTarget::MacOsX86_64 => "",
             FtwTarget::WindowsX86Gnu
@@ -93,7 +91,8 @@ impl ToLibExt for FtwTarget {
             | FtwTarget::WindowsX86Msvc
             | FtwTarget::WindowsX86_64Gnu
             | FtwTarget::WindowsX86_64Msvc => "dll",
-            FtwTarget::IosAarch64 | FtwTarget::IosX64_64 | FtwTarget::MacOsX86_64 => "dylib",
+            FtwTarget::IosAarch64 => "a",
+            FtwTarget::MacOsX86_64 => "dylib",
         }
         .to_string()
     }
@@ -121,7 +120,6 @@ impl FromStr for FtwTarget {
             "android-x86" => Ok(FtwTarget::AndroidLinuxX86),
             "android-x86_64" => Ok(FtwTarget::AndroidLinuxX86_64),
             "ios-aarch64" => Ok(FtwTarget::IosAarch64),
-            "ios-x86_64" => Ok(FtwTarget::IosX64_64),
             "linux-x86" => Ok(FtwTarget::LinuxX86),
             "linux-x86_64" => Ok(FtwTarget::LinuxX86_64),
             "macos-x86_64" => Ok(FtwTarget::MacOsX86_64),
