@@ -247,6 +247,11 @@ impl FtwCommand {
         env::set_current_dir(Path::new("./godot"))?;
         (ProcessCommand { commands }).process()
     }
+
+    fn run_with_godot() -> Result<(), FtwError> {
+        let commands: Commands = vec![vec!["godot", "--path", "godot/", "-d"]];
+        (ProcessCommand { commands }).process()
+    }
 }
 
 impl Processor for FtwCommand {
@@ -287,8 +292,7 @@ impl Processor for FtwCommand {
                     .parse()
                     .unwrap_or(FtwTarget::WindowsX86_64Msvc);
                 FtwCommand::build_lib(&target, &build_type)?;
-                let commands: Commands = vec![vec!["godot", "--path", "godot/", "-d"]];
-                (ProcessCommand { commands }).process()
+                FtwCommand::run_with_godot()
             }
             FtwCommand::Build { target, build_type } => {
                 FtwCommand::is_valid_project()?;

@@ -57,7 +57,6 @@ $ ftw build linux-x86_64 release # builds the library for the `linux-x86_64` pla
 - android-x86
 - android-x86_64
 - ios-aarch64
-- ios-x86_64
 - linux-x86
 - linux-x86_64
 - macos-x86_64
