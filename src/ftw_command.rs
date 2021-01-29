@@ -161,30 +161,42 @@ impl FtwCommand {
     }
 
     fn create_class_rs_file(class_name: &str, node_type: &FtwNodeType) -> Result<(), FtwError> {
-        let tmpl_globals = FtwCommand::get_tmpl_globals(class_name, node_type);
-        FtwCommand::create_file(
-            &String::from_utf8_lossy(include_bytes!("class_tmpl.rs")),
-            &format!("rust/src/{}.rs", class_name._snake_case()),
-            &tmpl_globals,
-        )
+        let class_rs_file = format!("rust/src/{}.rs", class_name._snake_case());
+        if !Path::new(&class_rs_file).exists() {
+            let tmpl_globals = FtwCommand::get_tmpl_globals(class_name, node_type);
+            FtwCommand::create_file(
+                &String::from_utf8_lossy(include_bytes!("class_tmpl.rs")),
+                &class_rs_file,
+                &tmpl_globals,
+            )?;
+        }
+        Ok(())
     }
 
     fn create_gdns_file(class_name: &str, node_type: &FtwNodeType) -> Result<(), FtwError> {
-        let tmpl_globals = FtwCommand::get_tmpl_globals(class_name, node_type);
-        FtwCommand::create_file(
-            &String::from_utf8_lossy(include_bytes!("gdns_tmpl.gdns")),
-            &format!("godot/native/{}.gdns", class_name._pascal_case()),
-            &tmpl_globals,
-        )
+        let gdns_file = format!("godot/native/{}.gdns", class_name._pascal_case());
+        if !Path::new(&gdns_file).exists() {
+            let tmpl_globals = FtwCommand::get_tmpl_globals(class_name, node_type);
+            FtwCommand::create_file(
+                &String::from_utf8_lossy(include_bytes!("gdns_tmpl.gdns")),
+                &gdns_file,
+                &tmpl_globals,
+            )?;
+        }
+        Ok(())
     }
 
     fn create_tscn_file(class_name: &str, node_type: &FtwNodeType) -> Result<(), FtwError> {
-        let tmpl_globals = FtwCommand::get_tmpl_globals(class_name, node_type);
-        FtwCommand::create_file(
-            &String::from_utf8_lossy(include_bytes!("tscn_tmpl.tscn")),
-            &format!("godot/scenes/{}.tscn", class_name._pascal_case()),
-            &tmpl_globals,
-        )
+        let tscn_file = format!("godot/scenes/{}.tscn", class_name._pascal_case());
+        if !Path::new(&tscn_file).exists() {
+            let tmpl_globals = FtwCommand::get_tmpl_globals(class_name, node_type);
+            FtwCommand::create_file(
+                &String::from_utf8_lossy(include_bytes!("tscn_tmpl.tscn")),
+                &tscn_file,
+                &tmpl_globals,
+            )?;
+        }
+        Ok(())
     }
 
     fn build_lib(target: &FtwTarget, build_type: &FtwBuildType) -> Result<(), FtwError> {
