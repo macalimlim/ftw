@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=2]
 
-[ext_resource path="res://native/{{class_name}}.gdns" type="Script" id=1]
+[ext_resource path="res://native/{{dir_path}}{{class_name}}.gdns" type="Script" id=1]
 
 [node name="{{class_name}}" type="{{node_type}}"]
 script = ExtResource( 1 )

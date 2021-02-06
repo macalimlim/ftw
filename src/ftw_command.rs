@@ -15,13 +15,14 @@ use fs_extra::{move_items, remove_items};
 use kstring::KString;
 use liquid::{object, Object, ParserBuilder};
 use liquid_core::model::{ScalarCow, Value};
+use regex::Regex;
 use std::env;
-use std::ffi::OsStr;
-use std::fs::{read_dir, write, OpenOptions};
+use std::fs::{create_dir_all, read_dir, write, File, OpenOptions};
 use std::io::prelude::*;
 use std::path::Path;
 use strum::IntoEnumIterator;
 use voca_rs::Voca;
+use walkdir::WalkDir;
 
 pub enum FtwCommand {
     New {
@@ -116,28 +117,44 @@ impl FtwCommand {
         }
     }
 
-    fn generate_module_class_name_pairs() -> Result<String, FtwError> {
-        let godot_native_files = read_dir("godot/native/")?;
-        let mut module_class_name_pairs = vec![];
-        for file in godot_native_files {
-            let file = file?;
-            if Path::new(&file.path())
-                .extension()
-                .and_then(OsStr::to_str)
-                .ok_or(FtwError::Utf8ConversionError)?
-                == "gdns"
-            {
-                let class_name = file
-                    .file_name()
-                    .to_str()
-                    .ok_or(FtwError::Utf8ConversionError)?
-                    .replace(".gdns", "");
-                let module = class_name._snake_case();
-                let pair = format!("{},{}", module, class_name);
-                module_class_name_pairs.push(pair);
+    pub fn is_derving_native_class(contents: String) -> Result<bool, FtwError> {
+        let reg_ex = Regex::new(r"#\[derive\([a-zA-Z, ]*NativeClass[a-zA-Z, ]*\)\]+")?;
+        match reg_ex.find(&contents) {
+            Some(_) => Ok(true),
+            None => Ok(false),
+        }
+    }
+
+    fn get_classes_from_directory(directory: &str) -> Result<String, FtwError> {
+        let mut classes: Vec<String> = Vec::new();
+        for entry in WalkDir::new(directory) {
+            let entry = entry?;
+            let entry_path = entry.path();
+            let path = Path::new(&entry_path);
+            let is_file = path.is_file();
+            if is_file {
+                let mut file_contents = String::new();
+                let mut file = File::open(&entry.path())?;
+                file.read_to_string(&mut file_contents)?;
+                let is_native_class = FtwCommand::is_derving_native_class(file_contents)?;
+                if is_native_class {
+                    let class_name = path.file_stem().ok_or(FtwError::PathError)?;
+                    let class_name = class_name.to_str().ok_or(FtwError::StringConversionError)?;
+                    let class_name = class_name.replace(".rs", "")._pascal_case();
+                    let module_name = class_name._snake_case();
+                    let path_display = format!("{}", path.display());
+                    let full_module_name_vec: Vec<&str> =
+                        path_display.as_str().split('/').collect();
+                    let (_, module_path) = full_module_name_vec.split_at(2);
+                    let mut full_module_name_vec = module_path.to_vec();
+                    full_module_name_vec.pop();
+                    full_module_name_vec.push(&module_name);
+                    full_module_name_vec.push(&class_name);
+                    classes.push(full_module_name_vec.join("::"));
+                }
             }
         }
-        Ok(module_class_name_pairs.join("|"))
+        Ok(classes.join("|"))
     }
 
     fn get_tmpl_globals(class_name: &str, node_type: &FtwNodeType) -> Object {
@@ -149,9 +166,13 @@ impl FtwCommand {
 
     fn create_lib_rs_file(class_name: &str, node_type: &FtwNodeType) -> Result<(), FtwError> {
         let mut tmpl_globals = FtwCommand::get_tmpl_globals(class_name, node_type);
-        let module_class_name_pairs = FtwCommand::generate_module_class_name_pairs()?;
-        let k = KString::from_ref("module_class_name_pairs");
-        let v = Value::Scalar(ScalarCow::from(module_class_name_pairs));
+        let modules = FtwCommand::get_modules_from_directory("rust/src")?;
+        let k = KString::from_ref("modules");
+        let v = Value::Scalar(ScalarCow::from(modules));
+        tmpl_globals.insert(k, v);
+        let classes = FtwCommand::get_classes_from_directory("rust/src")?;
+        let k = KString::from_ref("classes");
+        let v = Value::Scalar(ScalarCow::from(classes));
         tmpl_globals.insert(k, v);
         FtwCommand::create_file(
             &String::from_utf8_lossy(include_bytes!("lib_tmpl.rs")),
@@ -160,8 +181,84 @@ impl FtwCommand {
         )
     }
 
-    fn create_class_rs_file(class_name: &str, node_type: &FtwNodeType) -> Result<(), FtwError> {
-        let class_rs_file = format!("rust/src/{}.rs", class_name._snake_case());
+    fn create_directory(base_path: String, directories: &Vec<String>) -> Result<String, FtwError> {
+        let dir_path = directories.join("/");
+        let full_path = format!("{}/{}", base_path, dir_path);
+        create_dir_all(&full_path)?;
+        Ok(full_path)
+    }
+
+    fn get_modules_from_directory(directory: &str) -> Result<String, FtwError> {
+        let files_and_folders = read_dir(directory)?;
+        let mut modules: Vec<String> = Vec::new();
+        for entry in files_and_folders {
+            let entry = entry?;
+            let entry_path = entry.path();
+            let path = Path::new(&entry_path);
+            let is_file = path.is_file();
+            if is_file {
+                let mut file_contents = String::new();
+                let mut file = File::open(&entry.path())?;
+                file.read_to_string(&mut file_contents)?;
+                let is_native_class = FtwCommand::is_derving_native_class(file_contents)?;
+                if is_native_class {
+                    let path = path.file_stem().ok_or(FtwError::PathError)?;
+                    modules.push(
+                        path.to_os_string()
+                            .to_str()
+                            .ok_or(FtwError::StringConversionError)?
+                            .to_string(),
+                    );
+                }
+            }
+            let is_dir = path.is_dir();
+            let mod_rs_file = format!("{}/mod.rs", entry_path.as_path().display());
+            let mod_rs_file_path = Path::new(&mod_rs_file);
+            let is_contains_mod_rs = mod_rs_file_path.exists();
+            if is_dir && is_contains_mod_rs {
+                modules.push(
+                    path.file_name()
+                        .ok_or(FtwError::PathError)?
+                        .to_str()
+                        .ok_or(FtwError::StringConversionError)?
+                        .to_string(),
+                );
+            }
+        }
+        Ok(modules.join("|"))
+    }
+
+    fn create_mod_rs_file(base_src_path: &str, directories: &Vec<String>) -> Result<(), FtwError> {
+        if directories.is_empty() {
+            Ok(())
+        } else {
+            let dir = directories.join("/");
+            let current_path = format!("{}/{}", &base_src_path, &dir);
+            let mod_rs_file = format!("{}/mod.rs", &current_path);
+            let modules = FtwCommand::get_modules_from_directory(&current_path)?;
+            let tmpl_globals = object!({
+                "modules": modules,
+            });
+            FtwCommand::create_file(
+                &String::from_utf8_lossy(include_bytes!("mod_tmpl.rs")),
+                &mod_rs_file,
+                &tmpl_globals,
+            )?;
+            match directories.split_last() {
+                Some((_, init)) => FtwCommand::create_mod_rs_file(&base_src_path, &init.to_vec()),
+                None => Ok(()),
+            }
+        }
+    }
+
+    fn create_class_rs_file(
+        class_name: &str,
+        directories: &Vec<String>,
+        node_type: &FtwNodeType,
+    ) -> Result<(), FtwError> {
+        let base_src_path = "rust/src".to_string();
+        let src_dir_path = FtwCommand::create_directory(base_src_path.clone(), &directories)?;
+        let class_rs_file = format!("{}/{}.rs", &src_dir_path, class_name._snake_case());
         if !Path::new(&class_rs_file).exists() {
             let tmpl_globals = FtwCommand::get_tmpl_globals(class_name, node_type);
             FtwCommand::create_file(
@@ -170,11 +267,17 @@ impl FtwCommand {
                 &tmpl_globals,
             )?;
         }
+        FtwCommand::create_mod_rs_file(&base_src_path, &directories)?;
         Ok(())
     }
 
-    fn create_gdns_file(class_name: &str, node_type: &FtwNodeType) -> Result<(), FtwError> {
-        let gdns_file = format!("godot/native/{}.gdns", class_name._pascal_case());
+    fn create_gdns_file(
+        class_name: &str,
+        directories: &Vec<String>,
+        node_type: &FtwNodeType,
+    ) -> Result<(), FtwError> {
+        let gdns_dir_path = FtwCommand::create_directory("godot/native".to_string(), &directories)?;
+        let gdns_file = format!("{}/{}.gdns", &gdns_dir_path, class_name._pascal_case());
         if !Path::new(&gdns_file).exists() {
             let tmpl_globals = FtwCommand::get_tmpl_globals(class_name, node_type);
             FtwCommand::create_file(
@@ -186,10 +289,24 @@ impl FtwCommand {
         Ok(())
     }
 
-    fn create_tscn_file(class_name: &str, node_type: &FtwNodeType) -> Result<(), FtwError> {
-        let tscn_file = format!("godot/scenes/{}.tscn", class_name._pascal_case());
+    fn create_tscn_file(
+        class_name: &str,
+        directories: &Vec<String>,
+        node_type: &FtwNodeType,
+    ) -> Result<(), FtwError> {
+        let tscn_dir_path = FtwCommand::create_directory("godot/scenes".to_string(), &directories)?;
+        let tscn_file = format!("{}/{}.tscn", &tscn_dir_path, class_name._pascal_case());
         if !Path::new(&tscn_file).exists() {
-            let tmpl_globals = FtwCommand::get_tmpl_globals(class_name, node_type);
+            let mut tmpl_globals = FtwCommand::get_tmpl_globals(class_name, node_type);
+            let k = KString::from_ref("dir_path");
+            let v = Value::Scalar(ScalarCow::from(if directories.len() == 0 {
+                "".to_string()
+            } else {
+                let mut dir = directories.join("/");
+                dir.push('/');
+                dir
+            }));
+            tmpl_globals.insert(k, v);
             FtwCommand::create_file(
                 &String::from_utf8_lossy(include_bytes!("tscn_tmpl.tscn")),
                 &tscn_file,
@@ -281,17 +398,19 @@ impl Processor for FtwCommand {
                 node_type,
             } => {
                 FtwCommand::is_valid_project()?;
-                FtwCommand::create_class_rs_file(class_name, &node_type)?;
-                FtwCommand::create_gdns_file(class_name, &node_type)?;
-                FtwCommand::create_tscn_file(class_name, &node_type)?;
-                FtwCommand::create_lib_rs_file(class_name, &node_type)
+                let (class_name, directories) = util::get_class_name_and_directories(class_name);
+                FtwCommand::create_class_rs_file(&class_name, &directories, &node_type)?;
+                FtwCommand::create_gdns_file(&class_name, &directories, &node_type)?;
+                FtwCommand::create_tscn_file(&class_name, &directories, &node_type)?;
+                FtwCommand::create_lib_rs_file(&class_name, &node_type)
             }
             FtwCommand::Singleton { class_name } => {
                 FtwCommand::is_valid_project()?;
                 let node_type = FtwNodeType::Node;
-                FtwCommand::create_class_rs_file(class_name, &node_type)?;
-                FtwCommand::create_gdns_file(class_name, &node_type)?;
-                FtwCommand::create_lib_rs_file(class_name, &node_type)?;
+                let (class_name, directories) = util::get_class_name_and_directories(class_name);
+                FtwCommand::create_class_rs_file(&class_name, &directories, &node_type)?;
+                FtwCommand::create_gdns_file(&class_name, &directories, &node_type)?;
+                FtwCommand::create_lib_rs_file(&class_name, &node_type)?;
                 println!("Open Project -> Project Settings -> Autoload and then add the newly created *.gdns file as an autoload");
                 // TODO: parse and modify project.godot file to include the newly created *.gdns file as an autoload
                 Ok(())
