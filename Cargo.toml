@@ -13,7 +13,9 @@ categories = ["command-line-utilities", "game-development"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+anyhow = "1.0.38"
 cargo-edit = "0.7.0"
+cargo-generate = "0.5.2"
 clap = "3.0.0-beta.2"
 fs_extra = "1.2.0"
 kstring = "1.0.0"

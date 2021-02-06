@@ -10,6 +10,7 @@ use crate::traits::{
 use crate::type_alias::{ClassName, Commands, ProjectName};
 use crate::util;
 use cargo_edit::get_crate_name_from_path;
+use cargo_generate::{generate, Args};
 use fs_extra::dir::CopyOptions;
 use fs_extra::{move_items, remove_items};
 use kstring::KString;
@@ -50,15 +51,14 @@ pub enum FtwCommand {
 impl FtwCommand {
     fn generate_project(project_name: &str, template: &FtwTemplate) -> Result<(), FtwError> {
         let git_url = &template.to_git_url();
-        let commands: Commands = vec![vec![
-            "cargo",
-            "generate",
-            "--name",
-            project_name,
-            "--git",
-            git_url,
-        ]];
-        (ProcessCommand { commands }).process()
+        let args = Args {
+            git: git_url.to_string(),
+            branch: None,
+            name: Some(project_name.to_string()),
+            force: false,
+            verbose: false,
+        };
+        Ok(generate(args)?)
     }
 
     fn append_to_gitignore(project_name: &str) -> Result<(), FtwError> {

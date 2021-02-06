@@ -28,4 +28,6 @@ pub enum FtwError {
     StringConversionError,
     #[error("Regex error: {0}")]
     RegexError(#[from] regex::Error),
+    #[error("Anyhow error: {0}")]
+    AnyhowError(#[from] anyhow::Error),
 }
