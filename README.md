@@ -36,12 +36,23 @@ $ ftw class MyHero Area2D # creates a class that derives from `Area2D`
 ```
 > Note: This creates the following files `rust/src/my_hero.rs`, `godot/scenes/MyHero.tscn` and `godot/native/MyHero.gdns` then adds the class inside `rust/src/lib.rs`
 
+##### You could also organize rs, tscn and gdns files into submodules or subfolders
+```shell
+$ ftw class heros/marvel/avengers/IronMan Area2D # creates a class that derives from `Area2D`
+```
+> Note: This creates the following files `rust/src/heros/marvel/avengers/iron_man.rs`, `godot/scenes/heros/marvel/avengers/IronMan.tscn`, `godot/native/heros/marvel/avengers/IronMan.gdns` and `mod.rs` files in each subfolder in `rust/src` then adds the class inside `rust/src/lib.rs`
+
 ### ftw singleton &lt;class-name&gt;
 #### Creates a singleton class for autoloading
 ```shell
 $ ftw singleton MySingleton # creates a class called `MySingleton` that derives from `Node`
 ```
 > Note: This creates the following `rust/src/my_singleton.rs` and `godot/native/MySingleton.gdns` then adds the class inside `rust/src/lib.rs`
+
+##### You can also organize the files into submodules/subfolders as in `ftw class` command
+```shell
+$ ftw singleton network/Network # creates a class called `Network` that derives from `Node`
+```
 
 ### ftw build [target] [build-type]
 #### Builds the library for a particular target

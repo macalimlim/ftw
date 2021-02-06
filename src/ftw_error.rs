@@ -8,8 +8,8 @@ pub enum FtwError {
     InvalidProject,
     #[error("Liquid error: {0}")]
     LiquidError(#[from] liquid_core::Error),
-    #[error("UTF-8 conversion error")]
-    Utf8ConversionError,
+    #[error("Walkdir error")]
+    WalkdirError(#[from] walkdir::Error),
     #[error("Unsupported target")]
     UnsupportedTarget,
     #[error("FsExtra error: {0}")]
@@ -22,4 +22,10 @@ pub enum FtwError {
     InvalidCommandError,
     #[error("Process command error")]
     ProcessCommandError,
+    #[error("Path error")]
+    PathError,
+    #[error("String conversion error")]
+    StringConversionError,
+    #[error("Regex error: {0}")]
+    RegexError(#[from] regex::Error),
 }
