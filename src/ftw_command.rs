@@ -181,7 +181,7 @@ impl FtwCommand {
         )
     }
 
-    fn create_directory(base_path: String, directories: &Vec<String>) -> Result<String, FtwError> {
+    fn create_directory(base_path: String, directories: &[String]) -> Result<String, FtwError> {
         let dir_path = directories.join("/");
         let full_path = format!("{}/{}", base_path, dir_path);
         create_dir_all(&full_path)?;
@@ -228,7 +228,7 @@ impl FtwCommand {
         Ok(modules.join("|"))
     }
 
-    fn create_mod_rs_file(base_src_path: &str, directories: &Vec<String>) -> Result<(), FtwError> {
+    fn create_mod_rs_file(base_src_path: &str, directories: &[String]) -> Result<(), FtwError> {
         if directories.is_empty() {
             Ok(())
         } else {
@@ -253,7 +253,7 @@ impl FtwCommand {
 
     fn create_class_rs_file(
         class_name: &str,
-        directories: &Vec<String>,
+        directories: &[String],
         node_type: &FtwNodeType,
     ) -> Result<(), FtwError> {
         let base_src_path = "rust/src".to_string();
@@ -273,7 +273,7 @@ impl FtwCommand {
 
     fn create_gdns_file(
         class_name: &str,
-        directories: &Vec<String>,
+        directories: &[String],
         node_type: &FtwNodeType,
     ) -> Result<(), FtwError> {
         let gdns_dir_path = FtwCommand::create_directory("godot/native".to_string(), &directories)?;
@@ -291,7 +291,7 @@ impl FtwCommand {
 
     fn create_tscn_file(
         class_name: &str,
-        directories: &Vec<String>,
+        directories: &[String],
         node_type: &FtwNodeType,
     ) -> Result<(), FtwError> {
         let tscn_dir_path = FtwCommand::create_directory("godot/scenes".to_string(), &directories)?;
@@ -299,7 +299,7 @@ impl FtwCommand {
         if !Path::new(&tscn_file).exists() {
             let mut tmpl_globals = FtwCommand::get_tmpl_globals(class_name, node_type);
             let k = KString::from_ref("dir_path");
-            let v = Value::Scalar(ScalarCow::from(if directories.len() == 0 {
+            let v = Value::Scalar(ScalarCow::from(if directories.is_empty() {
                 "".to_string()
             } else {
                 let mut dir = directories.join("/");
