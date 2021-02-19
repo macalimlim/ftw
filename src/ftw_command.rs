@@ -91,14 +91,7 @@ impl FtwCommand {
             "rust/src/lib.rs",
             "rust/Cargo.toml",
         ];
-        let targets_to_filter = vec![
-            FtwTarget::WindowsX86Gnu,
-            FtwTarget::WindowsX86Msvc,
-            FtwTarget::WindowsX86_64Gnu,
-            FtwTarget::WindowsX86_64Msvc,
-        ];
         let targets: Vec<String> = FtwTarget::iter()
-            .filter(|t| !targets_to_filter.iter().any(|tf| t == tf))
             .map(|t| {
                 let gitkeep = format!("{}/.gitkeep", t.to_cli_arg());
                 let bin_gitkeep = format!("bin/{}", gitkeep);
