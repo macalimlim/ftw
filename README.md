@@ -11,7 +11,7 @@
 This is a tool to help you manage your game project by providing commands to (1) create a project, (2) create a class, (3) create a singleton class, (4) build the library, (5) export your game, (6) run your project (and more to come in the future!). Its like [rails](https://rubyonrails.org/) but for game development :wink:.
 
 ## Setup
-It leverages tools like [godot and godot-headless](https://godotengine.org/download) to make it all work! So make sure both are installed. For additional setup instructions, check the [wiki](https://github.com/godot-rust/godot-rust-template/wiki) of the default template.
+It leverages tools like [godot and godot-headless](https://godotengine.org/download) to make it all work! In Linux you can install both godot and godot-headless, on others only godot. For additional setup instructions, check the [wiki](https://github.com/godot-rust/godot-rust-template/wiki) of the default template.
 
 ```shell
 $ cargo install ftw
