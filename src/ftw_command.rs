@@ -361,7 +361,7 @@ impl FtwCommand {
             &target_cli_arg, &crate_name, build_type, &target_cli_arg, &target_app_ext
         );
         let commands = vec![vec![
-            "godot-headless",
+            util::get_godot_bin_for_exporting(),
             &build_type_export_arg,
             &export_preset_name,
             &export_path,
