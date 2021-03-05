@@ -168,7 +168,7 @@ impl FtwCommand {
         let v = Value::Scalar(ScalarCow::from(classes));
         tmpl_globals.insert(k, v);
         FtwCommand::create_file(
-            &String::from_utf8_lossy(include_bytes!("lib_tmpl.rs")),
+            &String::from_utf8_lossy(include_bytes!("templates/lib_tmpl.rs")),
             "rust/src/lib.rs",
             &tmpl_globals,
         )
@@ -233,7 +233,7 @@ impl FtwCommand {
                 "modules": modules,
             });
             FtwCommand::create_file(
-                &String::from_utf8_lossy(include_bytes!("mod_tmpl.rs")),
+                &String::from_utf8_lossy(include_bytes!("templates/mod_tmpl.rs")),
                 &mod_rs_file,
                 &tmpl_globals,
             )?;
@@ -255,7 +255,7 @@ impl FtwCommand {
         if !Path::new(&class_rs_file).exists() {
             let tmpl_globals = FtwCommand::get_tmpl_globals(class_name, node_type);
             FtwCommand::create_file(
-                &String::from_utf8_lossy(include_bytes!("class_tmpl.rs")),
+                &String::from_utf8_lossy(include_bytes!("templates/class_tmpl.rs")),
                 &class_rs_file,
                 &tmpl_globals,
             )?;
@@ -274,7 +274,7 @@ impl FtwCommand {
         if !Path::new(&gdns_file).exists() {
             let tmpl_globals = FtwCommand::get_tmpl_globals(class_name, node_type);
             FtwCommand::create_file(
-                &String::from_utf8_lossy(include_bytes!("gdns_tmpl.gdns")),
+                &String::from_utf8_lossy(include_bytes!("templates/gdns_tmpl.gdns")),
                 &gdns_file,
                 &tmpl_globals,
             )?;
@@ -301,7 +301,7 @@ impl FtwCommand {
             }));
             tmpl_globals.insert(k, v);
             FtwCommand::create_file(
-                &String::from_utf8_lossy(include_bytes!("tscn_tmpl.tscn")),
+                &String::from_utf8_lossy(include_bytes!("templates/tscn_tmpl.tscn")),
                 &tscn_file,
                 &tmpl_globals,
             )?;
