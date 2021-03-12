@@ -1,5 +1,6 @@
 use crate::ftw_build_type::FtwBuildType;
 use crate::ftw_error::FtwError;
+use crate::ftw_machine_type::FtwMachineType;
 use crate::ftw_node_type::FtwNodeType;
 use crate::ftw_target::FtwTarget;
 use crate::ftw_template::FtwTemplate;
@@ -37,7 +38,9 @@ pub enum FtwCommand {
     Singleton {
         class_name: ClassName,
     },
-    Run,
+    Run {
+        machine_type: FtwMachineType,
+    },
     Build {
         target: FtwTarget,
         build_type: FtwBuildType,
@@ -78,6 +81,14 @@ impl FtwCommand {
         write(target_file_path, output.as_bytes())?;
         println!("{} has been created...", target_file_path);
         Ok(())
+    }
+
+    fn is_linux(target: &FtwTarget) -> Result<bool, FtwError> {
+        if *target != FtwTarget::LinuxX86_64 {
+            Err(FtwError::UnsupportedTarget)
+        } else {
+            Ok(true)
+        }
     }
 
     fn is_valid_project() -> Result<bool, FtwError> {
@@ -370,8 +381,12 @@ impl FtwCommand {
         (ProcessCommand { commands }).process()
     }
 
-    fn run_with_godot() -> Result<(), FtwError> {
-        let commands: Commands = vec![vec!["godot", "--path", "godot/", "-d"]];
+    fn run_with_godot(machine_type: &FtwMachineType) -> Result<(), FtwError> {
+        let (godot_binary, debug_flag) = match machine_type {
+            FtwMachineType::Server => ("godot-server", ""),
+            FtwMachineType::Desktop => ("godot", "-d"),
+        };
+        let commands: Commands = vec![vec![godot_binary, "--path", "godot/", debug_flag]];
         (ProcessCommand { commands }).process()
     }
 }
@@ -408,15 +423,18 @@ impl Processor for FtwCommand {
                 // TODO: parse and modify project.godot file to include the newly created *.gdns file as an autoload
                 Ok(())
             }
-            FtwCommand::Run => {
+            FtwCommand::Run { machine_type } => {
                 FtwCommand::is_valid_project()?;
                 let build_type = FtwBuildType::Debug;
                 let current_platform = util::get_current_platform();
                 let target = current_platform
                     .parse()
                     .unwrap_or(FtwTarget::WindowsX86_64Msvc);
+                if *machine_type == FtwMachineType::Server {
+                    FtwCommand::is_linux(&target)?;
+                }
                 FtwCommand::build_lib(&target, &build_type)?;
-                FtwCommand::run_with_godot()
+                FtwCommand::run_with_godot(machine_type)
             }
             FtwCommand::Build { target, build_type } => {
                 FtwCommand::is_valid_project()?;

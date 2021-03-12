@@ -1,6 +1,7 @@
 pub mod ftw_build_type;
 pub mod ftw_command;
 pub mod ftw_error;
+pub mod ftw_machine_type;
 pub mod ftw_node_type;
 pub mod ftw_target;
 pub mod ftw_template;

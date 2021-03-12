@@ -1,6 +1,7 @@
 mod ftw_build_type;
 mod ftw_command;
 mod ftw_error;
+mod ftw_machine_type;
 mod ftw_node_type;
 mod ftw_target;
 mod ftw_template;
@@ -11,6 +12,7 @@ mod util;
 
 use crate::ftw_build_type::FtwBuildType;
 use crate::ftw_command::FtwCommand;
+use crate::ftw_machine_type::FtwMachineType;
 use crate::ftw_node_type::FtwNodeType;
 use crate::ftw_target::FtwTarget;
 use crate::ftw_template::FtwTemplate;
@@ -37,7 +39,8 @@ fn main() {
                              (about: "create a singleton (autoloaded) class")
                              (@arg class_name: +required "the name of this class"))
                             (@subcommand run =>
-                             (about: "run a debug version of the game"))
+                             (about: "run a debug version of the game")
+                             (@arg machine_type: !required "either desktop or server"))
                             (@subcommand build =>
                              (about: "build the library for a particular platform")
                              (@arg target: !required "target platform to build")
@@ -82,7 +85,14 @@ fn main() {
                 .to_string();
             FtwCommand::Singleton { class_name }
         }
-        Some(("run", _)) => FtwCommand::Run,
+        Some(("run", args)) => {
+            let machine_type = args
+                .value_of("machine_type")
+                .unwrap_or("desktop")
+                .parse()
+                .unwrap_or(FtwMachineType::Desktop);
+            FtwCommand::Run { machine_type }
+        }
         Some(("build", args)) => {
             let current_platform = util::get_current_platform();
             let target = args
