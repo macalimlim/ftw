@@ -1,4 +1,5 @@
 use crate::ftw_build_type::FtwBuildType;
+use crate::ftw_configuration::FtwConfiguration;
 use crate::ftw_error::FtwError;
 use crate::ftw_machine_type::FtwMachineType;
 use crate::ftw_node_type::FtwNodeType;
@@ -67,6 +68,7 @@ impl FtwCommand {
     fn append_to_gitignore(project_name: &str) -> Result<(), FtwError> {
         let gitignore_path: String = format!("{}/.gitignore", project_name);
         let mut gitignore_file = OpenOptions::new().append(true).open(gitignore_path)?;
+        writeln!(gitignore_file, ".ftw")?;
         Ok(writeln!(gitignore_file, "godot/export_presets.cfg")?)
     }
 
@@ -371,8 +373,9 @@ impl FtwCommand {
             "../bin/{}/{}.{}.{}{}",
             &target_cli_arg, &crate_name, build_type, &target_cli_arg, &target_app_ext
         );
+        let godot_executable = util::get_godot_exe_for_exporting();
         let commands = vec![vec![
-            util::get_godot_bin_for_exporting(),
+            godot_executable.as_str(),
             &build_type_export_arg,
             &export_preset_name,
             &export_path,
@@ -382,11 +385,12 @@ impl FtwCommand {
     }
 
     fn run_with_godot(machine_type: &FtwMachineType) -> Result<(), FtwError> {
-        let (godot_binary, debug_flag) = match machine_type {
-            FtwMachineType::Server => ("godot-server", ""),
-            FtwMachineType::Desktop => ("godot", "-d"),
+        let ftw_cfg = FtwConfiguration::new();
+        let (godot_executable, debug_flag) = match machine_type {
+            FtwMachineType::Server => (ftw_cfg.godot_server_executable, ""),
+            FtwMachineType::Desktop => (ftw_cfg.godot_executable, "-d"),
         };
-        let commands: Commands = vec![vec![godot_binary, "--path", "godot/", debug_flag]];
+        let commands: Commands = vec![vec![&godot_executable, "--path", "godot/", debug_flag]];
         (ProcessCommand { commands }).process()
     }
 }

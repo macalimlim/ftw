@@ -1,3 +1,5 @@
+use crate::ftw_configuration::FtwConfiguration;
+use crate::ftw_target::FtwTarget;
 use std::env;
 
 pub fn get_current_platform() -> String {
@@ -15,10 +17,13 @@ pub fn get_class_name_and_directories(class_name: &str) -> (String, Vec<String>)
     }
 }
 
-pub fn get_godot_bin_for_exporting() -> &'static str {
-    let current_platform = get_current_platform();
-    match current_platform.as_str() {
-        "linux-x86" | "linux-x86_64" => "godot-headless",
-        _ => "godot",
+pub fn get_godot_exe_for_exporting() -> String {
+    let current_platform = get_current_platform()
+        .parse()
+        .unwrap_or(FtwTarget::WindowsX86_64Msvc);
+    let ftw_cfg = FtwConfiguration::new();
+    match current_platform {
+        FtwTarget::LinuxX86 | FtwTarget::LinuxX86_64 => ftw_cfg.godot_headless_executable,
+        _ => ftw_cfg.godot_executable,
     }
 }
