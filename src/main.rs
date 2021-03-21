@@ -1,5 +1,6 @@
 mod ftw_build_type;
 mod ftw_command;
+mod ftw_configuration;
 mod ftw_error;
 mod ftw_machine_type;
 mod ftw_node_type;

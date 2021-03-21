@@ -95,5 +95,22 @@ $ ftw run server # runs the game as a server
 # enjoy! 😆
 ```
 
+## Custom executables
+
+If you have custom executables to run godot, for example if you have a shell/batch script which do some stuff first before running godot, you can configure using the following inside your project...
+
+### .ftw
+
+You can create a `per-project` configuration file at your project root named `.ftw` with the following contents...
+
+```ini
+[ftw]
+godot-exe=/path/to/custom/godot-script
+godot-headless-exe=/path/to/custom/godot-headless-script
+godot-server-exe=godot-server-script # assuming it's on $PATH
+```
+
+> Note: Having the .ftw file and the keys inside the `.ftw` file are all optional. If you don't provide them, the defaults (godot, godot-headless and godot-server) will be used. For Windows users use forward-slashes instead of back-slashes (e.g. godot-exe=D:/path/to/godot/bin/godot.windows.tools.64.exe)
+
 ## Contact
 Michael Angelo Calimlim `<macalimlim@gmail.com>`
