@@ -12,7 +12,7 @@ use crate::traits::{
 use crate::type_alias::{ClassName, Commands, ProjectName};
 use crate::util;
 use cargo_edit::get_crate_name_from_path;
-use cargo_generate::{generate, Args};
+use cargo_generate::{generate, Args, Vcs};
 use fs_extra::dir::CopyOptions;
 use fs_extra::{move_items, remove_items};
 use kstring::KString;
@@ -56,11 +56,17 @@ impl FtwCommand {
     fn generate_project(project_name: &str, template: &FtwTemplate) -> Result<(), FtwError> {
         let git_url = &template.to_git_url();
         let args = Args {
-            git: git_url.to_string(),
+            git: Some(git_url.to_string()),
             branch: None,
             name: Some(project_name.to_string()),
             force: false,
             verbose: false,
+            config: None,
+            favorite: None,
+            list_favorites: false,
+            silent: false,
+            template_values_file: None,
+            vcs: Vcs::Git,
         };
         Ok(generate(args)?)
     }
