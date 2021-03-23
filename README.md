@@ -14,7 +14,8 @@ This is a tool to help you manage your game project by providing commands to (1)
 It leverages tools like [godot, godot-headless and godot-server](https://godotengine.org/download) to make it all work! In Linux you can install all godot, godot-headless and godot-server, on others only godot. For additional setup instructions, check the [wiki](https://github.com/godot-rust/godot-rust-template/wiki) of the default template.
 
 ```shell
-$ cargo install ftw
+$ cargo install ftw # to install
+$ cargo install --force ftw # to upgrade ftw
 ```
 
 ## Usage
