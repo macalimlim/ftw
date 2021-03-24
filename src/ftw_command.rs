@@ -74,8 +74,11 @@ impl FtwCommand {
     fn append_to_gitignore(project_name: &str) -> Result<(), FtwError> {
         let gitignore_path: String = format!("{}/.gitignore", project_name);
         let mut gitignore_file = OpenOptions::new().append(true).open(gitignore_path)?;
-        writeln!(gitignore_file, ".ftw")?;
-        Ok(writeln!(gitignore_file, "godot/export_presets.cfg")?)
+        let things_to_be_ignored = vec![".ftw", "bin/*", "godot/export_presets.cfg", "lib/*"];
+        for thing in things_to_be_ignored {
+            writeln!(gitignore_file, "{}", thing)?;
+        }
+        Ok(())
     }
 
     fn create_file(
