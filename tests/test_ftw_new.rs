@@ -25,6 +25,9 @@ fn test_ftw_new() {
     assert!(project.exists("godot/project.godot"));
     assert!(project.exists("rust/Cargo.toml"));
     assert!(project.exists("rust/src/lib.rs"));
+    assert!(!project.exists("LICENSE"));
+    assert!(!project.exists(".travis.yml"));
+    assert!(!project.exists("sh"));
     assert!(project.read(".gitignore").contains(".ftw"));
     assert!(project.read(".gitignore").contains("bin/*"));
     assert!(project.read(".gitignore").contains("export_presets.cfg"));
@@ -51,6 +54,9 @@ fn test_ftw_new_no_template() {
     assert!(project.exists("godot/project.godot"));
     assert!(project.exists("rust/Cargo.toml"));
     assert!(project.exists("rust/src/lib.rs"));
+    assert!(!project.exists("LICENSE"));
+    assert!(!project.exists(".travis.yml"));
+    assert!(!project.exists("sh"));
     assert!(project.read(".gitignore").contains(".ftw"));
     assert!(project.read(".gitignore").contains("bin/*"));
     assert!(project.read(".gitignore").contains("export_presets.cfg"));

@@ -81,6 +81,14 @@ impl FtwCommand {
         Ok(())
     }
 
+    fn delete_items(project_name: &str) -> Result<(), FtwError> {
+        let files_to_be_removed: Vec<String> = vec![".travis.yml", "LICENSE", "sh"]
+            .into_iter()
+            .map(|i| format!("{}/{}", project_name, i))
+            .collect();
+        Ok(remove_items(&files_to_be_removed)?)
+    }
+
     fn create_file(
         template_contents: &str,
         target_file_path: &str,
@@ -412,7 +420,8 @@ impl Processor for FtwCommand {
                 template,
             } => {
                 FtwCommand::generate_project(project_name, &template)?;
-                FtwCommand::append_to_gitignore(project_name)
+                FtwCommand::append_to_gitignore(project_name)?;
+                FtwCommand::delete_items(project_name)
             }
             FtwCommand::Class {
                 class_name,
