@@ -2,6 +2,9 @@ use crate::ftw_error::FtwError;
 use crate::type_alias::{AppExt, CliArg, ExportArg, ExportName, GitUrl, LibExt, LibPrefix};
 
 pub trait Processor {
+    /// # Errors
+    ///
+    /// Will return `Err` if an error happened in the implementation
     fn process(&self) -> Result<(), FtwError>;
 }
 

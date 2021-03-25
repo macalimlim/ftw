@@ -2,21 +2,28 @@ use crate::ftw_configuration::FtwConfiguration;
 use crate::ftw_target::FtwTarget;
 use std::env;
 
+#[must_use]
 pub fn get_current_platform() -> String {
     format!("{}-{}", env::consts::OS, env::consts::ARCH)
 }
 
+#[must_use]
 pub fn get_class_name_and_directories(class_name: &str) -> (String, Vec<String>) {
     let xs: Vec<&str> = class_name.split('/').collect();
     match xs.split_last() {
         Some((class_name, directories)) => (
-            class_name.to_string(),
-            directories.to_vec().iter().map(|d| d.to_string()).collect(),
+            (*class_name).to_string(),
+            directories
+                .to_vec()
+                .iter()
+                .map(|d| (*d).to_string())
+                .collect(),
         ),
         _ => unreachable!(),
     }
 }
 
+#[must_use]
 pub fn get_godot_exe_for_exporting() -> String {
     let current_platform = get_current_platform()
         .parse()

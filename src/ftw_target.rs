@@ -67,8 +67,7 @@ impl ToAppExt for FtwTarget {
             | FtwTarget::AndroidLinuxX86
             | FtwTarget::AndroidLinuxX86_64 => ".apk",
             FtwTarget::IosAarch64 => ".ipa",
-            FtwTarget::LinuxX86 | FtwTarget::LinuxX86_64 => "",
-            FtwTarget::MacOsX86_64 => "",
+            FtwTarget::LinuxX86 | FtwTarget::LinuxX86_64 | FtwTarget::MacOsX86_64 => "",
             FtwTarget::WindowsX86Gnu
             | FtwTarget::WindowsX86Msvc
             | FtwTarget::WindowsX86_64Gnu
@@ -124,11 +123,9 @@ impl FromStr for FtwTarget {
             "linux-x86_64" => Ok(FtwTarget::LinuxX86_64),
             "macos-x86_64" => Ok(FtwTarget::MacOsX86_64),
             "windows-x86-gnu" => Ok(FtwTarget::WindowsX86Gnu),
-            "windows-x86-msvc" => Ok(FtwTarget::WindowsX86Msvc),
-            "windows-x86" => Ok(FtwTarget::WindowsX86Msvc),
+            "windows-x86" | "windows-x86-msvc" => Ok(FtwTarget::WindowsX86Msvc),
             "windows-x86_64-gnu" => Ok(FtwTarget::WindowsX86_64Gnu),
-            "windows-x86_64-msvc" => Ok(FtwTarget::WindowsX86_64Msvc),
-            "windows-x86_64" => Ok(FtwTarget::WindowsX86_64Msvc),
+            "windows-x86_64" | "windows-x86_64-msvc" => Ok(FtwTarget::WindowsX86_64Msvc),
             _ => Err(FtwError::UnsupportedTarget),
         }
     }

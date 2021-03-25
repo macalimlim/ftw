@@ -18,7 +18,7 @@ use crate::ftw_node_type::FtwNodeType;
 use crate::ftw_target::FtwTarget;
 use crate::ftw_template::FtwTemplate;
 use crate::traits::Processor;
-use clap::{clap_app, crate_authors, crate_version};
+use clap::{clap_app, crate_authors, crate_version, ArgMatches};
 use std::env;
 
 fn main() {
@@ -50,8 +50,15 @@ fn main() {
                              (about: "export the game for a particular platform")
                              (@arg target: !required "target platform to build")
                              (@arg build_type: !required "either a debug or release")))
-    .get_matches();
-    let command: FtwCommand = match matches.subcommand() {
+        .get_matches();
+    let command: FtwCommand = parse_matches(&matches);
+    if let Err(e) = command.process() {
+        eprintln!("{}", e);
+    }
+}
+
+fn parse_matches(matches: &ArgMatches) -> FtwCommand {
+    match matches.subcommand() {
         Some(("new", args)) => {
             let project_name = args
                 .value_of("project_name")
@@ -71,7 +78,7 @@ fn main() {
             let class_name = args.value_of("class_name").unwrap_or("MyClass").to_string();
             let node_type: FtwNodeType = args
                 .value_of("node_type")
-                .unwrap_or("node")
+                .unwrap_or("Node")
                 .parse()
                 .unwrap_or(FtwNodeType::Node);
             FtwCommand::Class {
@@ -123,8 +130,5 @@ fn main() {
             FtwCommand::Export { target, build_type }
         }
         _ => unreachable!(),
-    };
-    if let Err(e) = command.process() {
-        eprintln!("{}", e);
     }
 }

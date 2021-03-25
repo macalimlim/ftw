@@ -7,6 +7,7 @@ pub struct FtwConfiguration {
 }
 
 impl FtwConfiguration {
+    #[must_use]
     pub fn new() -> Self {
         let ini = Ini::load_from_file(".ftw").unwrap_or_default();
         let default_properties = Properties::new();
@@ -21,10 +22,10 @@ impl FtwConfiguration {
             .map(|(exe, def)| ftw_section.get(exe).unwrap_or(def).replace("\\", "/"))
             .collect();
         match exes.as_slice() {
-            [ge, ghe, gse] => FtwConfiguration {
-                godot_executable: ge.to_string(),
-                godot_headless_executable: ghe.to_string(),
-                godot_server_executable: gse.to_string(),
+            [godot_exe, godot_headless_exe, godot_server_exe] => FtwConfiguration {
+                godot_executable: godot_exe.to_string(),
+                godot_headless_executable: godot_headless_exe.to_string(),
+                godot_server_executable: godot_server_exe.to_string(),
             },
             _ => unreachable!(),
         }
