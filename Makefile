@@ -23,7 +23,7 @@ doc: clean
 	cargo doc --no-deps --open -v
 
 expand:
-	cargo expand
+	cargo expand --lib ftw_node_type
 
 format:
 	cargo fmt --all -- --check
@@ -45,3 +45,6 @@ shell:
 
 test:
 	cargo test
+
+udeps:
+	cargo udeps
