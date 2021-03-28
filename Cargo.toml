@@ -35,3 +35,6 @@ cargo-edit = "0.7.0"
 nanoid = "0.3.0"
 predicates = "1.0.7"
 remove_dir_all = "0.7.0"
+
+[profile.release]
+lto = false
