@@ -1,3 +1,5 @@
+#![allow(clippy::upper_case_acronyms)]
+
 use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
