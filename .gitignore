@@ -2,3 +2,4 @@
 Cargo.lock
 debug/
 target/
+tarpaulin-report.html

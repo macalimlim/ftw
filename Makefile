@@ -19,6 +19,10 @@ check:
 clean:
 	cargo clean
 
+coverage:
+	cargo tarpaulin -o Html -t 120 --all-features
+	${BROWSER} tarpaulin-report.html
+
 doc: clean
 	cargo doc --no-deps --open -v
 
