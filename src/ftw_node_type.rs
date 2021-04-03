@@ -12,7 +12,7 @@ macro_rules! generate_ftw_node_types {
         }
 
         impl FromStr for FtwNodeType {
-            type Err = String;
+            type Err = ();
             fn from_str(s: &str) -> Result<Self, Self::Err> {
                 match s {
                     $(stringify!($i) => Ok(FtwNodeType::$i),)*
@@ -27,6 +27,33 @@ macro_rules! generate_ftw_node_types {
                     $(FtwNodeType::$i => stringify!($i),)*
                 };
                 write!(f, "{}", node_type)
+            }
+        }
+
+        #[cfg(test)]
+        mod ftw_node_type_tests {
+            use super::*;
+            use proptest::prelude::{prop_assert, prop_assert_eq, prop_assume, proptest};
+
+            #[test]
+            fn test_from_str() -> Result<(), ()> {
+                $(assert_eq!(stringify!($i).parse::<FtwNodeType>()?, FtwNodeType::$i);)*
+                Ok(())
+            }
+
+            #[test]
+            fn test_fmt() {
+                $(assert_eq!(stringify!($i), format!("{}", FtwNodeType::$i));)*
+            }
+
+            proptest! {
+                #[test]
+                fn test_from_str_invalid_input(node_type_input in "\\PC*") {
+                    $(prop_assume!(node_type_input != stringify!($i));)*
+                    let result = node_type_input.parse::<FtwNodeType>();
+                    prop_assert!(result.is_ok());
+                    prop_assert_eq!(result.unwrap(), FtwNodeType::Node);
+                }
             }
         }
     };

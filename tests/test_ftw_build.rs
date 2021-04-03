@@ -7,6 +7,7 @@ use ftw::traits::{ToCliArg, ToLibExt, ToLibPrefix};
 use ftw::util::get_current_platform;
 use predicates;
 use predicates::prelude::*;
+use std::{thread, time};
 
 #[test]
 fn test_ftw_build_no_target() {
@@ -21,6 +22,7 @@ fn test_ftw_build_no_target() {
     ftw().arg("build").current_dir(&name).assert().success();
     let current_platform = get_current_platform();
     let target: FtwTarget = current_platform.parse().unwrap();
+    thread::sleep(time::Duration::from_secs(2));
     assert!(project.read("rust/Cargo.toml").contains(&name));
     assert!(project.exists(&format!(
         "lib/{}/{}{}.{}",
@@ -29,4 +31,5 @@ fn test_ftw_build_no_target() {
         name,
         target.to_lib_ext()
     )));
+    drop(project);
 }

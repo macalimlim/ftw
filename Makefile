@@ -1,3 +1,6 @@
+all:
+	cargo build
+
 audit:
 	cargo audit
 
@@ -20,7 +23,7 @@ clean:
 	cargo clean
 
 coverage:
-	cargo tarpaulin -o Html -t 120 --all-features
+	cargo tarpaulin --all-features -o Html -t 120
 	${BROWSER} tarpaulin-report.html
 
 doc: clean
