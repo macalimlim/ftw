@@ -5,6 +5,7 @@ use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 
+#[derive(Debug, PartialEq)]
 pub enum FtwBuildType {
     Debug,
     Release,
@@ -47,6 +48,49 @@ impl FromStr for FtwBuildType {
             "debug" => Ok(FtwBuildType::Debug),
             "release" => Ok(FtwBuildType::Release),
             _ => Err(FtwError::UnknownBuildType),
+        }
+    }
+}
+
+#[cfg(test)]
+mod ftw_build_type_tests {
+    use super::*;
+    use proptest::prelude::{prop_assert, prop_assume, proptest};
+
+    #[test]
+    fn test_to_cli_arg() {
+        assert_eq!("", FtwBuildType::Debug.to_cli_arg());
+        assert_eq!("--release", FtwBuildType::Release.to_cli_arg());
+    }
+
+    #[test]
+    fn test_to_export_arg() {
+        assert_eq!("--export-debug", FtwBuildType::Debug.to_export_arg());
+        assert_eq!("--export", FtwBuildType::Release.to_export_arg());
+    }
+
+    #[test]
+    fn test_fmt() {
+        assert_eq!("debug", format!("{}", FtwBuildType::Debug));
+        assert_eq!("release", format!("{}", FtwBuildType::Release));
+    }
+
+    #[test]
+    fn test_from_str() -> Result<(), FtwError> {
+        assert_eq!(FtwBuildType::Debug, "debug".parse()?);
+        assert_eq!(FtwBuildType::Release, "release".parse()?);
+        Ok(())
+    }
+
+    proptest! {
+        #[test]
+        fn test_from_str_error(build_type_input in "\\PC*") {
+            prop_assume!(build_type_input != "debug");
+            prop_assume!(build_type_input != "release");
+            prop_assert!(build_type_input.parse::<FtwBuildType>().is_err());
+            if let FtwError::UnknownBuildType = build_type_input.parse::<FtwBuildType>().unwrap_err() {
+                 prop_assert!(true);
+            }
         }
     }
 }

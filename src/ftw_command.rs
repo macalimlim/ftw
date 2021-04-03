@@ -392,7 +392,10 @@ impl FtwCommand {
             "../bin/{}/{}.{}.{}{}",
             &target_cli_arg, &crate_name, build_type, &target_cli_arg, &target_app_ext
         );
-        let godot_executable = util::get_godot_exe_for_exporting();
+        let current_platform = util::get_current_platform()
+            .parse()
+            .unwrap_or(FtwTarget::WindowsX86_64Msvc);
+        let godot_executable = util::get_godot_exe_for_exporting(current_platform);
         let commands = vec![vec![
             godot_executable.as_str(),
             &build_type_export_arg,

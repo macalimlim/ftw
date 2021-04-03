@@ -18,10 +18,6 @@ pub enum FtwError {
     UnknownBuildType,
     #[error("Cargo edit error: {0}")]
     CargoEditError(#[from] cargo_edit::Error),
-    #[error("Invalid command error")]
-    InvalidCommandError,
-    #[error("Process command error")]
-    ProcessCommandError,
     #[error("Path error")]
     PathError,
     #[error("String conversion error")]

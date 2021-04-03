@@ -8,6 +8,7 @@ use ftw::traits::{ToAppExt, ToCliArg, ToLibExt, ToLibPrefix};
 use ftw::util::get_current_platform;
 use predicates;
 use predicates::prelude::*;
+use std::{thread, time};
 
 #[test]
 fn test_ftw_export_no_target() {
@@ -23,6 +24,7 @@ fn test_ftw_export_no_target() {
     let current_platform = get_current_platform();
     let target: FtwTarget = current_platform.parse().unwrap();
     let crate_name = get_crate_name_from_path(&format!("{}/rust/", &name)).unwrap();
+    thread::sleep(time::Duration::from_secs(2));
     assert!(project.read("rust/Cargo.toml").contains(&name));
     assert!(project.exists(&format!(
         "bin/{}/{}{}.{}",
@@ -43,4 +45,5 @@ fn test_ftw_export_no_target() {
         target.to_cli_arg(),
         target.to_app_ext()
     )));
+    drop(project);
 }
