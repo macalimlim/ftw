@@ -1,3 +1,4 @@
+**/*.orig
 **/*.rs.bk
 Cargo.lock
 debug/
