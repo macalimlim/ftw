@@ -24,7 +24,7 @@ pub fn get_class_name_and_directories(class_name: &str) -> (String, Vec<String>)
 }
 
 #[must_use]
-pub fn get_godot_exe_for_exporting(current_platform: FtwTarget) -> String {
+pub fn get_godot_exe_for_exporting(current_platform: &FtwTarget) -> String {
     let ftw_cfg = FtwConfiguration::new();
     match current_platform {
         FtwTarget::LinuxX86 | FtwTarget::LinuxX86_64 => ftw_cfg.godot_headless_executable,
@@ -40,7 +40,7 @@ mod util_tests {
     fn test_get_godot_exe_for_exporting() {
         let linux_desktop_platforms = vec![FtwTarget::LinuxX86, FtwTarget::LinuxX86_64];
         for p in linux_desktop_platforms {
-            let godot_exe = get_godot_exe_for_exporting(p);
+            let godot_exe = get_godot_exe_for_exporting(&p);
             assert_eq!("godot-headless".to_string(), godot_exe);
         }
         let other_desktop_platforms = vec![
@@ -51,7 +51,7 @@ mod util_tests {
             FtwTarget::WindowsX86_64Msvc,
         ];
         for p in other_desktop_platforms {
-            let godot_exe = get_godot_exe_for_exporting(p);
+            let godot_exe = get_godot_exe_for_exporting(&p);
             assert_eq!("godot".to_string(), godot_exe);
         }
     }

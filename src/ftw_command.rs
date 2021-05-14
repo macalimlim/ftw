@@ -395,7 +395,7 @@ impl FtwCommand {
         let current_platform = util::get_current_platform()
             .parse()
             .unwrap_or(FtwTarget::WindowsX86_64Msvc);
-        let godot_executable = util::get_godot_exe_for_exporting(current_platform);
+        let godot_executable = util::get_godot_exe_for_exporting(&current_platform);
         let commands = vec![vec![
             godot_executable.as_str(),
             &build_type_export_arg,

@@ -10,7 +10,7 @@ pub struct ProcessCommand<'a> {
 impl Processor for ProcessCommand<'_> {
     fn process(&self) -> Result<(), FtwError> {
         for xs in &self.commands {
-            if xs.len() > 0 {
+            if !xs.is_empty() {
                 let _out = match xs.split_at(1) {
                     (&[cmd], args) => args
                         .iter()
