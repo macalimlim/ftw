@@ -22,7 +22,7 @@ kstring = "1.0.1"
 liquid = { version = "0.22.0", default-features = false, features = [ "stdlib" ] }
 liquid-core = { version = "0.22.0", default-features = false }
 regex = { version = "1.4.5", default-features = false }
-rust-ini = { version = "0.16.1", default-features = false }
+rust-ini = { version = "0.17.0", default-features = false }
 strum = "0.20"
 strum_macros = "0.20"
 thiserror = "1.0.24"
@@ -32,7 +32,7 @@ walkdir = "2.3.2"
 [dev-dependencies]
 assert_cmd = "1.0.3"
 cargo-edit = "0.7.0"
-nanoid = "0.3.0"
+nanoid = "0.4.0"
 predicates = { version = "1.0.7", default-features = false }
 proptest = "1.0.0"
 remove_dir_all = "0.7.0"
