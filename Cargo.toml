@@ -1,6 +1,6 @@
 [package]
 name = "ftw"
-version = "0.5.0"
+version = "0.6.0"
 authors = ["Michael Angelo Calimlim <macalimlim@gmail.com>"]
 edition = "2018"
 license = "MIT"
