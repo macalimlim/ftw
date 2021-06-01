@@ -4,7 +4,7 @@ use crate::type_alias::{AppExt, CliArg, ExportName, LibExt, LibPrefix};
 use std::str::FromStr;
 use strum_macros::EnumIter;
 
-#[derive(Debug, EnumIter, PartialEq)]
+#[derive(Clone, Debug, EnumIter, PartialEq)]
 pub enum FtwTarget {
     AndroidLinuxAarch64,
     AndroidLinuxArmV7,

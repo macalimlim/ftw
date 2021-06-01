@@ -23,7 +23,7 @@ clean:
 	cargo clean
 
 coverage:
-	cargo tarpaulin --all-features -o Html -t 120
+	cargo tarpaulin --all-features -o Html -t 300 -- --test-threads=1
 	${BROWSER} tarpaulin-report.html
 
 doc: clean
@@ -51,7 +51,7 @@ shell:
 	nix-shell -p openssl pkgconfig
 
 test:
-	cargo test
+	cargo test -- --test-threads=1
 
 udeps:
 	cargo udeps

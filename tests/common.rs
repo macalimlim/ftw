@@ -43,7 +43,9 @@ impl Drop for Project {
 
 pub fn generate_random_name() -> String {
     let name = nanoid!();
-    name.to_lowercase().replace("_", "-").replace("-", "")
+    let mut name = name.to_lowercase().replace("_", "-").replace("-", "");
+    name.insert_str(0, "game");
+    name
 }
 
 pub fn ftw() -> Command {

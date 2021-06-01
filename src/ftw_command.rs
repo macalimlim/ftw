@@ -27,6 +27,7 @@ use strum::IntoEnumIterator;
 use voca_rs::Voca;
 use walkdir::WalkDir;
 
+#[derive(Debug, PartialEq)]
 pub enum FtwCommand {
     New {
         project_name: ProjectName,
@@ -144,10 +145,7 @@ impl FtwCommand {
     /// Will return `Err` if the regular expression is invalid
     pub fn is_derving_native_class(contents: &str) -> Result<bool, FtwError> {
         let reg_ex = Regex::new(r"#\[derive\([a-zA-Z, ]*NativeClass[a-zA-Z, ]*\)\]+")?;
-        match reg_ex.find(&contents) {
-            Some(_) => Ok(true),
-            None => Ok(false),
-        }
+        Ok(reg_ex.find(&contents).is_some())
     }
 
     fn get_classes_from_directory(directory: &str) -> Result<String, FtwError> {
@@ -271,7 +269,7 @@ impl FtwCommand {
             )?;
             match directories.split_last() {
                 Some((_, init)) => FtwCommand::create_mod_rs_file(&base_src_path, &init.to_vec()),
-                None => Ok(()),
+                _ => unreachable!(),
             }
         }
     }
@@ -474,5 +472,372 @@ impl Processor for FtwCommand {
                 FtwCommand::export_game(target, build_type)
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod ftw_command_tests {
+    use super::*;
+
+    use nanoid::nanoid;
+    use std::env;
+    use std::fs;
+    use std::fs::File;
+    use std::io::Read;
+    use std::path::PathBuf;
+    use std::str;
+
+    #[derive(Debug)]
+    pub struct Project {
+        pub root: PathBuf,
+    }
+
+    impl Project {
+        pub fn new(root: &String) -> Self {
+            Project {
+                root: PathBuf::from(root),
+            }
+        }
+
+        pub fn read(&self, path: &str) -> String {
+            let mut ret = String::new();
+            File::open(self.root.join(path))
+                .expect(&format!("couldn't open file {:?}", self.root.join(path)))
+                .read_to_string(&mut ret)
+                .expect(&format!("couldn't read file {:?}", self.root.join(path)));
+            return ret;
+        }
+
+        pub fn exists(&self, path: &str) -> bool {
+            self.root.join(path).exists()
+        }
+    }
+
+    impl Drop for Project {
+        fn drop(&mut self) {
+            drop(fs::remove_dir_all(&self.root));
+            drop(fs::remove_dir(&self.root));
+        }
+    }
+
+    pub fn generate_random_name() -> String {
+        let name = nanoid!();
+        let mut name = name.to_lowercase().replace("_", "-").replace("-", "");
+        name.insert_str(0, "game");
+        name
+    }
+
+    #[test]
+    fn test_is_linux() {
+        let res = FtwCommand::is_linux(&FtwTarget::LinuxX86_64);
+        assert!(res.is_ok());
+        assert!(res.unwrap());
+    }
+
+    #[test]
+    fn test_is_linux_not_linux() {
+        let res = FtwCommand::is_linux(&FtwTarget::WindowsX86_64Msvc);
+        match res {
+            Err(FtwError::UnsupportedTarget) => assert!(true),
+            _ => unreachable!(),
+        }
+    }
+
+    #[test]
+    fn test_is_valid_project_no_cargo_toml() {
+        let name = generate_random_name();
+        let cmd = FtwCommand::New {
+            project_name: name.to_string(),
+            template: FtwTemplate::Default,
+        };
+        let _ = cmd.process();
+        let _ = env::set_current_dir(Path::new(&name));
+        let _ = remove_items(&vec!["Cargo.toml"]);
+        let res = FtwCommand::is_valid_project();
+        match res {
+            Err(FtwError::InvalidProject) => assert!(true),
+            _ => unreachable!(),
+        }
+    }
+
+    #[test]
+    fn test_process_ftw_command_new() {
+        let name = generate_random_name();
+        let project = Project::new(&name);
+        let cmd = FtwCommand::New {
+            project_name: name.to_string(),
+            template: FtwTemplate::Default,
+        };
+        let _ = cmd.process();
+        assert!(project.exists(".gitignore"));
+        assert!(project.exists("Cargo.toml"));
+        assert!(project.exists("Makefile"));
+        assert!(project.exists("godot/default_env.tres"));
+        assert!(project.exists("godot/export_presets.cfg"));
+        assert!(project.exists("godot/native/game.gdnlib"));
+        assert!(project.exists("godot/project.godot"));
+        assert!(project.exists("rust/Cargo.toml"));
+        assert!(project.exists("rust/src/lib.rs"));
+        assert!(!project.exists("LICENSE"));
+        assert!(!project.exists(".travis.yml"));
+        assert!(!project.exists("sh"));
+        assert!(project.read(".gitignore").contains(".ftw"));
+        assert!(project.read(".gitignore").contains("bin/*"));
+        assert!(project.read(".gitignore").contains("export_presets.cfg"));
+        assert!(project.read(".gitignore").contains("lib/*"));
+        assert!(project.read("rust/Cargo.toml").contains(&name));
+    }
+
+    #[test]
+    fn test_process_ftw_command_class() {
+        let name = generate_random_name();
+        let project = Project::new(&name);
+        let cmd = FtwCommand::New {
+            project_name: name.to_string(),
+            template: FtwTemplate::Default,
+        };
+        let _ = cmd.process();
+        let _ = env::set_current_dir(Path::new(&name));
+        let cmd = FtwCommand::Class {
+            class_name: "MyPlayer".to_string(),
+            node_type: FtwNodeType::Area2D,
+        };
+        let _ = cmd.process();
+        let _ = env::set_current_dir(Path::new("../"));
+        assert!(project.exists("rust/src/my_player.rs"));
+        assert!(project.exists("godot/native/MyPlayer.gdns"));
+        assert!(project.exists("godot/scenes/MyPlayer.tscn"));
+        assert!(project.exists("rust/src/lib.rs"));
+        assert!(project
+            .read("rust/src/my_player.rs")
+            .contains("pub struct MyPlayer"));
+        assert!(project
+            .read("rust/src/my_player.rs")
+            .contains("#[inherit(Area2D)]"));
+        assert!(project
+            .read("godot/native/MyPlayer.gdns")
+            .contains("resource_name = \"MyPlayer\""));
+        assert!(project
+            .read("godot/native/MyPlayer.gdns")
+            .contains("class_name = \"MyPlayer\""));
+        assert!(project
+            .read("godot/scenes/MyPlayer.tscn")
+            .contains("[ext_resource path=\"res://native/MyPlayer.gdns\" type=\"Script\" id=1]"));
+        assert!(project
+            .read("godot/scenes/MyPlayer.tscn")
+            .contains("[node name=\"MyPlayer\" type=\"Area2D\"]"));
+        assert!(project.read("rust/src/lib.rs").contains("mod my_player;"));
+        assert!(project
+            .read("rust/src/lib.rs")
+            .contains("handle.add_class::<my_player::MyPlayer>();"));
+    }
+
+    #[test]
+    fn test_process_ftw_command_class_with_subs() {
+        let name = generate_random_name();
+        let project = Project::new(&name);
+        let cmd = FtwCommand::New {
+            project_name: name.to_string(),
+            template: FtwTemplate::Default,
+        };
+        let _ = cmd.process();
+        let _ = env::set_current_dir(Path::new(&name));
+        let cmd = FtwCommand::Class {
+            class_name: "foo/bar/baz/MyPlayer".to_string(),
+            node_type: FtwNodeType::Area2D,
+        };
+        let _ = cmd.process();
+        let _ = env::set_current_dir(Path::new("../"));
+        assert!(project.exists("rust/src/foo/bar/baz/my_player.rs"));
+        assert!(project.exists("rust/src/foo/bar/baz/mod.rs"));
+        assert!(project.exists("rust/src/foo/bar/mod.rs"));
+        assert!(project.exists("rust/src/foo/mod.rs"));
+        assert!(project.exists("godot/native/foo/bar/baz/MyPlayer.gdns"));
+        assert!(project.exists("godot/scenes/foo/bar/baz/MyPlayer.tscn"));
+        assert!(project.exists("rust/src/lib.rs"));
+        assert!(project
+            .read("rust/src/foo/bar/baz/my_player.rs")
+            .contains("pub struct MyPlayer"));
+        assert!(project
+            .read("rust/src/foo/bar/baz/my_player.rs")
+            .contains("#[inherit(Area2D)]"));
+        assert!(project
+            .read("godot/native/foo/bar/baz/MyPlayer.gdns")
+            .contains("resource_name = \"MyPlayer\""));
+        assert!(project
+            .read("godot/native/foo/bar/baz/MyPlayer.gdns")
+            .contains("class_name = \"MyPlayer\""));
+        assert!(project
+            .read("godot/scenes/foo/bar/baz/MyPlayer.tscn")
+            .contains(
+            "[ext_resource path=\"res://native/foo/bar/baz/MyPlayer.gdns\" type=\"Script\" id=1]"
+        ));
+        assert!(project
+            .read("godot/scenes/foo/bar/baz/MyPlayer.tscn")
+            .contains("[node name=\"MyPlayer\" type=\"Area2D\"]"));
+        assert!(project.read("rust/src/lib.rs").contains("mod foo;"));
+        assert!(project
+            .read("rust/src/lib.rs")
+            .contains("handle.add_class::<foo::bar::baz::my_player::MyPlayer>();"));
+        assert!(project
+            .read("rust/src/foo/bar/baz/mod.rs")
+            .contains("pub mod my_player;"));
+        assert!(project
+            .read("rust/src/foo/bar/mod.rs")
+            .contains("pub mod baz;"));
+        assert!(project.read("rust/src/foo/mod.rs").contains("pub mod bar;"));
+    }
+
+    #[test]
+    fn test_process_ftw_command_singleton() {
+        let name = generate_random_name();
+        let project = Project::new(&name);
+        let cmd = FtwCommand::New {
+            project_name: name.to_string(),
+            template: FtwTemplate::Default,
+        };
+        let _ = cmd.process();
+        let _ = env::set_current_dir(Path::new(&name));
+        let cmd = FtwCommand::Singleton {
+            class_name: "MyPlayer".to_string(),
+        };
+        let _ = cmd.process();
+        let _ = env::set_current_dir(Path::new("../"));
+        assert!(project.exists("rust/src/my_player.rs"));
+        assert!(project.exists("godot/native/MyPlayer.gdns"));
+        assert!(project.exists("rust/src/lib.rs"));
+        assert!(project
+            .read("rust/src/my_player.rs")
+            .contains("pub struct MyPlayer"));
+        assert!(project
+            .read("rust/src/my_player.rs")
+            .contains("#[inherit(Node)]"));
+        assert!(project
+            .read("godot/native/MyPlayer.gdns")
+            .contains("resource_name = \"MyPlayer\""));
+        assert!(project
+            .read("godot/native/MyPlayer.gdns")
+            .contains("class_name = \"MyPlayer\""));
+        assert!(project.read("rust/src/lib.rs").contains("mod my_player;"));
+        assert!(project
+            .read("rust/src/lib.rs")
+            .contains("handle.add_class::<my_player::MyPlayer>();"));
+    }
+
+    #[test]
+    fn test_process_ftw_command_build() {
+        let name = generate_random_name();
+        let project = Project::new(&name);
+        let cmd = FtwCommand::New {
+            project_name: name.to_string(),
+            template: FtwTemplate::Default,
+        };
+        let _ = cmd.process();
+        let _ = env::set_current_dir(Path::new(&name));
+        let target: FtwTarget = util::get_current_platform().parse().unwrap();
+        let cmd = FtwCommand::Build {
+            target: target.clone(),
+            build_type: FtwBuildType::Debug,
+        };
+        let _ = cmd.process();
+        let _ = env::set_current_dir(Path::new("../"));
+        assert!(project.read("rust/Cargo.toml").contains(&name));
+        assert!(project.exists(&format!(
+            "lib/{}/{}{}.{}",
+            target.to_cli_arg(),
+            target.to_lib_prefix(),
+            name,
+            target.to_lib_ext()
+        )));
+    }
+
+    #[test]
+    fn test_process_ftw_command_build_2x() {
+        let name = generate_random_name();
+        let project = Project::new(&name);
+        let cmd = FtwCommand::New {
+            project_name: name.to_string(),
+            template: FtwTemplate::Default,
+        };
+        let _ = cmd.process();
+        let _ = env::set_current_dir(Path::new(&name));
+        let target: FtwTarget = util::get_current_platform().parse().unwrap();
+        let cmd = FtwCommand::Build {
+            target: target.clone(),
+            build_type: FtwBuildType::Debug,
+        };
+        let _ = cmd.process();
+        let _ = cmd.process();
+        let _ = env::set_current_dir(Path::new("../"));
+        assert!(project.read("rust/Cargo.toml").contains(&name));
+        assert!(project.exists(&format!(
+            "lib/{}/{}{}.{}",
+            target.to_cli_arg(),
+            target.to_lib_prefix(),
+            name,
+            target.to_lib_ext()
+        )));
+    }
+
+    #[test]
+    fn test_process_ftw_command_build_release() {
+        let name = generate_random_name();
+        let project = Project::new(&name);
+        let cmd = FtwCommand::New {
+            project_name: name.to_string(),
+            template: FtwTemplate::Default,
+        };
+        let _ = cmd.process();
+        let _ = env::set_current_dir(Path::new(&name));
+        let target: FtwTarget = util::get_current_platform().parse().unwrap();
+        let cmd = FtwCommand::Build {
+            target: target.clone(),
+            build_type: FtwBuildType::Release,
+        };
+        let _ = cmd.process();
+        let _ = env::set_current_dir(Path::new("../"));
+        assert!(project.read("rust/Cargo.toml").contains(&name));
+        assert!(project.exists(&format!(
+            "lib/{}/{}{}.{}",
+            target.to_cli_arg(),
+            target.to_lib_prefix(),
+            name,
+            target.to_lib_ext()
+        )));
+    }
+
+    #[test]
+    fn test_process_ftw_command_export() {
+        let name = generate_random_name();
+        let project = Project::new(&name);
+        let cmd = FtwCommand::New {
+            project_name: name.to_string(),
+            template: FtwTemplate::Default,
+        };
+        let _ = cmd.process();
+        let _ = env::set_current_dir(Path::new(&name));
+        let target: FtwTarget = util::get_current_platform().parse().unwrap();
+        let cmd = FtwCommand::Export {
+            target: target.clone(),
+            build_type: FtwBuildType::Debug,
+        };
+        let _ = cmd.process();
+        let _ = env::set_current_dir(Path::new("../../"));
+        assert!(project.read("rust/Cargo.toml").contains(&name));
+        assert!(project.exists(&format!(
+            "bin/{}/{}{}.{}",
+            target.to_cli_arg(),
+            target.to_lib_prefix(),
+            name,
+            target.to_lib_ext()
+        )));
+        assert!(project.exists(&format!("bin/{}/{}.debug.pck", target.to_cli_arg(), name)));
+        assert!(project.exists(&format!(
+            "bin/{}/{}.debug.{}{}",
+            target.to_cli_arg(),
+            name,
+            target.to_cli_arg(),
+            target.to_app_ext()
+        )));
     }
 }
