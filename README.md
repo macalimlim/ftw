@@ -11,7 +11,7 @@
 This is a tool to help you manage your game project by providing commands to (1) create a project, (2) create a class, (3) create a singleton class, (4) build the library, (5) export your game, (6) run your project (and more to come in the future!). Its like [rails](https://rubyonrails.org/) but for game development :wink:.
 
 ## Setup
-It leverages tools like [godot, godot-headless and godot-server](https://godotengine.org/download) to make it all work! In Linux you can install all godot, godot-headless and godot-server, on others only godot. For additional setup instructions, check the [wiki](https://github.com/godot-rust/godot-rust-template/wiki) of the default template.
+It leverages tools like [godot, godot-headless and godot-server](https://godotengine.org/download) to make it all work! In Linux, you can install all godot, godot-headless and godot-server, on others only godot. For additional setup instructions, check the [wiki](https://github.com/godot-rust/godot-rust-template/wiki) of the default template.
 
 ```shell
 $ cargo install ftw # to install
@@ -34,7 +34,7 @@ $ ftw new my-awesome-game /path/to/custom/template # creates a new project using
 $ ftw class MyHero # creates a class called `MyHero` that is deriving from `Node` as default
 $ ftw class MyHero Area2D # creates a class that derives from `Area2D`
 ```
-> Note: This creates the following files `rust/src/my_hero.rs`, `godot/scenes/MyHero.tscn` and `godot/native/MyHero.gdns` then adds the class inside `rust/src/lib.rs`
+> Note: This creates the following files `rust/src/my_hero.rs`, `godot/scenes/MyHero.tscn` and `godot/native/MyHero.gdns` then adds the class inside `rust/src/lib.rs`. A complete list of node types can be found [here](https://github.com/macalimlim/ftw/blob/main/src/ftw_node_type.rs)
 
 ##### You could also organize rs, tscn and gdns files into submodules or subfolders
 ```shell
@@ -78,6 +78,8 @@ $ ftw build linux-x86_64 release # builds the library for the `linux-x86_64` pla
 - windows-x86_64-msvc
 - windows-x86_64
 
+> Note: The built libraries (*.so, *.dll, *.dylib, etc.) can be found inside the `lib/` folder
+
 ### ftw export [target] [build-type]
 #### Exports the game for a particular target
 ```shell
@@ -86,6 +88,8 @@ $ ftw export linux-x86_64 # exports the game for the `linux-x86_64` platform usi
 $ ftw export linux-x86_64 debug # same as above
 $ ftw export linux-x86_64 release # exports the game for the `linux-x86_64` platform using `release`
 ```
+
+> Note: The exported games can be found inside the `bin/` folder
 
 ### ftw run [machine-type]
 #### Builds the library using `debug` then runs your game
@@ -111,7 +115,7 @@ godot-headless-exe=/path/to/custom/godot-headless-script
 godot-server-exe=godot-server-script # assuming it's on $PATH
 ```
 
-> Note: Having the .ftw file and the keys inside the `.ftw` file are all optional. If you don't provide them, the defaults (godot, godot-headless and godot-server) will be used. For Windows users use forward-slashes instead of back-slashes (e.g. godot-exe=D:/path/to/godot/bin/godot.windows.tools.64.exe)
+> Note: Having the `.ftw` file and the keys inside it are all optional. If you don't provide them, the defaults (godot, godot-headless and godot-server) will be used. For Windows users use forward-slashes instead of back-slashes (e.g. godot-exe=D:/path/to/godot/bin/godot.windows.tools.64.exe)
 
 ## Contact
 Michael Angelo Calimlim `<macalimlim@gmail.com>`
