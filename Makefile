@@ -37,7 +37,7 @@ format:
 
 list-node-types:
 	godot-headless --gdnative-generate-json-api api.json
-	cat api.json | jq '.[] | .name' | tr -d '"' | sort | uniq
+	cat api.json | jq '.[] | .name' | tr -d '"' | tr -d "_" | sort | uniq
 	rm api.json
 
 outdated:
