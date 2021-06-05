@@ -1,6 +1,8 @@
 use crate::ftw_error::FtwError;
 use crate::traits::{ToAppExt, ToCliArg, ToExportName, ToLibExt, ToLibPrefix};
 use crate::type_alias::{AppExt, CliArg, ExportName, LibExt, LibPrefix};
+use std::fmt;
+use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 use strum_macros::EnumIter;
 
@@ -128,6 +130,12 @@ impl FromStr for FtwTarget {
             "windows-x86_64" | "windows-x86_64-msvc" => Ok(FtwTarget::WindowsX86_64Msvc),
             _ => Err(FtwError::UnsupportedTarget),
         }
+    }
+}
+
+impl Display for FtwTarget {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(f, "{}", self.to_cli_arg())
     }
 }
 
@@ -263,6 +271,27 @@ mod ftw_target_tests {
             assert_eq!(target, from_str.parse()?);
         }
         Ok(())
+    }
+
+    #[test]
+    fn test_fmt() {
+        let cli_arg_targets = vec![
+            ("aarch64-linux-android", FtwTarget::AndroidLinuxAarch64),
+            ("armv7-linux-androideabi", FtwTarget::AndroidLinuxArmV7),
+            ("i686-linux-android", FtwTarget::AndroidLinuxX86),
+            ("x86_64-linux-android", FtwTarget::AndroidLinuxX86_64),
+            ("aarch64-apple-ios", FtwTarget::IosAarch64),
+            ("i686-unknown-linux-gnu", FtwTarget::LinuxX86),
+            ("x86_64-unknown-linux-gnu", FtwTarget::LinuxX86_64),
+            ("x86_64-apple-darwin", FtwTarget::MacOsX86_64),
+            ("i686-pc-windows-gnu", FtwTarget::WindowsX86Gnu),
+            ("i686-pc-windows-msvc", FtwTarget::WindowsX86Msvc),
+            ("x86_64-pc-windows-gnu", FtwTarget::WindowsX86_64Gnu),
+            ("x86_64-pc-windows-msvc", FtwTarget::WindowsX86_64Msvc),
+        ];
+        for (cli_arg, target) in cli_arg_targets {
+            assert_eq!(cli_arg, format!("{}", target));
+        }
     }
 
     proptest! {

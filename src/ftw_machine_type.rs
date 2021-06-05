@@ -1,3 +1,5 @@
+use std::fmt;
+use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 
 #[derive(Debug, PartialEq)]
@@ -16,6 +18,16 @@ impl FromStr for FtwMachineType {
     }
 }
 
+impl Display for FtwMachineType {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        let message = match self {
+            FtwMachineType::Desktop => "desktop",
+            FtwMachineType::Server => "server",
+        };
+        write!(f, "{}", message)
+    }
+}
+
 #[cfg(test)]
 mod ftw_machine_type_tests {
     use super::*;
@@ -26,6 +38,12 @@ mod ftw_machine_type_tests {
         assert_eq!(FtwMachineType::Desktop, "desktop".parse()?);
         assert_eq!(FtwMachineType::Server, "server".parse()?);
         Ok(())
+    }
+
+    #[test]
+    fn test_fmt() {
+        assert_eq!("desktop", format!("{}", FtwMachineType::Desktop));
+        assert_eq!("server", format!("{}", FtwMachineType::Server));
     }
 
     proptest! {

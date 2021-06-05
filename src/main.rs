@@ -4,6 +4,7 @@ mod ftw_configuration;
 mod ftw_error;
 mod ftw_machine_type;
 mod ftw_node_type;
+mod ftw_success;
 mod ftw_target;
 mod ftw_template;
 mod process_command;
@@ -22,12 +23,13 @@ use crate::traits::Processor;
 use clap::{clap_app, crate_authors, crate_name, crate_version, App, ArgMatches};
 use std::env;
 
-fn main() {
+fn main() -> Result<(), ()> {
     let matches: ArgMatches = get_clap_app().get_matches();
     let command: FtwCommand = parse_matches(&matches);
-    if let Err(e) = command.process() {
-        eprintln!("{}", e);
-    }
+    command
+        .process()
+        .map(|ftw_success| println!("SUCCESS: {}", ftw_success))
+        .map_err(|ftw_error| eprintln!("ERROR: {}", ftw_error))
 }
 
 fn get_clap_app() -> App<'static> {

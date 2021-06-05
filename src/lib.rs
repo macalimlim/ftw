@@ -4,6 +4,7 @@ pub mod ftw_configuration;
 pub mod ftw_error;
 pub mod ftw_machine_type;
 pub mod ftw_node_type;
+pub mod ftw_success;
 pub mod ftw_target;
 pub mod ftw_template;
 pub mod process_command;

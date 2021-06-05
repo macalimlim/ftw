@@ -1,5 +1,4 @@
 use crate::ftw_error::FtwError;
-use crate::traits::Processor;
 use crate::type_alias::Commands;
 use std::process::{Command, Stdio};
 
@@ -7,8 +6,11 @@ pub struct ProcessCommand<'a> {
     pub commands: Commands<'a>,
 }
 
-impl Processor for ProcessCommand<'_> {
-    fn process(&self) -> Result<(), FtwError> {
+impl ProcessCommand<'_> {
+    /// # Errors
+    ///
+    /// Will return `Err` if the command failed
+    pub fn process(&self) -> Result<(), FtwError> {
         for xs in &self.commands {
             if !xs.is_empty() {
                 let _out = match xs.split_at(1) {

@@ -3,6 +3,7 @@ use crate::ftw_configuration::FtwConfiguration;
 use crate::ftw_error::FtwError;
 use crate::ftw_machine_type::FtwMachineType;
 use crate::ftw_node_type::FtwNodeType;
+use crate::ftw_success::FtwSuccess;
 use crate::ftw_target::FtwTarget;
 use crate::ftw_template::FtwTemplate;
 use crate::process_command::ProcessCommand;
@@ -65,7 +66,7 @@ impl FtwCommand {
             config: None,
             favorite: None,
             list_favorites: false,
-            silent: false,
+            silent: true,
             template_values_file: None,
             vcs: Vcs::Git,
         };
@@ -411,12 +412,13 @@ impl FtwCommand {
             FtwMachineType::Desktop => (ftw_cfg.godot_executable, "-d"),
         };
         let commands: Commands = vec![vec![&godot_executable, "--path", "godot/", debug_flag]];
-        (ProcessCommand { commands }).process()
+        let process_command = ProcessCommand { commands };
+        process_command.process()
     }
 }
 
 impl Processor for FtwCommand {
-    fn process(&self) -> Result<(), FtwError> {
+    fn process(&self) -> Result<FtwSuccess, FtwError> {
         match self {
             FtwCommand::New {
                 project_name,
@@ -424,7 +426,11 @@ impl Processor for FtwCommand {
             } => {
                 FtwCommand::generate_project(project_name, &template)?;
                 FtwCommand::append_to_gitignore(project_name)?;
-                FtwCommand::delete_items(project_name)
+                FtwCommand::delete_items(project_name)?;
+                Ok(FtwSuccess::New {
+                    project_name: project_name.to_string(),
+                    template,
+                })
             }
             FtwCommand::Class {
                 class_name,
@@ -435,7 +441,11 @@ impl Processor for FtwCommand {
                 FtwCommand::create_class_rs_file(&class_name, &directories, *node_type)?;
                 FtwCommand::create_gdns_file(&class_name, &directories, *node_type)?;
                 FtwCommand::create_tscn_file(&class_name, &directories, *node_type)?;
-                FtwCommand::create_lib_rs_file(&class_name, *node_type)
+                FtwCommand::create_lib_rs_file(&class_name, *node_type)?;
+                Ok(FtwSuccess::Class {
+                    class_name,
+                    node_type,
+                })
             }
             FtwCommand::Singleton { class_name } => {
                 FtwCommand::is_valid_project()?;
@@ -446,7 +456,7 @@ impl Processor for FtwCommand {
                 FtwCommand::create_lib_rs_file(&class_name, node_type)?;
                 println!("Open Project -> Project Settings -> Autoload and then add the newly created *.gdns file as an autoload");
                 // TODO: parse and modify project.godot file to include the newly created *.gdns file as an autoload
-                Ok(())
+                Ok(FtwSuccess::Singleton { class_name })
             }
             FtwCommand::Run { machine_type } => {
                 FtwCommand::is_valid_project()?;
@@ -459,17 +469,20 @@ impl Processor for FtwCommand {
                     FtwCommand::is_linux(&target)?;
                 }
                 FtwCommand::build_lib(&target, &build_type)?;
-                FtwCommand::run_with_godot(machine_type)
+                FtwCommand::run_with_godot(machine_type)?;
+                Ok(FtwSuccess::Run { machine_type })
             }
             FtwCommand::Build { target, build_type } => {
                 FtwCommand::is_valid_project()?;
-                FtwCommand::build_lib(target, build_type)
+                FtwCommand::build_lib(target, build_type)?;
+                Ok(FtwSuccess::Build { target, build_type })
             }
 
             FtwCommand::Export { target, build_type } => {
                 FtwCommand::is_valid_project()?;
                 FtwCommand::build_lib(target, build_type)?;
-                FtwCommand::export_game(target, build_type)
+                FtwCommand::export_game(target, build_type)?;
+                Ok(FtwSuccess::Export { target, build_type })
             }
         }
     }
