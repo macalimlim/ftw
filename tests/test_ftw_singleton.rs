@@ -1,24 +1,24 @@
 mod common;
 
 use assert_cmd::prelude::*;
-use common::{ftw, generate_random_name, Project};
+use common::ftw;
+use ftw::test_util::Project;
 use predicates;
 use predicates::prelude::*;
 
 #[test]
 fn test_ftw_singleton() {
-    let name = generate_random_name();
+    let project = Project::new();
     ftw()
         .arg("new")
-        .arg(&name)
+        .arg(&project.get_name())
         .assert()
         .success()
         .stdout(predicates::str::contains("Done!").from_utf8());
-    let project = Project::new(&name);
     ftw()
         .arg("singleton")
         .arg("MyPlayer")
-        .current_dir(&name)
+        .current_dir(&project.get_name())
         .assert()
         .success();
     assert!(project.exists("rust/src/my_player.rs"));
@@ -44,36 +44,36 @@ fn test_ftw_singleton() {
 
 #[test]
 fn test_ftw_singleton_no_class_name() {
-    let name = generate_random_name();
+    let project = Project::new();
     ftw()
         .arg("new")
-        .arg(&name)
+        .arg(&project.get_name())
         .assert()
         .success()
         .stdout(predicates::str::contains("Done!").from_utf8());
     ftw()
         .arg("singleton")
         .arg("")
-        .current_dir(&name)
+        .current_dir(&project.get_name())
         .assert()
         .failure()
         .stderr(predicates::str::contains("error").from_utf8());
+    drop(project)
 }
 
 #[test]
 fn test_ftw_singleton_with_subs() {
-    let name = generate_random_name();
+    let project = Project::new();
     ftw()
         .arg("new")
-        .arg(&name)
+        .arg(&project.get_name())
         .assert()
         .success()
         .stdout(predicates::str::contains("Done!").from_utf8());
-    let project = Project::new(&name);
     ftw()
         .arg("singleton")
         .arg("foo/bar/baz/MyPlayer")
-        .current_dir(&name)
+        .current_dir(&project.get_name())
         .assert()
         .success();
     assert!(project.exists("rust/src/foo/bar/baz/my_player.rs"));
@@ -109,7 +109,7 @@ fn test_ftw_singleton_with_subs() {
     ftw()
         .arg("singleton")
         .arg("foo/bar/FooBar")
-        .current_dir(&name)
+        .current_dir(&project.get_name())
         .assert()
         .success();
     assert!(project.exists("rust/src/foo/bar/foo_bar.rs"));
@@ -144,7 +144,7 @@ fn test_ftw_singleton_with_subs() {
     ftw()
         .arg("singleton")
         .arg("foo/bar/baz/woot/Blah")
-        .current_dir(&name)
+        .current_dir(&project.get_name())
         .assert()
         .success();
     assert!(project.exists("rust/src/foo/bar/baz/woot/blah.rs"));

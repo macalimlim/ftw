@@ -1,17 +1,17 @@
 mod common;
 
 use assert_cmd::prelude::*;
-use common::{ftw, generate_random_name, Project};
+use common::ftw;
+use ftw::test_util::Project;
 use predicates;
 use predicates::prelude::*;
 
 #[test]
 fn test_ftw_new() {
-    let name = generate_random_name();
-    let project = Project::new(&name);
+    let project = Project::new();
     ftw()
         .arg("new")
-        .arg(&name)
+        .arg(&project.get_name())
         .arg("default")
         .assert()
         .success()
@@ -32,16 +32,17 @@ fn test_ftw_new() {
     assert!(project.read(".gitignore").contains("bin/*"));
     assert!(project.read(".gitignore").contains("export_presets.cfg"));
     assert!(project.read(".gitignore").contains("lib/*"));
-    assert!(project.read("rust/Cargo.toml").contains(&name));
+    assert!(project
+        .read("rust/Cargo.toml")
+        .contains(&project.get_name()));
 }
 
 #[test]
 fn test_ftw_new_no_template() {
-    let name = generate_random_name();
-    let project = Project::new(&name);
+    let project = Project::new();
     ftw()
         .arg("new")
-        .arg(&name)
+        .arg(&project.get_name())
         .assert()
         .success()
         .stdout(predicates::str::contains("Done!").from_utf8());
@@ -61,5 +62,7 @@ fn test_ftw_new_no_template() {
     assert!(project.read(".gitignore").contains("bin/*"));
     assert!(project.read(".gitignore").contains("export_presets.cfg"));
     assert!(project.read(".gitignore").contains("lib/*"));
-    assert!(project.read("rust/Cargo.toml").contains(&name));
+    assert!(project
+        .read("rust/Cargo.toml")
+        .contains(&project.get_name()));
 }

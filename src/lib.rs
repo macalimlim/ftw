@@ -7,6 +7,7 @@ pub mod ftw_node_type;
 pub mod ftw_target;
 pub mod ftw_template;
 pub mod process_command;
+pub mod test_util;
 pub mod traits;
 pub mod type_alias;
 pub mod util;

@@ -479,53 +479,8 @@ impl Processor for FtwCommand {
 mod ftw_command_tests {
     use super::*;
 
-    use nanoid::nanoid;
+    use crate::test_util::Project;
     use std::env;
-    use std::fs;
-    use std::fs::File;
-    use std::io::Read;
-    use std::path::PathBuf;
-    use std::str;
-
-    #[derive(Debug)]
-    pub struct Project {
-        pub root: PathBuf,
-    }
-
-    impl Project {
-        pub fn new(root: &String) -> Self {
-            Project {
-                root: PathBuf::from(root),
-            }
-        }
-
-        pub fn read(&self, path: &str) -> String {
-            let mut ret = String::new();
-            File::open(self.root.join(path))
-                .expect(&format!("couldn't open file {:?}", self.root.join(path)))
-                .read_to_string(&mut ret)
-                .expect(&format!("couldn't read file {:?}", self.root.join(path)));
-            return ret;
-        }
-
-        pub fn exists(&self, path: &str) -> bool {
-            self.root.join(path).exists()
-        }
-    }
-
-    impl Drop for Project {
-        fn drop(&mut self) {
-            drop(fs::remove_dir_all(&self.root));
-            drop(fs::remove_dir(&self.root));
-        }
-    }
-
-    pub fn generate_random_name() -> String {
-        let name = nanoid!();
-        let mut name = name.to_lowercase().replace("_", "-").replace("-", "");
-        name.insert_str(0, "game");
-        name
-    }
 
     #[test]
     fn test_is_linux() {
@@ -545,27 +500,28 @@ mod ftw_command_tests {
 
     #[test]
     fn test_is_valid_project_no_cargo_toml() {
-        let name = generate_random_name();
+        let project = Project::default();
         let cmd = FtwCommand::New {
-            project_name: name.to_string(),
+            project_name: project.get_name(),
             template: FtwTemplate::Default,
         };
         let _ = cmd.process();
-        let _ = env::set_current_dir(Path::new(&name));
+        let _ = env::set_current_dir(Path::new(&project.get_name()));
         let _ = remove_items(&vec!["Cargo.toml"]);
         let res = FtwCommand::is_valid_project();
         match res {
             Err(FtwError::InvalidProject) => assert!(true),
             _ => unreachable!(),
         }
+        let _ = env::set_current_dir(Path::new("../"));
+        drop(project)
     }
 
     #[test]
     fn test_process_ftw_command_new() {
-        let name = generate_random_name();
-        let project = Project::new(&name);
+        let project = Project::new();
         let cmd = FtwCommand::New {
-            project_name: name.to_string(),
+            project_name: project.get_name(),
             template: FtwTemplate::Default,
         };
         let _ = cmd.process();
@@ -585,19 +541,20 @@ mod ftw_command_tests {
         assert!(project.read(".gitignore").contains("bin/*"));
         assert!(project.read(".gitignore").contains("export_presets.cfg"));
         assert!(project.read(".gitignore").contains("lib/*"));
-        assert!(project.read("rust/Cargo.toml").contains(&name));
+        assert!(project
+            .read("rust/Cargo.toml")
+            .contains(&project.get_name()));
     }
 
     #[test]
     fn test_process_ftw_command_class() {
-        let name = generate_random_name();
-        let project = Project::new(&name);
+        let project = Project::new();
         let cmd = FtwCommand::New {
-            project_name: name.to_string(),
+            project_name: project.get_name(),
             template: FtwTemplate::Default,
         };
         let _ = cmd.process();
-        let _ = env::set_current_dir(Path::new(&name));
+        let _ = env::set_current_dir(Path::new(&project.get_name()));
         let cmd = FtwCommand::Class {
             class_name: "MyPlayer".to_string(),
             node_type: FtwNodeType::Area2D,
@@ -634,14 +591,13 @@ mod ftw_command_tests {
 
     #[test]
     fn test_process_ftw_command_class_with_subs() {
-        let name = generate_random_name();
-        let project = Project::new(&name);
+        let project = Project::new();
         let cmd = FtwCommand::New {
-            project_name: name.to_string(),
+            project_name: project.get_name(),
             template: FtwTemplate::Default,
         };
         let _ = cmd.process();
-        let _ = env::set_current_dir(Path::new(&name));
+        let _ = env::set_current_dir(Path::new(&project.get_name()));
         let cmd = FtwCommand::Class {
             class_name: "foo/bar/baz/MyPlayer".to_string(),
             node_type: FtwNodeType::Area2D,
@@ -690,14 +646,13 @@ mod ftw_command_tests {
 
     #[test]
     fn test_process_ftw_command_singleton() {
-        let name = generate_random_name();
-        let project = Project::new(&name);
+        let project = Project::new();
         let cmd = FtwCommand::New {
-            project_name: name.to_string(),
+            project_name: project.get_name(),
             template: FtwTemplate::Default,
         };
         let _ = cmd.process();
-        let _ = env::set_current_dir(Path::new(&name));
+        let _ = env::set_current_dir(Path::new(&project.get_name()));
         let cmd = FtwCommand::Singleton {
             class_name: "MyPlayer".to_string(),
         };
@@ -726,14 +681,13 @@ mod ftw_command_tests {
 
     #[test]
     fn test_process_ftw_command_build() {
-        let name = generate_random_name();
-        let project = Project::new(&name);
+        let project = Project::new();
         let cmd = FtwCommand::New {
-            project_name: name.to_string(),
+            project_name: project.get_name(),
             template: FtwTemplate::Default,
         };
         let _ = cmd.process();
-        let _ = env::set_current_dir(Path::new(&name));
+        let _ = env::set_current_dir(Path::new(&project.get_name()));
         let target: FtwTarget = util::get_current_platform().parse().unwrap();
         let cmd = FtwCommand::Build {
             target: target.clone(),
@@ -741,26 +695,27 @@ mod ftw_command_tests {
         };
         let _ = cmd.process();
         let _ = env::set_current_dir(Path::new("../"));
-        assert!(project.read("rust/Cargo.toml").contains(&name));
+        assert!(project
+            .read("rust/Cargo.toml")
+            .contains(&project.get_name()));
         assert!(project.exists(&format!(
             "lib/{}/{}{}.{}",
             target.to_cli_arg(),
             target.to_lib_prefix(),
-            name,
+            project.get_name(),
             target.to_lib_ext()
         )));
     }
 
     #[test]
     fn test_process_ftw_command_build_2x() {
-        let name = generate_random_name();
-        let project = Project::new(&name);
+        let project = Project::new();
         let cmd = FtwCommand::New {
-            project_name: name.to_string(),
+            project_name: project.get_name(),
             template: FtwTemplate::Default,
         };
         let _ = cmd.process();
-        let _ = env::set_current_dir(Path::new(&name));
+        let _ = env::set_current_dir(Path::new(&project.get_name()));
         let target: FtwTarget = util::get_current_platform().parse().unwrap();
         let cmd = FtwCommand::Build {
             target: target.clone(),
@@ -769,26 +724,27 @@ mod ftw_command_tests {
         let _ = cmd.process();
         let _ = cmd.process();
         let _ = env::set_current_dir(Path::new("../"));
-        assert!(project.read("rust/Cargo.toml").contains(&name));
+        assert!(project
+            .read("rust/Cargo.toml")
+            .contains(&project.get_name()));
         assert!(project.exists(&format!(
             "lib/{}/{}{}.{}",
             target.to_cli_arg(),
             target.to_lib_prefix(),
-            name,
+            project.get_name(),
             target.to_lib_ext()
         )));
     }
 
     #[test]
     fn test_process_ftw_command_build_release() {
-        let name = generate_random_name();
-        let project = Project::new(&name);
+        let project = Project::new();
         let cmd = FtwCommand::New {
-            project_name: name.to_string(),
+            project_name: project.get_name(),
             template: FtwTemplate::Default,
         };
         let _ = cmd.process();
-        let _ = env::set_current_dir(Path::new(&name));
+        let _ = env::set_current_dir(Path::new(&project.get_name()));
         let target: FtwTarget = util::get_current_platform().parse().unwrap();
         let cmd = FtwCommand::Build {
             target: target.clone(),
@@ -796,26 +752,27 @@ mod ftw_command_tests {
         };
         let _ = cmd.process();
         let _ = env::set_current_dir(Path::new("../"));
-        assert!(project.read("rust/Cargo.toml").contains(&name));
+        assert!(project
+            .read("rust/Cargo.toml")
+            .contains(&project.get_name()));
         assert!(project.exists(&format!(
             "lib/{}/{}{}.{}",
             target.to_cli_arg(),
             target.to_lib_prefix(),
-            name,
+            project.get_name(),
             target.to_lib_ext()
         )));
     }
 
     #[test]
     fn test_process_ftw_command_export() {
-        let name = generate_random_name();
-        let project = Project::new(&name);
+        let project = Project::new();
         let cmd = FtwCommand::New {
-            project_name: name.to_string(),
+            project_name: project.get_name(),
             template: FtwTemplate::Default,
         };
         let _ = cmd.process();
-        let _ = env::set_current_dir(Path::new(&name));
+        let _ = env::set_current_dir(Path::new(&project.get_name()));
         let target: FtwTarget = util::get_current_platform().parse().unwrap();
         let cmd = FtwCommand::Export {
             target: target.clone(),
@@ -823,19 +780,25 @@ mod ftw_command_tests {
         };
         let _ = cmd.process();
         let _ = env::set_current_dir(Path::new("../../"));
-        assert!(project.read("rust/Cargo.toml").contains(&name));
+        assert!(project
+            .read("rust/Cargo.toml")
+            .contains(&project.get_name()));
         assert!(project.exists(&format!(
             "bin/{}/{}{}.{}",
             target.to_cli_arg(),
             target.to_lib_prefix(),
-            name,
+            project.get_name(),
             target.to_lib_ext()
         )));
-        assert!(project.exists(&format!("bin/{}/{}.debug.pck", target.to_cli_arg(), name)));
+        assert!(project.exists(&format!(
+            "bin/{}/{}.debug.pck",
+            target.to_cli_arg(),
+            project.get_name()
+        )));
         assert!(project.exists(&format!(
             "bin/{}/{}.debug.{}{}",
             target.to_cli_arg(),
-            name,
+            project.get_name(),
             target.to_cli_arg(),
             target.to_app_ext()
         )));
