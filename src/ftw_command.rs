@@ -167,8 +167,9 @@ impl FtwCommand {
                     let class_name = class_name.replace(".rs", "")._pascal_case();
                     let module_name = class_name._snake_case();
                     let path_display = format!("{}", path.display());
+                    let replaced_path_display = path_display.as_str().replace("\\", "/");
                     let full_module_name_vec: Vec<&str> =
-                        path_display.as_str().split('/').collect();
+                        replaced_path_display.split('/').collect();
                     let (_, module_path) = full_module_name_vec.split_at(2);
                     let mut full_module_name_vec = module_path.to_vec();
                     full_module_name_vec.pop();
