@@ -7,7 +7,7 @@ mod ftw_node_type;
 mod ftw_success;
 mod ftw_target;
 mod ftw_template;
-mod process_command;
+mod run_command;
 mod test_util;
 mod traits;
 mod type_alias;

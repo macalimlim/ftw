@@ -9,12 +9,20 @@ pub trait Processor {
     fn process(&self) -> Result<FtwSuccess, FtwError>;
 }
 
+pub trait Runner {
+    /// # Errors
+    ///
+    /// Will return `Err` if an error happened in the implementation
+    fn run(&mut self) -> Result<(), FtwError>;
+}
+
 pub trait ToGitUrl {
     fn to_git_url(&self) -> GitUrl;
 }
 
 pub trait ToCliArg {
     fn to_cli_arg(&self) -> CliArg;
+    fn to_cli_arg_option(&self) -> Option<CliArg>;
 }
 
 pub trait ToExportArg {

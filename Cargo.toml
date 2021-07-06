@@ -17,6 +17,7 @@ anyhow = { version = "1.0.41", default-features = false }
 cargo-edit = "0.7.0"
 cargo-generate = "0.6.0"
 clap = { version = "3.0.0-beta.2", default-features = false, features = [ "cargo", "std" ] }
+command-macros = "0.2.9"
 fs_extra = "1.2.0"
 kstring = "1.0.1"
 liquid = { version = "0.22.0", default-features = false, features = [ "stdlib" ] }

@@ -40,6 +40,10 @@ impl ToCliArg for FtwTarget {
         }
         .to_string()
     }
+
+    fn to_cli_arg_option(&self) -> Option<CliArg> {
+        unimplemented!()
+    }
 }
 
 impl ToExportName for FtwTarget {

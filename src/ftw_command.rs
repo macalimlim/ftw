@@ -6,14 +6,15 @@ use crate::ftw_node_type::FtwNodeType;
 use crate::ftw_success::FtwSuccess;
 use crate::ftw_target::FtwTarget;
 use crate::ftw_template::FtwTemplate;
-use crate::process_command::ProcessCommand;
 use crate::traits::{
-    Processor, ToAppExt, ToCliArg, ToExportArg, ToExportName, ToGitUrl, ToLibExt, ToLibPrefix,
+    Processor, Runner, ToAppExt, ToCliArg, ToExportArg, ToExportName, ToGitUrl, ToLibExt,
+    ToLibPrefix,
 };
-use crate::type_alias::{ClassName, Commands, ProjectName};
+use crate::type_alias::{ClassName, ProjectName};
 use crate::util;
 use cargo_edit::get_crate_name_from_path;
 use cargo_generate::{generate, Args, Vcs};
+use command_macros::cmd;
 use fs_extra::dir::CopyOptions;
 use fs_extra::{move_items, remove_items};
 use kstring::KString;
@@ -344,7 +345,7 @@ impl FtwCommand {
     fn build_lib(target: &FtwTarget, build_type: &FtwBuildType) -> Result<(), FtwError> {
         let crate_name = get_crate_name_from_path("./rust/")?;
         let target_cli_arg = target.to_cli_arg();
-        let build_type_cli_arg = build_type.to_cli_arg();
+        let build_type_cli_arg_option = build_type.to_cli_arg_option();
         let target_lib_ext = target.to_lib_ext();
         let source_path = format!(
             "./target/{}/{}/{}{}.{}",
@@ -355,13 +356,8 @@ impl FtwCommand {
             &target_lib_ext
         );
         let target_path = format!("./lib/{}", &target_cli_arg);
-        let mut cargo_build_cmd = vec!["cargo", "build", "--target", &target_cli_arg];
-        cargo_build_cmd.append(&mut match build_type {
-            FtwBuildType::Debug => vec![],
-            FtwBuildType::Release => vec![&build_type_cli_arg],
-        });
-        let commands: Commands = vec![cargo_build_cmd];
-        (ProcessCommand { commands }).process()?;
+        cmd!(cargo build ("--target") (target_cli_arg) if let Some(btca) = (build_type_cli_arg_option) { (btca) } )
+            .run()?;
         let target_lib_file = format!(
             "{}/{}{}.{}",
             target_path,
@@ -396,14 +392,11 @@ impl FtwCommand {
             .parse()
             .unwrap_or(FtwTarget::WindowsX86_64Msvc);
         let godot_executable = util::get_godot_exe_for_exporting(&current_platform);
-        let commands = vec![vec![
-            godot_executable.as_str(),
-            &build_type_export_arg,
-            &export_preset_name,
-            &export_path,
-        ]];
         env::set_current_dir(Path::new("./godot"))?;
-        (ProcessCommand { commands }).process()
+        cmd!((godot_executable.as_str())(build_type_export_arg)(
+            export_preset_name
+        )(export_path))
+        .run()
     }
 
     fn run_with_godot(machine_type: &FtwMachineType) -> Result<(), FtwError> {
@@ -412,9 +405,7 @@ impl FtwCommand {
             FtwMachineType::Server => (ftw_cfg.godot_server_executable, ""),
             FtwMachineType::Desktop => (ftw_cfg.godot_executable, "-d"),
         };
-        let commands: Commands = vec![vec![&godot_executable, "--path", "godot/", debug_flag]];
-        let process_command = ProcessCommand { commands };
-        process_command.process()
+        cmd!((godot_executable)("--path")("godot/")(debug_flag)).run()
     }
 }
 

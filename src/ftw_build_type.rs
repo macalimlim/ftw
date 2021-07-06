@@ -19,6 +19,13 @@ impl ToCliArg for FtwBuildType {
         }
         .to_string()
     }
+
+    fn to_cli_arg_option(&self) -> Option<CliArg> {
+        match self {
+            FtwBuildType::Debug => None,
+            FtwBuildType::Release => Some(self.to_cli_arg()),
+        }
+    }
 }
 
 impl ToExportArg for FtwBuildType {
