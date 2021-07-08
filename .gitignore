@@ -2,5 +2,6 @@
 **/*.rs.bk
 Cargo.lock
 debug/
+game*/
 target/
 tarpaulin-report.html

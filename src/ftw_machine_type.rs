@@ -1,3 +1,5 @@
+use crate::traits::ToCliArg;
+use crate::type_alias::CliArg;
 use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
@@ -6,6 +8,18 @@ use std::str::FromStr;
 pub enum FtwMachineType {
     Desktop,
     Server,
+}
+
+impl FtwMachineType {
+    #[must_use]
+    pub fn is_desktop(&self) -> bool {
+        self == &FtwMachineType::Desktop
+    }
+
+    #[must_use]
+    pub fn is_server(&self) -> bool {
+        !self.is_desktop()
+    }
 }
 
 impl FromStr for FtwMachineType {
@@ -28,10 +42,38 @@ impl Display for FtwMachineType {
     }
 }
 
+impl ToCliArg for FtwMachineType {
+    fn to_cli_arg(&self) -> CliArg {
+        match self {
+            FtwMachineType::Desktop => "-d",
+            FtwMachineType::Server => "",
+        }
+        .to_string()
+    }
+}
+
+impl Default for FtwMachineType {
+    fn default() -> Self {
+        FtwMachineType::Desktop
+    }
+}
+
 #[cfg(test)]
 mod ftw_machine_type_tests {
     use super::*;
     use proptest::prelude::{prop_assert, prop_assert_eq, prop_assume, proptest};
+
+    #[test]
+    fn test_is_desktop() {
+        assert!(FtwMachineType::Desktop.is_desktop());
+        assert!(!FtwMachineType::Server.is_desktop());
+    }
+
+    #[test]
+    fn test_is_server() {
+        assert!(!FtwMachineType::Desktop.is_server());
+        assert!(FtwMachineType::Server.is_server());
+    }
 
     #[test]
     fn test_from_str() -> Result<(), ()> {
@@ -44,6 +86,17 @@ mod ftw_machine_type_tests {
     fn test_fmt() {
         assert_eq!("desktop", format!("{}", FtwMachineType::Desktop));
         assert_eq!("server", format!("{}", FtwMachineType::Server));
+    }
+
+    #[test]
+    fn test_to_cli_arg() {
+        assert_eq!("-d", FtwMachineType::Desktop.to_cli_arg());
+        assert_eq!("", FtwMachineType::Server.to_cli_arg());
+    }
+
+    #[test]
+    fn test_default() {
+        assert_eq!(FtwMachineType::default(), FtwMachineType::Desktop);
     }
 
     proptest! {

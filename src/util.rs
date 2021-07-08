@@ -1,4 +1,5 @@
 use crate::ftw_configuration::FtwConfiguration;
+use crate::ftw_machine_type::FtwMachineType;
 use crate::ftw_target::FtwTarget;
 use std::env;
 
@@ -32,6 +33,15 @@ pub fn get_godot_exe_for_exporting(current_platform: &FtwTarget) -> String {
     }
 }
 
+#[must_use]
+pub fn get_godot_exe_for_running(machine_type: &FtwMachineType) -> String {
+    let ftw_cfg = FtwConfiguration::new();
+    match machine_type {
+        FtwMachineType::Desktop => ftw_cfg.godot_executable,
+        FtwMachineType::Server => ftw_cfg.godot_server_executable,
+    }
+}
+
 #[cfg(test)]
 mod util_tests {
     use super::*;
@@ -54,6 +64,16 @@ mod util_tests {
             let godot_exe = get_godot_exe_for_exporting(&p);
             assert_eq!("godot".to_string(), godot_exe);
         }
+    }
+
+    #[test]
+    fn test_get_godot_exe_for_running() {
+        let machine_type = FtwMachineType::Desktop;
+        let godot_exe = get_godot_exe_for_running(&machine_type);
+        assert_eq!("godot".to_string(), godot_exe);
+        let machine_type = FtwMachineType::Server;
+        let godot_exe = get_godot_exe_for_running(&machine_type);
+        assert_eq!("godot-server".to_string(), godot_exe);
     }
 
     #[test]

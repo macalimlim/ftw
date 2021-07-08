@@ -33,41 +33,16 @@ pub enum FtwSuccess<'a> {
     },
 }
 
+#[rustfmt::skip::macros(format)]
 impl Display for FtwSuccess<'_> {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         let message: String = match self {
-            FtwSuccess::New {
-                project_name,
-                template,
-            } => format!(
-                "A new project has been created {} using {} template",
-                project_name, template
-            ),
-            FtwSuccess::Class {
-                class_name,
-                node_type,
-            } => format!(
-                "A new class has been created {} using the {} node type",
-                class_name, node_type
-            ),
-            FtwSuccess::Singleton { class_name } => {
-                format!("A new singleton class has been created {}", class_name)
-            }
-            FtwSuccess::Run { machine_type } => {
-                format!("The game was run as a {} application", machine_type)
-            }
-            FtwSuccess::Build { target, build_type } => {
-                format!(
-                    "A library was created at lib/{} with a {} profile",
-                    target, build_type
-                )
-            }
-            FtwSuccess::Export { target, build_type } => {
-                format!(
-                    "A game was created at bin/{} with a {} profile",
-                    target, build_type
-                )
-            }
+            FtwSuccess::New { project_name, template } => format!("A new project has been created {} using {} template", project_name, template),
+            FtwSuccess::Class { class_name, node_type } => format!("A new class has been created {} using the {} node type", class_name, node_type),
+            FtwSuccess::Singleton { class_name } => format!("A new singleton class has been created {}", class_name),
+            FtwSuccess::Run { machine_type } => format!("The game was run as a {} application", machine_type),
+            FtwSuccess::Build { target, build_type } => format!("A library was created at lib/{} with a {} profile", target, build_type),
+            FtwSuccess::Export { target, build_type } => format!("A game was created at bin/{} with a {} profile", target, build_type)
         };
         write!(f, "{}", message)
     }
@@ -128,6 +103,23 @@ mod ftw_success_tests {
         assert_eq!(
             format!("A new singleton class has been created {}", class_name),
             format!("{}", ftw_success_singleton)
+        );
+        //
+        let machine_type = FtwMachineType::Desktop;
+        let ftw_success_run = FtwSuccess::Run {
+            machine_type: &machine_type,
+        };
+        assert_eq!(
+            format!("The game was run as a {} application", machine_type),
+            format!("{}", ftw_success_run)
+        );
+        let machine_type = FtwMachineType::Server;
+        let ftw_success_run = FtwSuccess::Run {
+            machine_type: &machine_type,
+        };
+        assert_eq!(
+            format!("The game was run as a {} application", machine_type),
+            format!("{}", ftw_success_run)
         );
         //
         let target = FtwTarget::LinuxX86_64;

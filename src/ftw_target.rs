@@ -40,62 +40,41 @@ impl ToCliArg for FtwTarget {
         }
         .to_string()
     }
-
-    fn to_cli_arg_option(&self) -> Option<CliArg> {
-        unimplemented!()
-    }
 }
 
+#[rustfmt::skip]
 impl ToExportName for FtwTarget {
     fn to_export_name(&self) -> ExportName {
         match self {
-            FtwTarget::AndroidLinuxAarch64
-            | FtwTarget::AndroidLinuxArmV7
-            | FtwTarget::AndroidLinuxX86
-            | FtwTarget::AndroidLinuxX86_64 => "Android",
+            FtwTarget::AndroidLinuxAarch64 | FtwTarget::AndroidLinuxArmV7 | FtwTarget::AndroidLinuxX86 | FtwTarget::AndroidLinuxX86_64 => "Android",
             FtwTarget::IosAarch64 => "iOS",
             FtwTarget::LinuxX86 | FtwTarget::LinuxX86_64 => "Linux/X11",
             FtwTarget::MacOsX86_64 => "Mac OSX",
-            FtwTarget::WindowsX86Gnu
-            | FtwTarget::WindowsX86Msvc
-            | FtwTarget::WindowsX86_64Gnu
-            | FtwTarget::WindowsX86_64Msvc => "Windows",
+            FtwTarget::WindowsX86Gnu | FtwTarget::WindowsX86Msvc | FtwTarget::WindowsX86_64Gnu | FtwTarget::WindowsX86_64Msvc => "Windows",
         }
         .to_string()
     }
 }
 
+#[rustfmt::skip]
 impl ToAppExt for FtwTarget {
     fn to_app_ext(&self) -> AppExt {
         match self {
-            FtwTarget::AndroidLinuxAarch64
-            | FtwTarget::AndroidLinuxArmV7
-            | FtwTarget::AndroidLinuxX86
-            | FtwTarget::AndroidLinuxX86_64 => ".apk",
+            FtwTarget::AndroidLinuxAarch64 | FtwTarget::AndroidLinuxArmV7 | FtwTarget::AndroidLinuxX86 | FtwTarget::AndroidLinuxX86_64 => ".apk",
             FtwTarget::IosAarch64 => ".ipa",
             FtwTarget::LinuxX86 | FtwTarget::LinuxX86_64 | FtwTarget::MacOsX86_64 => "",
-            FtwTarget::WindowsX86Gnu
-            | FtwTarget::WindowsX86Msvc
-            | FtwTarget::WindowsX86_64Gnu
-            | FtwTarget::WindowsX86_64Msvc => ".exe",
+            FtwTarget::WindowsX86Gnu | FtwTarget::WindowsX86Msvc | FtwTarget::WindowsX86_64Gnu | FtwTarget::WindowsX86_64Msvc => ".exe",
         }
         .to_string()
     }
 }
 
+#[rustfmt::skip]
 impl ToLibExt for FtwTarget {
     fn to_lib_ext(&self) -> LibExt {
         match self {
-            FtwTarget::AndroidLinuxAarch64
-            | FtwTarget::AndroidLinuxArmV7
-            | FtwTarget::AndroidLinuxX86
-            | FtwTarget::AndroidLinuxX86_64
-            | FtwTarget::LinuxX86
-            | FtwTarget::LinuxX86_64 => "so",
-            FtwTarget::WindowsX86Gnu
-            | FtwTarget::WindowsX86Msvc
-            | FtwTarget::WindowsX86_64Gnu
-            | FtwTarget::WindowsX86_64Msvc => "dll",
+            FtwTarget::AndroidLinuxAarch64 | FtwTarget::AndroidLinuxArmV7 | FtwTarget::AndroidLinuxX86 | FtwTarget::AndroidLinuxX86_64 | FtwTarget::LinuxX86 | FtwTarget::LinuxX86_64 => "so",
+            FtwTarget::WindowsX86Gnu | FtwTarget::WindowsX86Msvc | FtwTarget::WindowsX86_64Gnu | FtwTarget::WindowsX86_64Msvc => "dll",
             FtwTarget::IosAarch64 => "a",
             FtwTarget::MacOsX86_64 => "dylib",
         }
@@ -103,13 +82,11 @@ impl ToLibExt for FtwTarget {
     }
 }
 
+#[rustfmt::skip]
 impl ToLibPrefix for FtwTarget {
     fn to_lib_prefix(&self) -> LibPrefix {
         match self {
-            FtwTarget::WindowsX86Gnu
-            | FtwTarget::WindowsX86Msvc
-            | FtwTarget::WindowsX86_64Gnu
-            | FtwTarget::WindowsX86_64Msvc => "",
+            FtwTarget::WindowsX86Gnu | FtwTarget::WindowsX86Msvc | FtwTarget::WindowsX86_64Gnu | FtwTarget::WindowsX86_64Msvc => "",
             _ => "lib",
         }
         .to_string()
@@ -140,6 +117,12 @@ impl FromStr for FtwTarget {
 impl Display for FtwTarget {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         write!(f, "{}", self.to_cli_arg())
+    }
+}
+
+impl Default for FtwTarget {
+    fn default() -> Self {
+        FtwTarget::WindowsX86_64Msvc
     }
 }
 
@@ -296,6 +279,11 @@ mod ftw_target_tests {
         for (cli_arg, target) in cli_arg_targets {
             assert_eq!(cli_arg, format!("{}", target));
         }
+    }
+
+    #[test]
+    fn test_default() {
+        assert_eq!(FtwTarget::default(), FtwTarget::WindowsX86_64Msvc);
     }
 
     proptest! {

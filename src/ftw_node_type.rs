@@ -30,6 +30,12 @@ macro_rules! generate_ftw_node_types {
             }
         }
 
+        impl Default for FtwNodeType {
+            fn default() -> Self {
+                FtwNodeType::Node
+            }
+        }
+
         #[cfg(test)]
         mod ftw_node_type_tests {
             use super::*;

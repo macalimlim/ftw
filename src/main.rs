@@ -13,19 +13,15 @@ mod traits;
 mod type_alias;
 mod util;
 
-use crate::ftw_build_type::FtwBuildType;
 use crate::ftw_command::FtwCommand;
-use crate::ftw_machine_type::FtwMachineType;
-use crate::ftw_node_type::FtwNodeType;
-use crate::ftw_target::FtwTarget;
-use crate::ftw_template::FtwTemplate;
 use crate::traits::Processor;
 use clap::{clap_app, crate_authors, crate_name, crate_version, App, ArgMatches};
 use std::env;
 
+#[cfg(not(tarpaulin_include))]
 fn main() -> Result<(), ()> {
-    let matches: ArgMatches = get_clap_app().get_matches();
-    let command: FtwCommand = parse_matches(&matches);
+    let matches = get_clap_app().get_matches();
+    let command = parse_matches(&matches);
     command
         .process()
         .map(|ftw_success| println!("SUCCESS: {}", ftw_success))
@@ -70,11 +66,11 @@ fn parse_matches(matches: &ArgMatches) -> FtwCommand {
                 .value_of("project_name")
                 .unwrap_or("my-awesome-game")
                 .to_string();
-            let template: FtwTemplate = args
+            let template = args
                 .value_of("template")
                 .unwrap_or("default")
                 .parse()
-                .unwrap_or(FtwTemplate::Default);
+                .unwrap_or_default();
             FtwCommand::New {
                 project_name,
                 template,
@@ -82,11 +78,11 @@ fn parse_matches(matches: &ArgMatches) -> FtwCommand {
         }
         Some(("class", args)) => {
             let class_name = args.value_of("class_name").unwrap_or("MyClass").to_string();
-            let node_type: FtwNodeType = args
+            let node_type = args
                 .value_of("node_type")
                 .unwrap_or("Node")
                 .parse()
-                .unwrap_or(FtwNodeType::Node);
+                .unwrap_or_default();
             FtwCommand::Class {
                 class_name,
                 node_type,
@@ -104,7 +100,7 @@ fn parse_matches(matches: &ArgMatches) -> FtwCommand {
                 .value_of("machine_type")
                 .unwrap_or("desktop")
                 .parse()
-                .unwrap_or(FtwMachineType::Desktop);
+                .unwrap_or_default();
             FtwCommand::Run { machine_type }
         }
         Some(("build", args)) => {
@@ -113,12 +109,12 @@ fn parse_matches(matches: &ArgMatches) -> FtwCommand {
                 .value_of("target")
                 .unwrap_or(&current_platform)
                 .parse()
-                .unwrap_or(FtwTarget::WindowsX86_64Msvc);
+                .unwrap_or_default();
             let build_type = args
                 .value_of("build_type")
                 .unwrap_or("debug")
                 .parse()
-                .unwrap_or(FtwBuildType::Debug);
+                .unwrap_or_default();
             FtwCommand::Build { target, build_type }
         }
         Some(("export", args)) => {
@@ -127,12 +123,12 @@ fn parse_matches(matches: &ArgMatches) -> FtwCommand {
                 .value_of("target")
                 .unwrap_or(&current_platform)
                 .parse()
-                .unwrap_or(FtwTarget::WindowsX86_64Msvc);
+                .unwrap_or_default();
             let build_type = args
                 .value_of("build_type")
                 .unwrap_or("debug")
                 .parse()
-                .unwrap_or(FtwBuildType::Debug);
+                .unwrap_or_default();
             FtwCommand::Export { target, build_type }
         }
         _ => unreachable!(),

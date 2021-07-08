@@ -1,5 +1,5 @@
+#[rustfmt::skip::macros(cmd, format)]
 use crate::ftw_build_type::FtwBuildType;
-use crate::ftw_configuration::FtwConfiguration;
 use crate::ftw_error::FtwError;
 use crate::ftw_machine_type::FtwMachineType;
 use crate::ftw_node_type::FtwNodeType;
@@ -10,7 +10,7 @@ use crate::traits::{
     Processor, Runner, ToAppExt, ToCliArg, ToExportArg, ToExportName, ToGitUrl, ToLibExt,
     ToLibPrefix,
 };
-use crate::type_alias::{ClassName, ProjectName};
+use crate::type_alias::{ClassName, FtwResult, ProjectName};
 use crate::util;
 use cargo_edit::get_crate_name_from_path;
 use cargo_generate::{generate, Args, Vcs};
@@ -55,6 +55,7 @@ pub enum FtwCommand {
     },
 }
 
+#[rustfmt::skip::macros(cmd, format)]
 impl FtwCommand {
     fn generate_project(project_name: &str, template: &FtwTemplate) -> Result<(), FtwError> {
         let git_url = &template.to_git_url();
@@ -114,7 +115,7 @@ impl FtwCommand {
     }
 
     fn is_valid_project() -> Result<bool, FtwError> {
-        let project_files: Vec<&str> = vec![
+        let project_files = vec![
             "Cargo.toml",
             "Makefile",
             "godot/default_env.tres",
@@ -169,9 +170,8 @@ impl FtwCommand {
                     let module_name = class_name._snake_case();
                     let path_display = format!("{}", path.display());
                     let replaced_path_display = path_display.as_str().replace("\\", "/");
-                    let full_module_name_vec: Vec<&str> =
-                        replaced_path_display.split('/').collect();
-                    let (_, module_path) = full_module_name_vec.split_at(2);
+                    let module_name_vec: Vec<&str> = replaced_path_display.split('/').collect();
+                    let (_, module_path) = module_name_vec.split_at(2);
                     let mut full_module_name_vec = module_path.to_vec();
                     full_module_name_vec.pop();
                     full_module_name_vec.push(&module_name);
@@ -184,10 +184,7 @@ impl FtwCommand {
     }
 
     fn get_tmpl_globals(class_name: &str, node_type: FtwNodeType) -> Object {
-        object!({
-            "class_name": class_name,
-            "node_type": node_type.to_string(),
-        })
+        object!({ "class_name": class_name, "node_type": node_type.to_string() })
     }
 
     fn create_lib_rs_file(class_name: &str, node_type: FtwNodeType) -> Result<(), FtwError> {
@@ -200,11 +197,8 @@ impl FtwCommand {
         let k = KString::from_ref("classes");
         let v = Value::Scalar(ScalarCow::from(classes));
         tmpl_globals.insert(k, v);
-        FtwCommand::create_file(
-            &String::from_utf8_lossy(include_bytes!("templates/lib_tmpl.rs")),
-            "rust/src/lib.rs",
-            &tmpl_globals,
-        )
+        let template = &String::from_utf8_lossy(include_bytes!("templates/lib_tmpl.rs"));
+        FtwCommand::create_file(template, "rust/src/lib.rs", &tmpl_globals)
     }
 
     fn create_directory(base_path: &str, directories: &[String]) -> Result<String, FtwError> {
@@ -228,13 +222,14 @@ impl FtwCommand {
                 file.read_to_string(&mut file_contents)?;
                 let is_native_class = FtwCommand::is_derving_native_class(&file_contents)?;
                 if is_native_class {
-                    let path = path.file_stem().ok_or(FtwError::PathError)?;
-                    modules.push(
-                        path.to_os_string()
-                            .to_str()
-                            .ok_or(FtwError::StringConversionError)?
-                            .to_string(),
-                    );
+                    let module_path = path
+                        .file_stem()
+                        .ok_or(FtwError::PathError)?
+                        .to_os_string()
+                        .to_str()
+                        .ok_or(FtwError::StringConversionError)?
+                        .to_string();
+                    modules.push(module_path);
                 }
             }
             let is_dir = path.is_dir();
@@ -242,13 +237,13 @@ impl FtwCommand {
             let mod_rs_file_path = Path::new(&mod_rs_file);
             let is_contains_mod_rs = mod_rs_file_path.exists();
             if is_dir && is_contains_mod_rs {
-                modules.push(
-                    path.file_name()
-                        .ok_or(FtwError::PathError)?
-                        .to_str()
-                        .ok_or(FtwError::StringConversionError)?
-                        .to_string(),
-                );
+                let module_path = path
+                    .file_name()
+                    .ok_or(FtwError::PathError)?
+                    .to_str()
+                    .ok_or(FtwError::StringConversionError)?
+                    .to_string();
+                modules.push(module_path);
             }
         }
         Ok(modules.join("|"))
@@ -262,14 +257,9 @@ impl FtwCommand {
             let current_path = format!("{}/{}", &base_src_path, &dir);
             let mod_rs_file = format!("{}/mod.rs", &current_path);
             let modules = FtwCommand::get_modules_from_directory(&current_path)?;
-            let tmpl_globals = object!({
-                "modules": modules,
-            });
-            FtwCommand::create_file(
-                &String::from_utf8_lossy(include_bytes!("templates/mod_tmpl.rs")),
-                &mod_rs_file,
-                &tmpl_globals,
-            )?;
+            let tmpl_globals = object!({ "modules": modules });
+            let template = &String::from_utf8_lossy(include_bytes!("templates/mod_tmpl.rs"));
+            FtwCommand::create_file(template, &mod_rs_file, &tmpl_globals)?;
             match directories.split_last() {
                 Some((_, init)) => FtwCommand::create_mod_rs_file(&base_src_path, &init.to_vec()),
                 _ => unreachable!(),
@@ -287,11 +277,8 @@ impl FtwCommand {
         let class_rs_file = format!("{}/{}.rs", &src_dir_path, class_name._snake_case());
         if !Path::new(&class_rs_file).exists() {
             let tmpl_globals = FtwCommand::get_tmpl_globals(class_name, node_type);
-            FtwCommand::create_file(
-                &String::from_utf8_lossy(include_bytes!("templates/class_tmpl.rs")),
-                &class_rs_file,
-                &tmpl_globals,
-            )?;
+            let template = &String::from_utf8_lossy(include_bytes!("templates/class_tmpl.rs"));
+            FtwCommand::create_file(template, &class_rs_file, &tmpl_globals)?;
         }
         FtwCommand::create_mod_rs_file(&base_src_path, &directories)?;
         Ok(())
@@ -306,11 +293,8 @@ impl FtwCommand {
         let gdns_file = format!("{}/{}.gdns", &gdns_dir_path, class_name._pascal_case());
         if !Path::new(&gdns_file).exists() {
             let tmpl_globals = FtwCommand::get_tmpl_globals(class_name, node_type);
-            FtwCommand::create_file(
-                &String::from_utf8_lossy(include_bytes!("templates/gdns_tmpl.gdns")),
-                &gdns_file,
-                &tmpl_globals,
-            )?;
+            let template = &String::from_utf8_lossy(include_bytes!("templates/gdns_tmpl.gdns"));
+            FtwCommand::create_file(template, &gdns_file, &tmpl_globals)?;
         }
         Ok(())
     }
@@ -333,11 +317,8 @@ impl FtwCommand {
                 dir
             }));
             tmpl_globals.insert(k, v);
-            FtwCommand::create_file(
-                &String::from_utf8_lossy(include_bytes!("templates/tscn_tmpl.tscn")),
-                &tscn_file,
-                &tmpl_globals,
-            )?;
+            let template = &String::from_utf8_lossy(include_bytes!("templates/tscn_tmpl.tscn"));
+            FtwCommand::create_file(template, &tscn_file, &tmpl_globals)?;
         }
         Ok(())
     }
@@ -345,28 +326,16 @@ impl FtwCommand {
     fn build_lib(target: &FtwTarget, build_type: &FtwBuildType) -> Result<(), FtwError> {
         let crate_name = get_crate_name_from_path("./rust/")?;
         let target_cli_arg = target.to_cli_arg();
-        let build_type_cli_arg_option = build_type.to_cli_arg_option();
+        let build_type_cli_arg = build_type.to_cli_arg();
         let target_lib_ext = target.to_lib_ext();
-        let source_path = format!(
-            "./target/{}/{}/{}{}.{}",
-            &target_cli_arg,
-            build_type.to_string().to_lowercase(),
-            target.to_lib_prefix(),
-            crate_name,
-            &target_lib_ext
-        );
+        let build_type_string = build_type.to_string().to_lowercase();
+        let target_lib_prefix = target.to_lib_prefix();
+        let source_path = format!("./target/{}/{}/{}{}.{}", &target_cli_arg, build_type_string, target_lib_prefix, crate_name, &target_lib_ext);
         let target_path = format!("./lib/{}", &target_cli_arg);
-        cmd!(cargo build ("--target") (target_cli_arg) if let Some(btca) = (build_type_cli_arg_option) { (btca) } )
-            .run()?;
-        let target_lib_file = format!(
-            "{}/{}{}.{}",
-            target_path,
-            target.to_lib_prefix(),
-            crate_name,
-            target.to_lib_ext()
-        );
-        if Path::new(&target_lib_file).exists() {
-            let target_lib_files = vec![target_lib_file];
+        cmd!(cargo build ("--target") (target_cli_arg) if (build_type.is_release()) { (build_type_cli_arg) }).run()?;
+        let lib = format!("{}/{}{}.{}", target_path, target_lib_prefix, crate_name, target_lib_ext);
+        if Path::new(&lib).exists() {
+            let target_lib_files = vec![lib];
             remove_items(&target_lib_files)?;
         }
         let options = CopyOptions::new();
@@ -382,66 +351,46 @@ impl FtwCommand {
         let build_type_export_arg = build_type.to_export_arg();
         let build_type = build_type.to_string().to_lowercase();
         let target_app_ext = target.to_app_ext();
-        let export_preset_name =
-            format!("{}.{}.{}", target_export_name, target_cli_arg, build_type);
+        let export_name = format!("{}.{}.{}", target_export_name, target_cli_arg, build_type);
         let export_path = format!(
             "../bin/{}/{}.{}.{}{}",
             &target_cli_arg, &crate_name, build_type, &target_cli_arg, &target_app_ext
         );
-        let current_platform = util::get_current_platform()
-            .parse()
-            .unwrap_or(FtwTarget::WindowsX86_64Msvc);
+        let current_platform = util::get_current_platform().parse().unwrap_or_default();
         let godot_executable = util::get_godot_exe_for_exporting(&current_platform);
         env::set_current_dir(Path::new("./godot"))?;
-        cmd!((godot_executable.as_str())(build_type_export_arg)(
-            export_preset_name
-        )(export_path))
-        .run()
+        cmd!((godot_executable.as_str()) (build_type_export_arg) (export_name) (export_path)).run()
     }
 
     fn run_with_godot(machine_type: &FtwMachineType) -> Result<(), FtwError> {
-        let ftw_cfg = FtwConfiguration::new();
-        let (godot_executable, debug_flag) = match machine_type {
-            FtwMachineType::Server => (ftw_cfg.godot_server_executable, ""),
-            FtwMachineType::Desktop => (ftw_cfg.godot_executable, "-d"),
-        };
-        cmd!((godot_executable)("--path")("godot/")(debug_flag)).run()
+        let godot_executable = util::get_godot_exe_for_running(machine_type);
+        cmd!((godot_executable) ("--path") ("godot/") if (machine_type.is_desktop()) { (machine_type.to_cli_arg()) }).run()
     }
 }
 
+#[rustfmt::skip]
 impl Processor for FtwCommand {
-    fn process(&self) -> Result<FtwSuccess, FtwError> {
+    fn process(&self) -> FtwResult {
         match self {
-            FtwCommand::New {
-                project_name,
-                template,
-            } => {
+            FtwCommand::New { project_name, template } => {
                 FtwCommand::generate_project(project_name, &template)?;
                 FtwCommand::append_to_gitignore(project_name)?;
                 FtwCommand::delete_items(project_name)?;
-                Ok(FtwSuccess::New {
-                    project_name: project_name.to_string(),
-                    template,
-                })
+                let project_name = project_name.to_string();
+                Ok(FtwSuccess::New { project_name, template })
             }
-            FtwCommand::Class {
-                class_name,
-                node_type,
-            } => {
+            FtwCommand::Class { class_name, node_type } => {
                 FtwCommand::is_valid_project()?;
                 let (class_name, directories) = util::get_class_name_and_directories(class_name);
                 FtwCommand::create_class_rs_file(&class_name, &directories, *node_type)?;
                 FtwCommand::create_gdns_file(&class_name, &directories, *node_type)?;
                 FtwCommand::create_tscn_file(&class_name, &directories, *node_type)?;
                 FtwCommand::create_lib_rs_file(&class_name, *node_type)?;
-                Ok(FtwSuccess::Class {
-                    class_name,
-                    node_type,
-                })
+                Ok(FtwSuccess::Class { class_name, node_type })
             }
             FtwCommand::Singleton { class_name } => {
                 FtwCommand::is_valid_project()?;
-                let node_type = FtwNodeType::Node;
+                let node_type = FtwNodeType::default();
                 let (class_name, directories) = util::get_class_name_and_directories(class_name);
                 FtwCommand::create_class_rs_file(&class_name, &directories, node_type)?;
                 FtwCommand::create_gdns_file(&class_name, &directories, node_type)?;
@@ -452,12 +401,10 @@ impl Processor for FtwCommand {
             }
             FtwCommand::Run { machine_type } => {
                 FtwCommand::is_valid_project()?;
-                let build_type = FtwBuildType::Debug;
+                let build_type = FtwBuildType::default();
                 let current_platform = util::get_current_platform();
-                let target = current_platform
-                    .parse()
-                    .unwrap_or(FtwTarget::WindowsX86_64Msvc);
-                if *machine_type == FtwMachineType::Server {
+                let target = current_platform.parse().unwrap_or_default();
+                if machine_type.is_server() {
                     FtwCommand::is_linux(&target)?;
                 }
                 FtwCommand::build_lib(&target, &build_type)?;

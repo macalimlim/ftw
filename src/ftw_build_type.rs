@@ -11,6 +11,18 @@ pub enum FtwBuildType {
     Release,
 }
 
+impl FtwBuildType {
+    #[must_use]
+    pub fn is_debug(&self) -> bool {
+        self == &FtwBuildType::Debug
+    }
+
+    #[must_use]
+    pub fn is_release(&self) -> bool {
+        !self.is_debug()
+    }
+}
+
 impl ToCliArg for FtwBuildType {
     fn to_cli_arg(&self) -> CliArg {
         match self {
@@ -18,13 +30,6 @@ impl ToCliArg for FtwBuildType {
             FtwBuildType::Release => "--release",
         }
         .to_string()
-    }
-
-    fn to_cli_arg_option(&self) -> Option<CliArg> {
-        match self {
-            FtwBuildType::Debug => None,
-            FtwBuildType::Release => Some(self.to_cli_arg()),
-        }
     }
 }
 
@@ -59,6 +64,12 @@ impl FromStr for FtwBuildType {
     }
 }
 
+impl Default for FtwBuildType {
+    fn default() -> Self {
+        FtwBuildType::Debug
+    }
+}
+
 #[cfg(test)]
 mod ftw_build_type_tests {
     use super::*;
@@ -87,6 +98,11 @@ mod ftw_build_type_tests {
         assert_eq!(FtwBuildType::Debug, "debug".parse()?);
         assert_eq!(FtwBuildType::Release, "release".parse()?);
         Ok(())
+    }
+
+    #[test]
+    fn test_default() {
+        assert_eq!(FtwBuildType::Debug, FtwBuildType::default());
     }
 
     proptest! {

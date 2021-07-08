@@ -44,6 +44,12 @@ impl Display for FtwTemplate {
     }
 }
 
+impl Default for FtwTemplate {
+    fn default() -> Self {
+        FtwTemplate::Default
+    }
+}
+
 #[cfg(test)]
 mod ftw_template_tests {
     use super::*;
@@ -93,6 +99,11 @@ mod ftw_template_tests {
                 }
             )
         );
+    }
+
+    #[test]
+    fn test_default() {
+        assert_eq!(FtwTemplate::default(), FtwTemplate::Default);
     }
 
     proptest! {

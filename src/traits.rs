@@ -1,12 +1,13 @@
 use crate::ftw_error::FtwError;
-use crate::ftw_success::FtwSuccess;
-use crate::type_alias::{AppExt, CliArg, ExportArg, ExportName, GitUrl, LibExt, LibPrefix};
+use crate::type_alias::{
+    AppExt, CliArg, ExportArg, ExportName, FtwResult, GitUrl, LibExt, LibPrefix,
+};
 
 pub trait Processor {
     /// # Errors
     ///
     /// Will return `Err` if an error happened in the implementation
-    fn process(&self) -> Result<FtwSuccess, FtwError>;
+    fn process(&self) -> FtwResult;
 }
 
 pub trait Runner {
@@ -22,7 +23,6 @@ pub trait ToGitUrl {
 
 pub trait ToCliArg {
     fn to_cli_arg(&self) -> CliArg;
-    fn to_cli_arg_option(&self) -> Option<CliArg>;
 }
 
 pub trait ToExportArg {

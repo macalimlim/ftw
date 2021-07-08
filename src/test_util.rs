@@ -10,6 +10,7 @@ pub struct Project {
     pub root: PathBuf,
 }
 
+#[cfg(not(tarpaulin_include))]
 impl Project {
     #[must_use]
     pub fn new() -> Self {
@@ -49,12 +50,14 @@ impl Project {
     }
 }
 
+#[cfg(not(tarpaulin_include))]
 impl Default for Project {
     fn default() -> Self {
         Self::new()
     }
 }
 
+#[cfg(not(tarpaulin_include))]
 impl Drop for Project {
     fn drop(&mut self) {
         drop(remove_dir_all(&self.root));
