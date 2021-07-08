@@ -52,6 +52,11 @@ macro_rules! generate_ftw_node_types {
                 $(assert_eq!(stringify!($i), format!("{}", FtwNodeType::$i));)*
             }
 
+            #[test]
+            fn test_default() {
+                assert_eq!(FtwNodeType::default(), FtwNodeType::Node);
+            }
+
             proptest! {
                 #[test]
                 fn test_from_str_invalid_input(node_type_input in "\\PC*") {

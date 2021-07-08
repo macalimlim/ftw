@@ -1,4 +1,3 @@
-#[rustfmt::skip::macros(cmd, format)]
 use crate::ftw_build_type::FtwBuildType;
 use crate::ftw_error::FtwError;
 use crate::ftw_machine_type::FtwMachineType;

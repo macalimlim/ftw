@@ -12,7 +12,7 @@ impl Runner for Command {
 }
 
 #[cfg(test)]
-mod process_command_tests {
+mod run_command_tests {
     use super::*;
     use command_macros::cmd;
 

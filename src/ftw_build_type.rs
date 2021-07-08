@@ -76,6 +76,18 @@ mod ftw_build_type_tests {
     use proptest::prelude::{prop_assert, prop_assume, proptest};
 
     #[test]
+    fn test_is_debug() {
+        assert!(FtwBuildType::Debug.is_debug());
+        assert!(!FtwBuildType::Release.is_debug());
+    }
+
+    #[test]
+    fn test_is_release() {
+        assert!(FtwBuildType::Release.is_release());
+        assert!(!FtwBuildType::Debug.is_release());
+    }
+
+    #[test]
     fn test_to_cli_arg() {
         assert_eq!("", FtwBuildType::Debug.to_cli_arg());
         assert_eq!("--release", FtwBuildType::Release.to_cli_arg());
