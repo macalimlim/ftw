@@ -105,14 +105,6 @@ impl FtwCommand {
         Ok(())
     }
 
-    fn is_linux(target: &FtwTarget) -> Result<bool, FtwError> {
-        if *target == FtwTarget::LinuxX86_64 {
-            Ok(true)
-        } else {
-            Err(FtwError::UnsupportedTarget)
-        }
-    }
-
     fn is_valid_project() -> Result<bool, FtwError> {
         let project_files = vec![
             "Cargo.toml",
@@ -402,9 +394,9 @@ impl Processor for FtwCommand {
                 FtwCommand::is_valid_project()?;
                 let build_type = FtwBuildType::default();
                 let current_platform = util::get_current_platform();
-                let target = current_platform.parse().unwrap_or_default();
+                let target: FtwTarget = current_platform.parse().unwrap_or_default();
                 if machine_type.is_server() {
-                    FtwCommand::is_linux(&target)?;
+                    target.is_linux_x86_64()?;
                 }
                 FtwCommand::build_lib(&target, &build_type)?;
                 FtwCommand::run_with_godot(machine_type)?;
@@ -432,22 +424,6 @@ mod ftw_command_tests {
 
     use crate::test_util::Project;
     use std::env;
-
-    #[test]
-    fn test_is_linux() {
-        let res = FtwCommand::is_linux(&FtwTarget::LinuxX86_64);
-        assert!(res.is_ok());
-        assert!(res.unwrap());
-    }
-
-    #[test]
-    fn test_is_linux_not_linux() {
-        let res = FtwCommand::is_linux(&FtwTarget::WindowsX86_64Msvc);
-        match res {
-            Err(FtwError::UnsupportedTarget) => assert!(true),
-            _ => unreachable!(),
-        }
-    }
 
     #[test]
     fn test_is_valid_project_no_cargo_toml() {

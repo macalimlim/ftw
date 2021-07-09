@@ -22,6 +22,44 @@ pub enum FtwTarget {
     WindowsX86_64Msvc,
 }
 
+#[rustfmt::skip]
+impl FtwTarget {
+    fn is(&self, target: &FtwTarget) -> bool {
+        self == target
+    }
+
+    /// # Errors
+    ///
+    /// Will return `Err` if `target` is not Linux x86-64
+    pub fn is_linux_x86_64(&self) -> Result<bool, FtwError> {
+        if self.is(&FtwTarget::LinuxX86_64) {
+            Ok(true)
+        } else {
+            Err(FtwError::UnsupportedTarget)
+        }
+    }
+
+    fn is_android(&self) -> bool {
+        matches!(self, FtwTarget::AndroidLinuxAarch64 | FtwTarget::AndroidLinuxArmV7 | FtwTarget::AndroidLinuxX86 | FtwTarget::AndroidLinuxX86_64)
+    }
+
+    fn is_windows(&self) -> bool {
+        matches!(self, FtwTarget::WindowsX86Gnu | FtwTarget::WindowsX86Msvc | FtwTarget::WindowsX86_64Gnu | FtwTarget::WindowsX86_64Msvc)
+    }
+
+    fn is_ios(&self) -> bool {
+        matches!(self, FtwTarget::IosAarch64)
+    }
+
+    fn is_linux(&self) -> bool {
+        matches!(self, FtwTarget::LinuxX86 | FtwTarget::LinuxX86_64)
+    }
+
+    fn is_macos(&self) -> bool {
+        matches!(self, FtwTarget::MacOsX86_64)
+    }
+}
+
 impl ToCliArg for FtwTarget {
     fn to_cli_arg(&self) -> CliArg {
         match self {
@@ -42,51 +80,54 @@ impl ToCliArg for FtwTarget {
     }
 }
 
-#[rustfmt::skip]
 impl ToExportName for FtwTarget {
     fn to_export_name(&self) -> ExportName {
-        match self {
-            FtwTarget::AndroidLinuxAarch64 | FtwTarget::AndroidLinuxArmV7 | FtwTarget::AndroidLinuxX86 | FtwTarget::AndroidLinuxX86_64 => "Android",
-            FtwTarget::IosAarch64 => "iOS",
-            FtwTarget::LinuxX86 | FtwTarget::LinuxX86_64 => "Linux/X11",
-            FtwTarget::MacOsX86_64 => "Mac OSX",
-            FtwTarget::WindowsX86Gnu | FtwTarget::WindowsX86Msvc | FtwTarget::WindowsX86_64Gnu | FtwTarget::WindowsX86_64Msvc => "Windows",
+        let s = self;
+        match s {
+            s if s.is_android() => "Android",
+            s if s.is_ios() => "iOS",
+            s if s.is_linux() => "Linux/X11",
+            s if s.is_macos() => "Mac OSX",
+            s if s.is_windows() => "Windows",
+            _ => unreachable!(),
         }
         .to_string()
     }
 }
 
-#[rustfmt::skip]
 impl ToAppExt for FtwTarget {
     fn to_app_ext(&self) -> AppExt {
-        match self {
-            FtwTarget::AndroidLinuxAarch64 | FtwTarget::AndroidLinuxArmV7 | FtwTarget::AndroidLinuxX86 | FtwTarget::AndroidLinuxX86_64 => ".apk",
-            FtwTarget::IosAarch64 => ".ipa",
-            FtwTarget::LinuxX86 | FtwTarget::LinuxX86_64 | FtwTarget::MacOsX86_64 => "",
-            FtwTarget::WindowsX86Gnu | FtwTarget::WindowsX86Msvc | FtwTarget::WindowsX86_64Gnu | FtwTarget::WindowsX86_64Msvc => ".exe",
+        let s = self;
+        match s {
+            s if s.is_android() => ".apk",
+            s if s.is_ios() => ".ipa",
+            s if s.is_linux() | s.is_macos() => "",
+            s if s.is_windows() => ".exe",
+            _ => unreachable!(),
         }
         .to_string()
     }
 }
 
-#[rustfmt::skip]
 impl ToLibExt for FtwTarget {
     fn to_lib_ext(&self) -> LibExt {
-        match self {
-            FtwTarget::AndroidLinuxAarch64 | FtwTarget::AndroidLinuxArmV7 | FtwTarget::AndroidLinuxX86 | FtwTarget::AndroidLinuxX86_64 | FtwTarget::LinuxX86 | FtwTarget::LinuxX86_64 => "so",
-            FtwTarget::WindowsX86Gnu | FtwTarget::WindowsX86Msvc | FtwTarget::WindowsX86_64Gnu | FtwTarget::WindowsX86_64Msvc => "dll",
-            FtwTarget::IosAarch64 => "a",
-            FtwTarget::MacOsX86_64 => "dylib",
+        let s = self;
+        match s {
+            s if s.is_android() | s.is_linux() => "so",
+            s if s.is_windows() => "dll",
+            s if s.is_ios() => "a",
+            s if s.is_macos() => "dylib",
+            _ => unreachable!(),
         }
         .to_string()
     }
 }
 
-#[rustfmt::skip]
 impl ToLibPrefix for FtwTarget {
     fn to_lib_prefix(&self) -> LibPrefix {
-        match self {
-            FtwTarget::WindowsX86Gnu | FtwTarget::WindowsX86Msvc | FtwTarget::WindowsX86_64Gnu | FtwTarget::WindowsX86_64Msvc => "",
+        let s = self;
+        match s {
+            s if s.is_windows() => "",
             _ => "lib",
         }
         .to_string()
@@ -256,6 +297,38 @@ mod ftw_target_tests {
         ];
         for (from_str, target) in from_str_targets {
             assert_eq!(target, from_str.parse()?);
+        }
+        Ok(())
+    }
+
+    #[test]
+    fn test_is_linux_x86_64() -> Result<(), FtwError> {
+        let targets = vec![
+            (FtwTarget::AndroidLinuxAarch64),
+            (FtwTarget::AndroidLinuxArmV7),
+            (FtwTarget::AndroidLinuxX86),
+            (FtwTarget::AndroidLinuxX86_64),
+            (FtwTarget::IosAarch64),
+            (FtwTarget::LinuxX86),
+            (FtwTarget::LinuxX86_64),
+            (FtwTarget::MacOsX86_64),
+            (FtwTarget::WindowsX86Gnu),
+            (FtwTarget::WindowsX86Msvc),
+            (FtwTarget::WindowsX86Msvc),
+            (FtwTarget::WindowsX86_64Gnu),
+            (FtwTarget::WindowsX86_64Msvc),
+            (FtwTarget::WindowsX86_64Msvc),
+        ];
+        for target in targets {
+            if target == FtwTarget::LinuxX86_64 {
+                assert!(target.is_linux_x86_64().unwrap());
+            } else {
+                let err = target.is_linux_x86_64().unwrap_err();
+                match err {
+                    FtwError::UnsupportedTarget => assert!(true),
+                    _ => unreachable!(),
+                }
+            }
         }
         Ok(())
     }
