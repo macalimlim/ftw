@@ -14,18 +14,20 @@ mod type_alias;
 mod util;
 
 use crate::ftw_command::FtwCommand;
-use crate::traits::Processor;
-use clap::{clap_app, crate_authors, crate_name, crate_version, App, ArgMatches};
+use crate::traits::{Processor, ToMessage};
+use clap::{clap_app, crate_authors, crate_name, crate_version, App, AppSettings, ArgMatches};
 use std::env;
 
 #[cfg(not(tarpaulin_include))]
 fn main() -> Result<(), ()> {
-    let matches = get_clap_app().get_matches();
+    let matches = get_clap_app()
+        .setting(AppSettings::ColoredHelp)
+        .get_matches();
     let command = parse_matches(&matches);
     command
         .process()
-        .map(|ftw_success| println!("SUCCESS: {}", ftw_success))
-        .map_err(|ftw_error| eprintln!("ERROR: {}", ftw_error))
+        .map(|ftw_success| println!("{}", ftw_success.to_message()))
+        .map_err(|ftw_error| eprintln!("{}", ftw_error.to_message()))
 }
 
 fn get_clap_app() -> App<'static> {
@@ -155,7 +157,7 @@ mod main_tests {
         let command = parse_matches(&matches);
         let cmd = FtwCommand::New {
             project_name: project_name.to_string(),
-            template: FtwTemplate::Default,
+            template: FtwTemplate::default(),
         };
         assert_eq!(command, cmd);
     }
@@ -169,7 +171,7 @@ mod main_tests {
         let command = parse_matches(&matches);
         let cmd = FtwCommand::New {
             project_name: project_name.to_string(),
-            template: FtwTemplate::Default,
+            template: FtwTemplate::default(),
         };
         assert_eq!(command, cmd);
     }

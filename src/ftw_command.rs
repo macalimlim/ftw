@@ -430,7 +430,7 @@ mod ftw_command_tests {
         let project = Project::default();
         let cmd = FtwCommand::New {
             project_name: project.get_name(),
-            template: FtwTemplate::Default,
+            template: FtwTemplate::default(),
         };
         let _ = cmd.process();
         let _ = env::set_current_dir(Path::new(&project.get_name()));
@@ -449,7 +449,7 @@ mod ftw_command_tests {
         let project = Project::new();
         let cmd = FtwCommand::New {
             project_name: project.get_name(),
-            template: FtwTemplate::Default,
+            template: FtwTemplate::default(),
         };
         let _ = cmd.process();
         assert!(project.exists(".gitignore"));
@@ -478,7 +478,7 @@ mod ftw_command_tests {
         let project = Project::new();
         let cmd = FtwCommand::New {
             project_name: project.get_name(),
-            template: FtwTemplate::Default,
+            template: FtwTemplate::default(),
         };
         let _ = cmd.process();
         let _ = env::set_current_dir(Path::new(&project.get_name()));
@@ -521,7 +521,7 @@ mod ftw_command_tests {
         let project = Project::new();
         let cmd = FtwCommand::New {
             project_name: project.get_name(),
-            template: FtwTemplate::Default,
+            template: FtwTemplate::default(),
         };
         let _ = cmd.process();
         let _ = env::set_current_dir(Path::new(&project.get_name()));
@@ -576,7 +576,7 @@ mod ftw_command_tests {
         let project = Project::new();
         let cmd = FtwCommand::New {
             project_name: project.get_name(),
-            template: FtwTemplate::Default,
+            template: FtwTemplate::default(),
         };
         let _ = cmd.process();
         let _ = env::set_current_dir(Path::new(&project.get_name()));
@@ -611,7 +611,7 @@ mod ftw_command_tests {
         let project = Project::new();
         let cmd = FtwCommand::New {
             project_name: project.get_name(),
-            template: FtwTemplate::Default,
+            template: FtwTemplate::default(),
         };
         let _ = cmd.process();
         let _ = env::set_current_dir(Path::new(&project.get_name()));
@@ -639,7 +639,7 @@ mod ftw_command_tests {
         let project = Project::new();
         let cmd = FtwCommand::New {
             project_name: project.get_name(),
-            template: FtwTemplate::Default,
+            template: FtwTemplate::default(),
         };
         let _ = cmd.process();
         let _ = env::set_current_dir(Path::new(&project.get_name()));
@@ -668,7 +668,7 @@ mod ftw_command_tests {
         let project = Project::new();
         let cmd = FtwCommand::New {
             project_name: project.get_name(),
-            template: FtwTemplate::Default,
+            template: FtwTemplate::default(),
         };
         let _ = cmd.process();
         let _ = env::set_current_dir(Path::new(&project.get_name()));
@@ -696,7 +696,7 @@ mod ftw_command_tests {
         let project = Project::new();
         let cmd = FtwCommand::New {
             project_name: project.get_name(),
-            template: FtwTemplate::Default,
+            template: FtwTemplate::default(),
         };
         let _ = cmd.process();
         let _ = env::set_current_dir(Path::new(&project.get_name()));

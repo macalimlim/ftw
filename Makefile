@@ -23,6 +23,7 @@ clean:
 	cargo clean
 
 coverage:
+	rm -rf game*
 	cargo tarpaulin --all-features --ignore-tests -o Html -t 300 -- --test-threads=1
 	${BROWSER} tarpaulin-report.html
 
