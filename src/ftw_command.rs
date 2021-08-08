@@ -139,7 +139,7 @@ impl FtwCommand {
     /// Will return `Err` if the regular expression is invalid
     pub fn is_derving_native_class(contents: &str) -> Result<bool, FtwError> {
         let reg_ex = Regex::new(r"#\[derive\([a-zA-Z, ]*NativeClass[a-zA-Z, ]*\)\]+")?;
-        Ok(reg_ex.find(&contents).is_some())
+        Ok(reg_ex.find(contents).is_some())
     }
 
     fn get_classes_from_directory(directory: &str) -> Result<String, FtwError> {
@@ -252,7 +252,7 @@ impl FtwCommand {
             let template = &String::from_utf8_lossy(include_bytes!("templates/mod_tmpl.rs"));
             FtwCommand::create_file(template, &mod_rs_file, &tmpl_globals)?;
             match directories.split_last() {
-                Some((_, init)) => FtwCommand::create_mod_rs_file(&base_src_path, &init.to_vec()),
+                Some((_, init)) => FtwCommand::create_mod_rs_file(base_src_path, &init.to_vec()),
                 _ => unreachable!(),
             }
         }
@@ -264,14 +264,14 @@ impl FtwCommand {
         node_type: FtwNodeType,
     ) -> Result<(), FtwError> {
         let base_src_path = "rust/src";
-        let src_dir_path = FtwCommand::create_directory(base_src_path, &directories)?;
+        let src_dir_path = FtwCommand::create_directory(base_src_path, directories)?;
         let class_rs_file = format!("{}/{}.rs", &src_dir_path, class_name._snake_case());
         if !Path::new(&class_rs_file).exists() {
             let tmpl_globals = FtwCommand::get_tmpl_globals(class_name, node_type);
             let template = &String::from_utf8_lossy(include_bytes!("templates/class_tmpl.rs"));
             FtwCommand::create_file(template, &class_rs_file, &tmpl_globals)?;
         }
-        FtwCommand::create_mod_rs_file(&base_src_path, &directories)?;
+        FtwCommand::create_mod_rs_file(base_src_path, directories)?;
         Ok(())
     }
 
@@ -280,7 +280,7 @@ impl FtwCommand {
         directories: &[String],
         node_type: FtwNodeType,
     ) -> Result<(), FtwError> {
-        let gdns_dir_path = FtwCommand::create_directory("godot/native", &directories)?;
+        let gdns_dir_path = FtwCommand::create_directory("godot/native", directories)?;
         let gdns_file = format!("{}/{}.gdns", &gdns_dir_path, class_name._pascal_case());
         if !Path::new(&gdns_file).exists() {
             let tmpl_globals = FtwCommand::get_tmpl_globals(class_name, node_type);
@@ -295,7 +295,7 @@ impl FtwCommand {
         directories: &[String],
         node_type: FtwNodeType,
     ) -> Result<(), FtwError> {
-        let tscn_dir_path = FtwCommand::create_directory("godot/scenes", &directories)?;
+        let tscn_dir_path = FtwCommand::create_directory("godot/scenes", directories)?;
         let tscn_file = format!("{}/{}.tscn", &tscn_dir_path, class_name._pascal_case());
         if !Path::new(&tscn_file).exists() {
             let mut tmpl_globals = FtwCommand::get_tmpl_globals(class_name, node_type);
@@ -364,7 +364,7 @@ impl Processor for FtwCommand {
     fn process(&self) -> FtwResult {
         match self {
             FtwCommand::New { project_name, template } => {
-                FtwCommand::generate_project(project_name, &template)?;
+                FtwCommand::generate_project(project_name, template)?;
                 FtwCommand::append_to_gitignore(project_name)?;
                 FtwCommand::delete_items(project_name)?;
                 let project_name = project_name.to_string();
