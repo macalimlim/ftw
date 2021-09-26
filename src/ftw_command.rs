@@ -70,6 +70,13 @@ impl FtwCommand {
             silent: true,
             template_values_file: None,
             vcs: Vcs::Git,
+            bin: false,
+            lib: true,
+            ssh_identity: None,
+            subfolder: None,
+            define: vec![],
+            init: false,
+            path: None,
         };
         Ok(generate(args)?)
     }
