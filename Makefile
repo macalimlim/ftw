@@ -49,7 +49,7 @@ publish: clean format check test
 	cargo publish
 
 shell:
-	nix-shell -p openssl pkgconfig
+	nix-shell -p clang openssl pkgconfig
 
 test:
 	cargo test -- --test-threads=1

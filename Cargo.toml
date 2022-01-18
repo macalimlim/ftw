@@ -2,7 +2,7 @@
 name = "ftw"
 version = "0.7.0"
 authors = ["Michael Angelo Calimlim <macalimlim@gmail.com>"]
-edition = "2018"
+edition = "2021"
 license = "MIT"
 readme = "README.md"
 repository = "https://github.com/macalimlim/ftw"
