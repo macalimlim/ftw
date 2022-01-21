@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 use nanoid::nanoid;
 use std::fs::{remove_dir, remove_dir_all, File};
-use std::io::Read;
+use std::io::{Read, Write};
 use std::path::PathBuf;
 use std::str;
 
@@ -47,6 +47,16 @@ impl Project {
             .into_os_string()
             .into_string()
             .unwrap_or_else(|_| "gameabc123xyz456".to_string())
+    }
+
+    /// # Panics
+    ///
+    /// Will panic if it can't create the file
+    pub fn create(&self, path: &str, contents: &str) {
+        File::create(self.root.join(path))
+            .unwrap_or_else(|_| panic!("couldn't create file {:?}", path))
+            .write_all(contents.as_ref())
+            .unwrap_or_else(|_| panic!("couldn't write to file {:?}: {:?}", path, contents));
     }
 }
 

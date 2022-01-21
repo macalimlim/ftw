@@ -1,26 +1,21 @@
 use crate::ftw_build_type::FtwBuildType;
+use crate::ftw_configuration::FtwConfiguration;
 use crate::ftw_error::FtwError;
 use crate::ftw_machine_type::FtwMachineType;
 use crate::ftw_node_type::FtwNodeType;
 use crate::ftw_success::FtwSuccess;
 use crate::ftw_target::FtwTarget;
 use crate::ftw_template::FtwTemplate;
-use crate::traits::{
-    Processor, Runner, ToAppExt, ToCliArg, ToExportArg, ToExportName, ToGitUrl, ToLibExt,
-    ToLibPrefix,
-};
+use crate::traits::{Compiler, Processor, Runner, ToCliArg, ToGitUrl};
 use crate::type_alias::{ClassName, FtwResult, ProjectName};
 use crate::util;
-use cargo_edit::get_crate_name_from_path;
 use cargo_generate::{generate, Args, Vcs};
 use command_macros::cmd;
-use fs_extra::dir::CopyOptions;
-use fs_extra::{move_items, remove_items};
+use fs_extra::remove_items;
 use kstring::KString;
 use liquid::{object, Object, ParserBuilder};
 use liquid_core::model::{ScalarCow, Value};
 use regex::Regex;
-use std::env;
 use std::fs::{create_dir_all, read_dir, write, File, OpenOptions};
 use std::io::prelude::*;
 use std::path::Path;
@@ -52,6 +47,7 @@ pub enum FtwCommand {
         target: FtwTarget,
         build_type: FtwBuildType,
     },
+    Clean,
 }
 
 #[rustfmt::skip::macros(cmd, format)]
@@ -321,43 +317,20 @@ impl FtwCommand {
         Ok(())
     }
 
-    fn build_lib(target: &FtwTarget, build_type: &FtwBuildType) -> Result<(), FtwError> {
-        let crate_name = get_crate_name_from_path("./rust/")?;
-        let target_cli_arg = target.to_cli_arg();
-        let build_type_cli_arg = build_type.to_cli_arg();
-        let target_lib_ext = target.to_lib_ext();
-        let build_type_string = build_type.to_string().to_lowercase();
-        let target_lib_prefix = target.to_lib_prefix();
-        let source_path = format!("./target/{}/{}/{}{}.{}", &target_cli_arg, build_type_string, target_lib_prefix, crate_name, &target_lib_ext);
-        let target_path = format!("./lib/{}", &target_cli_arg);
-        cmd!(cargo build ("--target") (target_cli_arg) if (build_type.is_release()) { (build_type_cli_arg) }).run()?;
-        let lib = format!("{}/{}{}.{}", target_path, target_lib_prefix, crate_name, target_lib_ext);
-        if Path::new(&lib).exists() {
-            let target_lib_files = vec![lib];
-            remove_items(&target_lib_files)?;
-        }
-        let options = CopyOptions::new();
-        let source_paths = vec![source_path];
-        move_items(&source_paths, target_path, &options)?;
-        Ok(())
+    fn clean() -> Result<(), FtwError> {
+        let compiler =
+            FtwConfiguration::new().get_compiler(FtwTarget::default(), FtwBuildType::default());
+        compiler.clean()
     }
 
-    fn export_game(target: &FtwTarget, build_type: &FtwBuildType) -> Result<(), FtwError> {
-        let crate_name = get_crate_name_from_path("./rust/")?;
-        let target_cli_arg = target.to_cli_arg();
-        let target_export_name = target.to_export_name();
-        let build_type_export_arg = build_type.to_export_arg();
-        let build_type = build_type.to_string().to_lowercase();
-        let target_app_ext = target.to_app_ext();
-        let export_name = format!("{}.{}.{}", target_export_name, target_cli_arg, build_type);
-        let export_path = format!(
-            "../bin/{}/{}.{}.{}{}",
-            &target_cli_arg, &crate_name, build_type, &target_cli_arg, &target_app_ext
-        );
-        let current_platform = util::get_current_platform().parse().unwrap_or_default();
-        let godot_executable = util::get_godot_exe_for_exporting(&current_platform);
-        env::set_current_dir(Path::new("./godot"))?;
-        cmd!((godot_executable.as_str()) (build_type_export_arg) (export_name) (export_path)).run()
+    fn build_lib(target: FtwTarget, build_type: FtwBuildType) -> Result<(), FtwError> {
+        let compiler = FtwConfiguration::new().get_compiler(target, build_type);
+        compiler.build()
+    }
+
+    fn export_game(target: FtwTarget, build_type: FtwBuildType) -> Result<(), FtwError> {
+        let compiler = FtwConfiguration::new().get_compiler(target, build_type);
+        compiler.export()
     }
 
     fn run_with_godot(machine_type: &FtwMachineType) -> Result<(), FtwError> {
@@ -405,21 +378,26 @@ impl Processor for FtwCommand {
                 if machine_type.is_server() {
                     target.is_linux_x86_64()?;
                 }
-                FtwCommand::build_lib(&target, &build_type)?;
+                FtwCommand::build_lib(target, build_type)?;
                 FtwCommand::run_with_godot(machine_type)?;
                 Ok(FtwSuccess::Run { machine_type })
             }
             FtwCommand::Build { target, build_type } => {
                 FtwCommand::is_valid_project()?;
-                FtwCommand::build_lib(target, build_type)?;
+                FtwCommand::clean()?;
+                FtwCommand::build_lib(*target, *build_type)?;
                 Ok(FtwSuccess::Build { target, build_type })
             }
-
             FtwCommand::Export { target, build_type } => {
                 FtwCommand::is_valid_project()?;
-                FtwCommand::build_lib(target, build_type)?;
-                FtwCommand::export_game(target, build_type)?;
+                FtwCommand::clean()?;
+                FtwCommand::build_lib(*target, *build_type)?;
+                FtwCommand::export_game(*target, *build_type)?;
                 Ok(FtwSuccess::Export { target, build_type })
+            }
+            FtwCommand::Clean => {
+                FtwCommand::clean()?;
+                Ok(FtwSuccess::Clean)
             }
         }
     }
@@ -429,7 +407,10 @@ impl Processor for FtwCommand {
 mod ftw_command_tests {
     use super::*;
 
-    use crate::test_util::Project;
+    use crate::{
+        test_util::Project,
+        traits::{ToAppExt, ToLibExt, ToLibPrefix},
+    };
     use std::env;
 
     #[test]
@@ -642,6 +623,154 @@ mod ftw_command_tests {
     }
 
     #[test]
+    fn test_process_ftw_command_cross_build_linux_target() {
+        let project = Project::new();
+        let cmd = FtwCommand::New {
+            project_name: project.get_name(),
+            template: FtwTemplate::default(),
+        };
+        let _ = cmd.process();
+        let contents = r#"[ftw]
+enable-cross-compilation=true
+"#;
+        let _ = project.create(".ftw", contents);
+        assert!(project
+            .read(".ftw")
+            .contains("enable-cross-compilation=true"));
+        let _ = env::set_current_dir(Path::new(&project.get_name()));
+        let target: FtwTarget = FtwTarget::LinuxX86_64;
+        let cmd = FtwCommand::Build {
+            target: target.clone(),
+            build_type: FtwBuildType::Debug,
+        };
+        let _ = cmd.process();
+        let cmd = FtwCommand::Clean;
+        let _ = cmd.process();
+        let _ = env::set_current_dir(Path::new("../"));
+        assert!(project
+            .read("rust/Cargo.toml")
+            .contains(&project.get_name()));
+        assert!(project.exists(&format!(
+            "lib/{}/{}{}.{}",
+            target.to_cli_arg(),
+            target.to_lib_prefix(),
+            project.get_name(),
+            target.to_lib_ext()
+        )));
+    }
+
+    #[test]
+    fn test_process_ftw_command_cross_build_windows_target() {
+        let project = Project::new();
+        let cmd = FtwCommand::New {
+            project_name: project.get_name(),
+            template: FtwTemplate::default(),
+        };
+        let _ = cmd.process();
+        let contents = r#"[ftw]
+enable-cross-compilation=true
+"#;
+        let _ = project.create(".ftw", contents);
+        assert!(project
+            .read(".ftw")
+            .contains("enable-cross-compilation=true"));
+        let _ = env::set_current_dir(Path::new(&project.get_name()));
+        let target: FtwTarget = FtwTarget::WindowsX86_64Gnu;
+        let cmd = FtwCommand::Build {
+            target: target.clone(),
+            build_type: FtwBuildType::Debug,
+        };
+        let _ = cmd.process();
+        let cmd = FtwCommand::Clean;
+        let _ = cmd.process();
+        let _ = env::set_current_dir(Path::new("../"));
+        assert!(project
+            .read("rust/Cargo.toml")
+            .contains(&project.get_name()));
+        assert!(project.exists(&format!(
+            "lib/{}/{}{}.{}",
+            target.to_cli_arg(),
+            target.to_lib_prefix(),
+            project.get_name(),
+            target.to_lib_ext()
+        )));
+    }
+
+    #[test]
+    fn test_process_ftw_command_cross_build_macos_target() {
+        let project = Project::new();
+        let cmd = FtwCommand::New {
+            project_name: project.get_name(),
+            template: FtwTemplate::default(),
+        };
+        let _ = cmd.process();
+        let contents = r#"[ftw]
+enable-cross-compilation=true
+"#;
+        let _ = project.create(".ftw", contents);
+        assert!(project
+            .read(".ftw")
+            .contains("enable-cross-compilation=true"));
+        let _ = env::set_current_dir(Path::new(&project.get_name()));
+        let target: FtwTarget = FtwTarget::MacOsX86_64;
+        let cmd = FtwCommand::Build {
+            target: target.clone(),
+            build_type: FtwBuildType::Debug,
+        };
+        let _ = cmd.process();
+        let cmd = FtwCommand::Clean;
+        let _ = cmd.process();
+        let _ = env::set_current_dir(Path::new("../"));
+        assert!(project
+            .read("rust/Cargo.toml")
+            .contains(&project.get_name()));
+        assert!(project.exists(&format!(
+            "lib/{}/{}{}.{}",
+            target.to_cli_arg(),
+            target.to_lib_prefix(),
+            project.get_name(),
+            target.to_lib_ext()
+        )));
+    }
+
+    #[test]
+    fn test_process_ftw_command_cross_build_android_target() {
+        let project = Project::new();
+        let cmd = FtwCommand::New {
+            project_name: project.get_name(),
+            template: FtwTemplate::default(),
+        };
+        let _ = cmd.process();
+        let contents = r#"[ftw]
+enable-cross-compilation=true
+"#;
+        let _ = project.create(".ftw", contents);
+        assert!(project
+            .read(".ftw")
+            .contains("enable-cross-compilation=true"));
+        let _ = env::set_current_dir(Path::new(&project.get_name()));
+        let target: FtwTarget = FtwTarget::AndroidLinuxAarch64;
+        let cmd = FtwCommand::Build {
+            target: target.clone(),
+            build_type: FtwBuildType::Debug,
+        };
+        let _ = cmd.process();
+        let cmd = FtwCommand::Clean;
+        let _ = cmd.process();
+        let _ = env::set_current_dir(Path::new("../"));
+        assert!(project
+            .read("rust/Cargo.toml")
+            .contains(&project.get_name()));
+        assert!(project.exists(&format!(
+            "lib/{}/{}{}.{}",
+            target.to_cli_arg(),
+            target.to_lib_prefix(),
+            project.get_name(),
+            target.to_lib_ext()
+        )));
+    }
+
+    #[test]
     fn test_process_ftw_command_build_2x() {
         let project = Project::new();
         let cmd = FtwCommand::New {
@@ -729,6 +858,92 @@ mod ftw_command_tests {
             target.to_cli_arg(),
             project.get_name()
         )));
+        assert!(project.exists(&format!(
+            "bin/{}/{}.debug.{}{}",
+            target.to_cli_arg(),
+            project.get_name(),
+            target.to_cli_arg(),
+            target.to_app_ext()
+        )));
+    }
+
+    #[test]
+    fn test_process_ftw_command_cross_export_linux_target() {
+        let project = Project::new();
+        let cmd = FtwCommand::New {
+            project_name: project.get_name(),
+            template: FtwTemplate::default(),
+        };
+        let _ = cmd.process();
+        let contents = r#"[ftw]
+enable-cross-compilation=true
+"#;
+        let _ = project.create(".ftw", contents);
+        assert!(project
+            .read(".ftw")
+            .contains("enable-cross-compilation=true"));
+        let _ = env::set_current_dir(Path::new(&project.get_name()));
+        let target: FtwTarget = FtwTarget::LinuxX86_64;
+        let cmd = FtwCommand::Export {
+            target: target.clone(),
+            build_type: FtwBuildType::Debug,
+        };
+        let _ = cmd.process();
+        let cmd = FtwCommand::Clean;
+        let _ = cmd.process();
+        let _ = env::set_current_dir(Path::new("../"));
+        assert!(project
+            .read("rust/Cargo.toml")
+            .contains(&project.get_name()));
+        assert!(project.exists(&format!(
+            "bin/{}/{}{}.{}",
+            target.to_cli_arg(),
+            target.to_lib_prefix(),
+            project.get_name(),
+            target.to_lib_ext()
+        )));
+        assert!(project.exists(&format!(
+            "bin/{}/{}.debug.pck",
+            target.to_cli_arg(),
+            project.get_name()
+        )));
+        assert!(project.exists(&format!(
+            "bin/{}/{}.debug.{}{}",
+            target.to_cli_arg(),
+            project.get_name(),
+            target.to_cli_arg(),
+            target.to_app_ext()
+        )));
+    }
+
+    #[test]
+    fn test_process_ftw_command_cross_export_macos_target() {
+        let project = Project::new();
+        let cmd = FtwCommand::New {
+            project_name: project.get_name(),
+            template: FtwTemplate::default(),
+        };
+        let _ = cmd.process();
+        let contents = r#"[ftw]
+enable-cross-compilation=true
+"#;
+        let _ = project.create(".ftw", contents);
+        assert!(project
+            .read(".ftw")
+            .contains("enable-cross-compilation=true"));
+        let _ = env::set_current_dir(Path::new(&project.get_name()));
+        let target: FtwTarget = FtwTarget::MacOsX86_64;
+        let cmd = FtwCommand::Export {
+            target: target.clone(),
+            build_type: FtwBuildType::Debug,
+        };
+        let _ = cmd.process();
+        let cmd = FtwCommand::Clean;
+        let _ = cmd.process();
+        let _ = env::set_current_dir(Path::new("../"));
+        assert!(project
+            .read("rust/Cargo.toml")
+            .contains(&project.get_name()));
         assert!(project.exists(&format!(
             "bin/{}/{}.debug.{}{}",
             target.to_cli_arg(),

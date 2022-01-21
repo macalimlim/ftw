@@ -1,5 +1,6 @@
 pub mod ftw_build_type;
 pub mod ftw_command;
+pub mod ftw_compiler;
 pub mod ftw_configuration;
 pub mod ftw_error;
 pub mod ftw_machine_type;

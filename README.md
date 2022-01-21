@@ -100,13 +100,19 @@ $ ftw run server # runs the game as a server
 # enjoy! 😆
 ```
 
-## Custom executables
+### ftw clean
+#### Cleans your project from excess artifacts, similar to `cargo clean`
+```shell
+$ ftw clean
+```
 
-If you have custom executables to run godot, for example if you have a shell/batch script which do some stuff first before running godot, you can configure using the following inside your project...
-
-### .ftw
+## Project configuration
 
 You can create a `per-project` configuration file at your project root named `.ftw` with the following contents...
+
+### Custom executables
+
+If you have custom executables to run godot, for example if you have a shell/batch script which do some stuff first before running godot, you can configure using the following inside your project...
 
 ```ini
 [ftw]
@@ -116,6 +122,22 @@ godot-server-exe=godot-server-script # assuming it's on $PATH
 ```
 
 > Note: Having the `.ftw` file and the keys inside it are all optional. If you don't provide them, the defaults (godot, godot-headless and godot-server) will be used. For Windows users use forward-slashes instead of back-slashes (e.g. godot-exe=D:/path/to/godot/bin/godot.windows.tools.64.exe)
+
+### Cross compilation
+
+You can also enable cross compilation, so you could build and export a game from and to any platform. It uses this [docker image](https://github.com/ufoot/godot-rust-cross-compiler) to set up Linux, Android, Mac and Windows toolchains (iOS toolchain to follow). Please read this [section](https://github.com/ufoot/godot-rust-cross-compiler#bugs-and-limitations) to know what is currently supported.
+
+```ini
+[ftw]
+enable-cross-compilation=true
+```
+
+(Let's say) On your Linux machine
+
+```shell
+$ ftw build windows-x86_64-gnu
+$ ftw export windows-x86_64-gnu
+```
 
 ## Contact
 Michael Angelo Calimlim `<macalimlim@gmail.com>`

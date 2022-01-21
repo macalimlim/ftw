@@ -6,7 +6,7 @@ use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 use strum_macros::EnumIter;
 
-#[derive(Clone, Debug, EnumIter, PartialEq)]
+#[derive(Clone, Copy, Debug, EnumIter, PartialEq)]
 pub enum FtwTarget {
     AndroidLinuxAarch64,
     AndroidLinuxArmV7,
@@ -24,38 +24,38 @@ pub enum FtwTarget {
 
 #[rustfmt::skip]
 impl FtwTarget {
-    fn is(&self, target: &FtwTarget) -> bool {
+    fn is(self, target: FtwTarget) -> bool {
         self == target
     }
 
     /// # Errors
     ///
     /// Will return `Err` if `target` is not Linux x86-64
-    pub fn is_linux_x86_64(&self) -> Result<bool, FtwError> {
-        if self.is(&FtwTarget::LinuxX86_64) {
+    pub fn is_linux_x86_64(self) -> Result<bool, FtwError> {
+        if self.is(FtwTarget::LinuxX86_64) {
             Ok(true)
         } else {
             Err(FtwError::UnsupportedTarget)
         }
     }
 
-    fn is_android(&self) -> bool {
+    fn is_android(self) -> bool {
         matches!(self, FtwTarget::AndroidLinuxAarch64 | FtwTarget::AndroidLinuxArmV7 | FtwTarget::AndroidLinuxX86 | FtwTarget::AndroidLinuxX86_64)
     }
 
-    fn is_windows(&self) -> bool {
+    fn is_windows(self) -> bool {
         matches!(self, FtwTarget::WindowsX86Gnu | FtwTarget::WindowsX86Msvc | FtwTarget::WindowsX86_64Gnu | FtwTarget::WindowsX86_64Msvc)
     }
 
-    fn is_ios(&self) -> bool {
+    fn is_ios(self) -> bool {
         matches!(self, FtwTarget::IosAarch64)
     }
 
-    fn is_linux(&self) -> bool {
+    fn is_linux(self) -> bool {
         matches!(self, FtwTarget::LinuxX86 | FtwTarget::LinuxX86_64)
     }
 
-    fn is_macos(&self) -> bool {
+    fn is_macos(self) -> bool {
         matches!(self, FtwTarget::MacOsX86_64)
     }
 }
@@ -88,7 +88,7 @@ impl ToExportName for FtwTarget {
             s if s.is_ios() => "iOS",
             s if s.is_linux() => "Linux/X11",
             s if s.is_macos() => "Mac OSX",
-            s if s.is_windows() => "Windows",
+            s if s.is_windows() => "Windows Desktop",
             _ => unreachable!(),
         }
         .to_string()
@@ -99,9 +99,9 @@ impl ToAppExt for FtwTarget {
     fn to_app_ext(&self) -> AppExt {
         let s = self;
         match s {
+            s if s.is_linux() | s.is_ios() => "",
             s if s.is_android() => ".apk",
-            s if s.is_ios() => ".ipa",
-            s if s.is_linux() | s.is_macos() => "",
+            s if s.is_macos() => ".dmg",
             s if s.is_windows() => ".exe",
             _ => unreachable!(),
         }
@@ -204,10 +204,10 @@ mod ftw_target_tests {
             ("Linux/X11", FtwTarget::LinuxX86),
             ("Linux/X11", FtwTarget::LinuxX86_64),
             ("Mac OSX", FtwTarget::MacOsX86_64),
-            ("Windows", FtwTarget::WindowsX86Gnu),
-            ("Windows", FtwTarget::WindowsX86Msvc),
-            ("Windows", FtwTarget::WindowsX86_64Gnu),
-            ("Windows", FtwTarget::WindowsX86_64Msvc),
+            ("Windows Desktop", FtwTarget::WindowsX86Gnu),
+            ("Windows Desktop", FtwTarget::WindowsX86Msvc),
+            ("Windows Desktop", FtwTarget::WindowsX86_64Gnu),
+            ("Windows Desktop", FtwTarget::WindowsX86_64Msvc),
         ];
         for (export_name, target) in export_name_targets {
             assert_eq!(export_name, target.to_export_name());
@@ -221,10 +221,10 @@ mod ftw_target_tests {
             (".apk", FtwTarget::AndroidLinuxArmV7),
             (".apk", FtwTarget::AndroidLinuxX86),
             (".apk", FtwTarget::AndroidLinuxX86_64),
-            (".ipa", FtwTarget::IosAarch64),
+            ("", FtwTarget::IosAarch64),
             ("", FtwTarget::LinuxX86),
             ("", FtwTarget::LinuxX86_64),
-            ("", FtwTarget::MacOsX86_64),
+            (".dmg", FtwTarget::MacOsX86_64),
             (".exe", FtwTarget::WindowsX86Gnu),
             (".exe", FtwTarget::WindowsX86Msvc),
             (".exe", FtwTarget::WindowsX86_64Gnu),

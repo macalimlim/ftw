@@ -17,6 +17,21 @@ pub trait Runner {
     fn run(&mut self) -> Result<(), FtwError>;
 }
 
+pub trait Compiler {
+    /// # Errors
+    ///
+    /// Will return `Err` if an error happened in the implementation
+    fn clean(&self) -> Result<(), FtwError>;
+    /// # Errors
+    ///
+    /// Will return `Err` if an error happened in the implementation
+    fn build(&self) -> Result<(), FtwError>;
+    /// # Errors
+    ///
+    /// Will return `Err` if an error happened in the implementation
+    fn export(&self) -> Result<(), FtwError>;
+}
+
 pub trait ToGitUrl {
     fn to_git_url(&self) -> GitUrl;
 }

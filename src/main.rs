@@ -1,5 +1,6 @@
 mod ftw_build_type;
 mod ftw_command;
+mod ftw_compiler;
 mod ftw_configuration;
 mod ftw_error;
 mod ftw_machine_type;
@@ -58,7 +59,9 @@ fn get_clap_app() -> App<'static> {
               (@subcommand export =>
                 (about: "export the game for a particular platform")
                 (@arg target: !required "target platform to build")
-                (@arg build_type: !required "either a debug or release")))
+                (@arg build_type: !required "either a debug or release"))
+              (@subcommand clean =>
+                (about: "cleans the project from excess artifacts")))
 }
 
 fn parse_matches(matches: &ArgMatches) -> FtwCommand {
@@ -133,6 +136,7 @@ fn parse_matches(matches: &ArgMatches) -> FtwCommand {
                 .unwrap_or_default();
             FtwCommand::Export { target, build_type }
         }
+        Some(("clean", _args)) => FtwCommand::Clean,
         _ => unreachable!(),
     }
 }

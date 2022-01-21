@@ -5,7 +5,7 @@ use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub enum FtwBuildType {
     Debug,
     Release,
@@ -13,12 +13,12 @@ pub enum FtwBuildType {
 
 impl FtwBuildType {
     #[must_use]
-    pub fn is_debug(&self) -> bool {
-        self == &FtwBuildType::Debug
+    pub fn is_debug(self) -> bool {
+        self == FtwBuildType::Debug
     }
 
     #[must_use]
-    pub fn is_release(&self) -> bool {
+    pub fn is_release(self) -> bool {
         !self.is_debug()
     }
 }

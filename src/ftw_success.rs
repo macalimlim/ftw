@@ -31,6 +31,7 @@ pub enum FtwSuccess<'a> {
         target: &'a FtwTarget,
         build_type: &'a FtwBuildType,
     },
+    Clean,
 }
 
 impl FtwSuccess<'_> {
@@ -50,7 +51,8 @@ impl ToMessage for FtwSuccess<'_> {
             FtwSuccess::Singleton { class_name } => format!("A new singleton class has been created {}", class_name.blue().bold().italic()),
             FtwSuccess::Run { machine_type } => format!("The game was run as a {} application", machine_type.to_string().blue().bold().italic()),
             FtwSuccess::Build { target, build_type } => format!("A library was created at lib/{} with a {} profile", target.to_string().blue().bold().italic(), build_type.to_string().blue().bold().italic()),
-            FtwSuccess::Export { target, build_type } => format!("A game was created at bin/{} with a {} profile", target.to_string().blue().bold().italic(), build_type.to_string().blue().bold().italic())
+            FtwSuccess::Export { target, build_type } => format!("A game was created at bin/{} with a {} profile", target.to_string().blue().bold().italic(), build_type.to_string().blue().bold().italic()),
+            FtwSuccess::Clean => "The project is now clean from excess artifacts".to_string(),
         };
         format!("{} {} {}", FtwSuccess::THUMBS_UP, FtwSuccess::get_styled_success(), description)
     }
@@ -217,6 +219,16 @@ mod ftw_success_tests {
                 release.to_string().blue().bold().italic()
             ),
             format!("{}", ftw_success_export_release.to_message())
+        );
+        //
+        let ftw_success_clean = FtwSuccess::Clean;
+        assert_eq!(
+            format!(
+                "{} {} The project is now clean from excess artifacts",
+                FtwSuccess::THUMBS_UP,
+                FtwSuccess::get_styled_success()
+            ),
+            format!("{}", ftw_success_clean.to_message())
         );
     }
 }
