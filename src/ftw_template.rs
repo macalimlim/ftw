@@ -10,7 +10,7 @@ pub enum FtwTemplate {
     Custom { git_url: GitUrl },
 }
 
-const DEFAULT_TEMPLATE_URL: &str = "https://github.com/godot-rust/godot-rust-template";
+const DEFAULT_TEMPLATE_URL: &str = "https://github.com/macalimlim/godot-rust-template";
 
 impl FromStr for FtwTemplate {
     type Err = ();
