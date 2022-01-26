@@ -5,13 +5,14 @@
 * [General Information](#general-information)
 * [Setup](#setup)
 * [Usage](#usage)
+* [Project Configuration](#project-configuration)
 * [Contact](#contact)
 
 ## General Information
 This is a tool to help you manage your game project by providing commands to (1) create a project, (2) create a class, (3) create a singleton class, (4) build the library, (5) export your game, (6) run your project (and more to come in the future!). Its like [rails](https://rubyonrails.org/) but for game development :wink:.
 
 ## Setup
-It leverages tools like [godot, godot-headless and godot-server](https://godotengine.org/download) to make it all work! In Linux, you can install all godot, godot-headless and godot-server, on others only godot. For additional setup instructions, check the [wiki](https://github.com/godot-rust/godot-rust-template/wiki) of the default template.
+It leverages tools like [godot, godot-headless, godot-server](https://godotengine.org/download) and [docker](https://www.docker.com/) (Optional, only used for cross compilation. See [below](#cross-compilation)) to make it all work! In Linux, you can install all godot, godot-headless and godot-server, on others only godot. For additional setup instructions, check the [wiki](https://github.com/macalimlim/godot-rust-template/wiki) of the default template.
 
 ```shell
 $ cargo install ftw # to install
@@ -26,7 +27,7 @@ $ ftw new my-awesome-game # this creates a new project using the default templat
 $ ftw new my-awesome-game default # same as above
 $ ftw new my-awesome-game /path/to/custom/template # creates a new project using a custom template
 ```
-> Note: The custom template should have same structure as the [default template](https://github.com/godot-rust/godot-rust-template)
+> Note: The custom template should have same structure as the [default template](https://github.com/macalimlim/godot-rust-template)
 
 ### ftw class &lt;class-name&gt; [node-type]
 #### Creates a class
@@ -106,11 +107,11 @@ $ ftw run server # runs the game as a server
 $ ftw clean
 ```
 
-## Project configuration
+## Project Configuration
 
 You can create a `per-project` configuration file at your project root named `.ftw` with the following contents...
 
-### Custom executables
+### Custom Executables
 
 If you have custom executables to run godot, for example if you have a shell/batch script which do some stuff first before running godot, you can configure using the following inside your project...
 
@@ -123,7 +124,7 @@ godot-server-exe=godot-server-script # assuming it's on $PATH
 
 > Note: Having the `.ftw` file and the keys inside it are all optional. If you don't provide them, the defaults (godot, godot-headless and godot-server) will be used. For Windows users use forward-slashes instead of back-slashes (e.g. godot-exe=D:/path/to/godot/bin/godot.windows.tools.64.exe)
 
-### Cross compilation
+### Cross Compilation
 
 You can also enable cross compilation, so you could build and export a game from and to any platform. It uses this [docker image](https://github.com/ufoot/godot-rust-cross-compiler) to set up Linux, Android, Mac and Windows toolchains (iOS toolchain to follow). Please read this [section](https://github.com/ufoot/godot-rust-cross-compiler#bugs-and-limitations) to know what is currently supported.
 
