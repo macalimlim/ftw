@@ -127,7 +127,14 @@ impl FtwCommand {
                 vec![bin_gitkeep, lib_gitkeep]
             })
             .collect();
-        let is_valid_project = project_files.iter().all(|i| Path::new(i).exists());
+        let is_valid_project = project_files.iter().all(|i| {
+            // TODO: Remove the check for the Makefile in the future
+            if i == &"Makefile" {
+                Path::new(i).exists() || Path::new("Makefile.toml").exists()
+            } else {
+                Path::new(i).exists()
+            }
+        });
         let is_valid_targets = targets.iter().all(|t| Path::new(&t).exists());
         if is_valid_project && is_valid_targets {
             println!("Project is valid...");
