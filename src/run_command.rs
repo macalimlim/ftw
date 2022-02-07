@@ -3,8 +3,9 @@ use crate::traits::Runner;
 use std::process::{Command, Stdio};
 
 impl Runner for Command {
-    fn run(&mut self) -> Result<(), FtwError> {
-        self.stdout(Stdio::inherit())
+    fn run(&mut self, current_dir: &str) -> Result<(), FtwError> {
+        self.current_dir(current_dir)
+            .stdout(Stdio::inherit())
             .stderr(Stdio::inherit())
             .output()?;
         Ok(())
@@ -18,10 +19,10 @@ mod run_command_tests {
 
     #[test]
     fn test_run() -> Result<(), FtwError> {
-        let result = cmd!(ls("-al")).run();
+        let result = cmd!(ls("-al")).run(".");
         assert!(result.is_ok());
         assert_eq!(result?, ());
-        let result = cmd!(cat("Cargo.toml")).run();
+        let result = cmd!(cat("Cargo.toml")).run(".");
         assert!(result.is_ok());
         assert_eq!(result?, ());
         Ok(())
@@ -29,7 +30,7 @@ mod run_command_tests {
 
     #[test]
     fn test_run_error() {
-        let result = cmd!(gogogo).run();
+        let result = cmd!(gogogo).run(".");
         assert!(result.is_err());
         match result.unwrap_err() {
             FtwError::Error(_) => assert!(true),

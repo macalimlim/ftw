@@ -30,16 +30,17 @@ impl Compiler for FtwCompiler {
             FtwCompiler::Local {
                 target: _,
                 build_type: _,
-            } => cmd!(cargo clean).run(),
+            } => cmd!(cargo clean).run("."),
             FtwCompiler::Cross {
                 target: _,
                 build_type: _,
             } => {
-                let volume_mount = format!("{}:/build", env::current_dir()?.display());
+                let project_path = format!("{}", env::current_dir()?.display());
+                let volume_mount = format!("{}:/build", project_path);
                 cmd!(docker run ("-v") (volume_mount)
                      ("ufoot/godot-rust-cross-compiler") ("/bin/bash") ("-c")
                      ("cargo clean ; rm -rf godot/.import"))
-                .run()
+                .run(&project_path)
             }
         }
     }
@@ -62,7 +63,8 @@ impl Compiler for FtwCompiler {
                     &target_lib_ext
                 );
                 let target_path = format!("./lib/{}", &target_cli_arg);
-                cmd!(cargo build ("--target") (target_cli_arg) if (build_type.is_release()) { (build_type_cli_arg) }).run()?;
+                let project_path = format!("{}", env::current_dir()?.display());
+                cmd!(cargo build ("--target") (target_cli_arg) if (build_type.is_release()) { (build_type_cli_arg) }).run(&project_path)?;
                 let lib = format!(
                     "{}/{}{}.{}",
                     target_path, target_lib_prefix, crate_name, target_lib_ext
@@ -88,12 +90,13 @@ impl Compiler for FtwCompiler {
                     target.to_lib_ext(),
                     target_cli_arg
                 );
-                let volume_mount = format!("{}:/build", env::current_dir()?.display());
+                let project_path = format!("{}", env::current_dir()?.display());
+                let volume_mount = format!("{}:/build", project_path);
                 cmd!(docker run ("-v") (volume_mount)
                      if (target == &FtwTarget::WindowsX86_64Gnu || target == &FtwTarget::WindowsX86_64Msvc) {("-e") ("C_INCLUDE_PATH=/usr/x86_64-w64-mingw32/include")}
                      if (target == &FtwTarget::MacOsX86_64) {("-e") ("CC=/opt/macosx-build-tools/cross-compiler/bin/x86_64-apple-darwin14-cc") ("-e") ("C_INCLUDE_PATH=/opt/macosx-build-tools/cross-compiler/SDK/MacOSX10.10.sdk/usr/include")}
                      ("ufoot/godot-rust-cross-compiler") ("/bin/bash") ("-c")
-                     (cargo_build_cmd)).run()
+                     (cargo_build_cmd)).run(&project_path)
             }
         }
     }
@@ -115,9 +118,9 @@ impl Compiler for FtwCompiler {
                 );
                 let current_platform = util::get_current_platform().parse().unwrap_or_default();
                 let godot_executable = util::get_godot_exe_for_exporting(current_platform);
-                env::set_current_dir(Path::new("./godot"))?;
+                let godot_project_path = format!("{}/godot", env::current_dir()?.display());
                 cmd!((godot_executable.as_str())(build_type_export_arg)(export_name)(export_path))
-                    .run()
+                    .run(&godot_project_path)
             }
             FtwCompiler::Cross { target, build_type } => {
                 let crate_name = get_crate_name_from_path("./rust/")?;
@@ -133,11 +136,12 @@ impl Compiler for FtwCompiler {
                 );
                 let godot_export_cmd =
                     format!("cd godot/ ; godot_headless --export '{}' {}", export_name, export_path);
-                let volume_mount = format!("{}:/build", env::current_dir()?.display());
+                let project_path = format!("{}", env::current_dir()?.display());
+                let volume_mount = format!("{}:/build", project_path);
                 cmd!(docker run ("-v") (volume_mount)
                     ("ufoot/godot-rust-cross-compiler") ("/bin/bash") ("-c")
                     (godot_export_cmd))
-                .run()
+                .run(&project_path)
             }
         }
     }

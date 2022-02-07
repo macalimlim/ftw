@@ -14,7 +14,7 @@ pub trait Runner {
     /// # Errors
     ///
     /// Will return `Err` if an error happened in the implementation
-    fn run(&mut self) -> Result<(), FtwError>;
+    fn run(&mut self, current_dir: &str) -> Result<(), FtwError>;
 }
 
 pub trait Compiler {

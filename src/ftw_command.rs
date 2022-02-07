@@ -16,6 +16,7 @@ use kstring::KString;
 use liquid::{object, Object, ParserBuilder};
 use liquid_core::model::{ScalarCow, Value};
 use regex::Regex;
+use std::env;
 use std::fs::{create_dir_all, read_dir, write, File, OpenOptions};
 use std::io::prelude::*;
 use std::path::Path;
@@ -342,7 +343,8 @@ impl FtwCommand {
 
     fn run_with_godot(machine_type: &FtwMachineType) -> Result<(), FtwError> {
         let godot_executable = util::get_godot_exe_for_running(machine_type);
-        cmd!((godot_executable) ("--path") ("godot/") if (machine_type.is_desktop()) { (machine_type.to_cli_arg()) }).run()
+        let project_path = format!("{}", env::current_dir()?.display());
+        cmd!((godot_executable) ("--path") ("godot/") if (machine_type.is_desktop()) { (machine_type.to_cli_arg()) }).run(&project_path)
     }
 }
 
@@ -418,9 +420,11 @@ mod ftw_command_tests {
         test_util::Project,
         traits::{ToAppExt, ToLibExt, ToLibPrefix},
     };
+    use rusty_forkfork::rusty_fork_test;
     use std::env;
 
-    #[test]
+    rusty_fork_test! {
+        #[test]
     fn test_is_valid_project_no_cargo_toml() {
         let project = Project::default();
         let cmd = FtwCommand::New {
@@ -849,7 +853,7 @@ enable-cross-compilation=true
             build_type: FtwBuildType::Debug,
         };
         let _ = cmd.process();
-        let _ = env::set_current_dir(Path::new("../../"));
+        let _ = env::set_current_dir(Path::new("../"));
         assert!(project
             .read("rust/Cargo.toml")
             .contains(&project.get_name()));
@@ -958,5 +962,6 @@ enable-cross-compilation=true
             target.to_cli_arg(),
             target.to_app_ext()
         )));
+    }
     }
 }

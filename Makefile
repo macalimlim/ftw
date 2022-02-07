@@ -24,7 +24,7 @@ clean:
 
 coverage:
 	rm -rf game*
-	cargo tarpaulin --all-features --ignore-tests -o Html -t 300 -- --test-threads=1
+	cargo tarpaulin --all-features --ignore-tests -o Html -t 300
 	${BROWSER} tarpaulin-report.html
 
 doc: clean
@@ -49,10 +49,11 @@ publish: clean format check test
 	cargo publish
 
 shell:
-	nix-shell -p clang openssl pkgconfig
+	nix-shell -p clang openssl pkgconfig tree
 
 test:
-	cargo test -- --test-threads=1
+	rm -rf game*
+	cargo test
 
 udeps:
 	cargo udeps

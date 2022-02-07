@@ -38,3 +38,4 @@ cargo-edit = "0.7.0"
 nanoid = "0.4.0"
 predicates = { version = "1.0.7", default-features = false }
 proptest = "1.0.0"
+rusty-forkfork = "0.4.0"
