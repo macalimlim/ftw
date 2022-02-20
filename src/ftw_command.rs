@@ -114,7 +114,6 @@ impl FtwCommand {
             "Makefile",
             "godot/default_env.tres",
             "godot/export_presets.cfg",
-            "godot/native/game.gdnlib",
             "godot/project.godot",
             "rust/src/lib.rs",
             "rust/Cargo.toml",
