@@ -53,7 +53,6 @@ fn test_ftw_singleton_no_class_name() {
         .stdout(predicates::str::contains("Done!").from_utf8());
     ftw()
         .arg("singleton")
-        .arg("")
         .current_dir(&project.get_name())
         .assert()
         .failure()

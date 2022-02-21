@@ -16,14 +16,14 @@ mod util;
 
 use crate::ftw_command::FtwCommand;
 use crate::traits::{Processor, ToMessage};
-use clap::{clap_app, crate_authors, crate_name, crate_version, App, AppSettings, ArgMatches};
+use clap::{
+    arg, command, crate_authors, crate_description, crate_name, crate_version, ArgMatches, Command,
+};
 use std::env;
 
 #[cfg(not(tarpaulin_include))]
 fn main() -> Result<(), ()> {
-    let matches = get_clap_app()
-        .setting(AppSettings::ColoredHelp)
-        .get_matches();
+    let matches = get_clap_command().get_matches();
     let command = parse_matches(&matches);
     command
         .process()
@@ -31,37 +31,46 @@ fn main() -> Result<(), ()> {
         .map_err(|ftw_error| eprintln!("{}", ftw_error.to_message()))
 }
 
-fn get_clap_app() -> App<'static> {
-    let version = crate_version!();
-    let author = crate_authors!("\n");
-    clap_app!((crate_name!()) =>
-              (version: version)
-              (author: author)
-              (about: "manage your godot-rust project")
-              (@subcommand new =>
-                (about: "create a new godot-rust project directory")
-                (@arg project_name: +required "set the name of your project")
-                (@arg template: !required "set the template to be used in your project"))
-              (@subcommand class =>
-                (about: "create a new class to be used by a node")
-                (@arg class_name: +required "the name of this class")
-                (@arg node_type: !required "the type of the node that this class inherits from"))
-              (@subcommand singleton =>
-                (about: "create a singleton (autoloaded) class")
-                (@arg class_name: +required "the name of this class"))
-              (@subcommand run =>
-                (about: "run a debug version of the game")
-                (@arg machine_type: !required "either desktop or server"))
-              (@subcommand build =>
-                (about: "build the library for a particular platform")
-                (@arg target: !required "target platform to build")
-                (@arg build_type: !required "either a debug or release"))
-              (@subcommand export =>
-                (about: "export the game for a particular platform")
-                (@arg target: !required "target platform to build")
-                (@arg build_type: !required "either a debug or release"))
-              (@subcommand clean =>
-                (about: "cleans the project from excess artifacts")))
+fn get_clap_command() -> Command<'static> {
+    command!(crate_name!())
+        .version(crate_version!())
+        .author(crate_authors!("\n"))
+        .about(crate_description!())
+        .subcommand(
+            Command::new("new")
+                .about("create a new godot-rust project directory")
+                .arg(arg!(<project_name> "set the name of your project"))
+                .arg(arg!([template] "set the template to be used in your project")),
+        )
+        .subcommand(
+            Command::new("class")
+                .about("create a new class to be used by a node")
+                .arg(arg!(<class_name> "the name of this class"))
+                .arg(arg!([node_type] "the type of the node that this class inherits from")),
+        )
+        .subcommand(
+            Command::new("singleton")
+                .about("create a singleton (autoloaded) class")
+                .arg(arg!(<class_name> "the name of this class")),
+        )
+        .subcommand(
+            Command::new("run")
+                .about("run a debug version of the game")
+                .arg(arg!([machine_type] "either desktop or server")),
+        )
+        .subcommand(
+            Command::new("build")
+                .about("build the library for a particular platform")
+                .arg(arg!([target] "target platform to build"))
+                .arg(arg!([build_type] "either a debug or release")),
+        )
+        .subcommand(
+            Command::new("export")
+                .about("export the game for a particular platform")
+                .arg(arg!([target] "target platform to export"))
+                .arg(arg!([build_type] "either a debug or release")),
+        )
+        .subcommand(Command::new("clean").about("cleans the project from excess artifacts"))
 }
 
 fn parse_matches(matches: &ArgMatches) -> FtwCommand {
@@ -154,7 +163,7 @@ mod main_tests {
 
     #[test]
     fn test_parse_matches_new() {
-        let app = get_clap_app();
+        let app = get_clap_command();
         let project_name = "my-awesome-game";
         let arg_vec = vec![crate_name!(), "new", project_name, "default"];
         let matches = app.get_matches_from(arg_vec);
@@ -168,7 +177,7 @@ mod main_tests {
 
     #[test]
     fn test_parse_matches_new_no_template() {
-        let app = get_clap_app();
+        let app = get_clap_command();
         let project_name = "my-awesome-game";
         let arg_vec = vec![crate_name!(), "new", project_name];
         let matches = app.get_matches_from(arg_vec);
@@ -182,7 +191,7 @@ mod main_tests {
 
     #[test]
     fn test_parse_matches_new_custom_template() {
-        let app = get_clap_app();
+        let app = get_clap_command();
         let project_name = "my-awesome-game";
         let git_url = "/path/to/custom/template";
         let arg_vec = vec![crate_name!(), "new", project_name, git_url];
@@ -199,7 +208,7 @@ mod main_tests {
 
     #[test]
     fn test_parse_matches_class() {
-        let app = get_clap_app();
+        let app = get_clap_command();
         let class_name = "IronMan";
         let arg_vec = vec![crate_name!(), "class", class_name, "Area2D"];
         let matches = app.get_matches_from(arg_vec);
@@ -213,7 +222,7 @@ mod main_tests {
 
     #[test]
     fn test_parse_matches_class_no_node_type() {
-        let app = get_clap_app();
+        let app = get_clap_command();
         let class_name = "IronMan";
         let arg_vec = vec![crate_name!(), "class", class_name];
         let matches = app.get_matches_from(arg_vec);
@@ -227,7 +236,7 @@ mod main_tests {
 
     #[test]
     fn test_parse_matches_singleton() {
-        let app = get_clap_app();
+        let app = get_clap_command();
         let class_name = "Network";
         let arg_vec = vec![crate_name!(), "singleton", class_name];
         let matches = app.get_matches_from(arg_vec);
@@ -240,7 +249,7 @@ mod main_tests {
 
     #[test]
     fn test_parse_matches_run_desktop() {
-        let app = get_clap_app();
+        let app = get_clap_command();
         let arg_vec = vec![crate_name!(), "run", "desktop"];
         let matches = app.get_matches_from(arg_vec);
         let command = parse_matches(&matches);
@@ -252,7 +261,7 @@ mod main_tests {
 
     #[test]
     fn test_parse_matches_run_server() {
-        let app = get_clap_app();
+        let app = get_clap_command();
         let arg_vec = vec![crate_name!(), "run", "server"];
         let matches = app.get_matches_from(arg_vec);
         let command = parse_matches(&matches);
@@ -264,7 +273,7 @@ mod main_tests {
 
     #[test]
     fn test_parse_matches_run_no_machine_type() {
-        let app = get_clap_app();
+        let app = get_clap_command();
         let arg_vec = vec![crate_name!(), "run"];
         let matches = app.get_matches_from(arg_vec);
         let command = parse_matches(&matches);
@@ -276,7 +285,7 @@ mod main_tests {
 
     #[test]
     fn test_parse_matches_build() {
-        let app = get_clap_app();
+        let app = get_clap_command();
         let arg_vec = vec![crate_name!(), "build", "linux-x86_64", "debug"];
         let matches = app.get_matches_from(arg_vec);
         let command = parse_matches(&matches);
@@ -289,7 +298,7 @@ mod main_tests {
 
     #[test]
     fn test_parse_matches_build_no_build_type() {
-        let app = get_clap_app();
+        let app = get_clap_command();
         let arg_vec = vec![crate_name!(), "build", "linux-x86_64"];
         let matches = app.get_matches_from(arg_vec);
         let command = parse_matches(&matches);
@@ -302,7 +311,7 @@ mod main_tests {
 
     #[test]
     fn test_parse_matches_build_no_target_and_no_build_type() {
-        let app = get_clap_app();
+        let app = get_clap_command();
         let arg_vec = vec![crate_name!(), "build"];
         let target = util::get_current_platform().parse().unwrap();
         let matches = app.get_matches_from(arg_vec);
@@ -316,7 +325,7 @@ mod main_tests {
 
     #[test]
     fn test_parse_matches_export() {
-        let app = get_clap_app();
+        let app = get_clap_command();
         let arg_vec = vec![crate_name!(), "export", "linux-x86_64", "debug"];
         let matches = app.get_matches_from(arg_vec);
         let command = parse_matches(&matches);
@@ -329,7 +338,7 @@ mod main_tests {
 
     #[test]
     fn test_parse_matches_export_no_build_type() {
-        let app = get_clap_app();
+        let app = get_clap_command();
         let arg_vec = vec![crate_name!(), "export", "linux-x86_64"];
         let matches = app.get_matches_from(arg_vec);
         let command = parse_matches(&matches);
@@ -342,7 +351,7 @@ mod main_tests {
 
     #[test]
     fn test_parse_matches_export_no_target_and_no_build_type() {
-        let app = get_clap_app();
+        let app = get_clap_command();
         let arg_vec = vec![crate_name!(), "export"];
         let target = util::get_current_platform().parse().unwrap();
         let matches = app.get_matches_from(arg_vec);
