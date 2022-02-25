@@ -170,7 +170,7 @@ impl FtwCommand {
                     let class_name = class_name.replace(".rs", "")._pascal_case();
                     let module_name = class_name._snake_case();
                     let path_display = format!("{}", path.display());
-                    let replaced_path_display = path_display.as_str().replace("\\", "/");
+                    let replaced_path_display = path_display.as_str().replace('\\', "/");
                     let module_name_vec: Vec<&str> = replaced_path_display.split('/').collect();
                     let (_, module_path) = module_name_vec.split_at(2);
                     let mut full_module_name_vec = module_path.to_vec();
@@ -262,7 +262,7 @@ impl FtwCommand {
             let template = &String::from_utf8_lossy(include_bytes!("templates/mod_tmpl.rs"));
             FtwCommand::create_file(template, &mod_rs_file, &tmpl_globals)?;
             match directories.split_last() {
-                Some((_, init)) => FtwCommand::create_mod_rs_file(base_src_path, &init.to_vec()),
+                Some((_, init)) => FtwCommand::create_mod_rs_file(base_src_path, init),
                 _ => unreachable!(),
             }
         }

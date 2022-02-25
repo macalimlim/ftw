@@ -29,7 +29,7 @@ impl FtwConfiguration {
         ];
         let keys: Vec<String> = exe_key_default_pairs
             .iter()
-            .map(|(key, def)| ftw_section.get(key).unwrap_or(def).replace("\\", "/"))
+            .map(|(key, def)| ftw_section.get(key).unwrap_or(def).replace('\\', "/"))
             .collect();
         match keys.as_slice() {
             [godot_exe, godot_headless_exe, godot_server_exe, enable_cross_compilation] => {

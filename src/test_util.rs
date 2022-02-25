@@ -15,7 +15,7 @@ impl Project {
     #[must_use]
     pub fn new() -> Self {
         let name = nanoid!();
-        let mut name = name.to_lowercase().replace("_", "-").replace("-", "");
+        let mut name = name.to_lowercase().replace('_', "-").replace('-', "");
         name.insert_str(0, "game");
         Project {
             root: PathBuf::from(name),
