@@ -1,6 +1,6 @@
 [package]
 name = "ftw"
-version = "0.8.0"
+version = "0.9.0"
 authors = ["Michael Angelo Calimlim <macalimlim@gmail.com>"]
 edition = "2021"
 license = "MIT"
@@ -38,3 +38,6 @@ cargo-edit = "0.7.0"
 nanoid = "0.4.0"
 predicates = { version = "2.1.1", default-features = false }
 proptest = "1.0.0"
+
+[profile.release]
+strip = true
