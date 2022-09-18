@@ -26,12 +26,12 @@ impl {{class_name}} {
         }
     }
 
-    // In order to make a method known to Godot, the #[export] attribute has to be used.
+    // In order to make a method known to Godot, the #[method] attribute has to be used.
     // In Godot script-classes do not actually inherit the parent class.
     // Instead they are "attached" to the parent object, called the "owner".
     // The owner is passed to every single exposed method.
-    #[export]
-    unsafe fn _ready(&mut self, _owner: &{{node_type}}) {
+    #[method]
+    unsafe fn _ready(&mut self, #[base] _owner: &{{node_type}}) {
         // The `godot_print!` macro works like `println!` but prints to the Godot-editor
         // output tab as well.
         self.name = "{{class_name}}".to_string();
@@ -39,8 +39,8 @@ impl {{class_name}} {
     }
 
     // This function will be called in every frame
-    #[export]
-    unsafe fn _process(&self, _owner: &{{node_type}}, delta: f64) {
+    #[method]
+    unsafe fn _process(&self, #[base] _owner: &{{node_type}}, delta: f64) {
         godot_print!("Inside {} _process(), delta is {}", self.name, delta);
     }
 }
