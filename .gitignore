@@ -1,5 +1,6 @@
 **/*.orig
 **/*.rs.bk
+*.~undo-tree~
 Cargo.lock
 debug/
 game*/
