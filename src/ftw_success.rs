@@ -7,7 +7,7 @@ use crate::traits::{ToGitUrl, ToMessage};
 use crate::type_alias::{ClassName, Message, ProjectName};
 use colored::{ColoredString, Colorize};
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Eq, PartialEq)]
 pub enum FtwSuccess<'a> {
     New {
         project_name: ProjectName,

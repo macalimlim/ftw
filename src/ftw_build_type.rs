@@ -5,7 +5,7 @@ use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum FtwBuildType {
     Debug,
     Release,

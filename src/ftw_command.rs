@@ -23,7 +23,7 @@ use strum::IntoEnumIterator;
 use voca_rs::Voca;
 use walkdir::WalkDir;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Eq, PartialEq)]
 pub enum FtwCommand {
     New {
         project_name: ProjectName,

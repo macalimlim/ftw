@@ -6,7 +6,7 @@ use std::str::FromStr;
 
 macro_rules! generate_ftw_node_types {
     ($($i:ident), *) => {
-        #[derive(Clone, Copy, Debug, PartialEq)]
+        #[derive(Clone, Copy, Debug, Eq, PartialEq)]
         pub enum FtwNodeType {
             $($i,)*
         }

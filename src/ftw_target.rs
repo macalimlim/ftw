@@ -6,7 +6,7 @@ use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 use strum_macros::EnumIter;
 
-#[derive(Clone, Copy, Debug, EnumIter, PartialEq)]
+#[derive(Clone, Copy, Debug, EnumIter, Eq, PartialEq)]
 pub enum FtwTarget {
     AndroidLinuxAarch64,
     AndroidLinuxArmV7,

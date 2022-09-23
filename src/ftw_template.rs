@@ -4,7 +4,7 @@ use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Eq, PartialEq)]
 pub enum FtwTemplate {
     Default { git_url: GitUrl },
     Custom { git_url: GitUrl },

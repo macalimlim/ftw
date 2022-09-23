@@ -7,7 +7,7 @@ pub const GODOT_EXE: &str = "godot";
 pub const GODOT_HEADLESS_EXE: &str = "godot-headless";
 pub const GODOT_SERVER_EXE: &str = "godot-server";
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Eq, PartialEq)]
 pub struct FtwConfiguration {
     pub godot_executable: String,
     pub godot_headless_executable: String,
