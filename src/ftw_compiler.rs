@@ -23,6 +23,8 @@ pub enum FtwCompiler {
     },
 }
 
+const DOCKER_IMAGE: &str = "macalimlim/godot-rust-cross-compiler:0.3.1";
+
 #[rustfmt::skip::macros(cmd, format)]
 impl Compiler for FtwCompiler {
     fn clean(&self) -> Result<(), FtwError> {
@@ -37,7 +39,7 @@ impl Compiler for FtwCompiler {
             } => {
                 let volume_mount = format!("{}:/build", env::current_dir()?.display());
                 cmd!(docker run ("-v") (volume_mount)
-                     ("ufoot/godot-rust-cross-compiler") ("/bin/bash") ("-c")
+                     (DOCKER_IMAGE) ("/bin/bash") ("-c")
                      ("cargo clean ; rm -rf godot/.import"))
                 .run()
             }
@@ -92,7 +94,7 @@ impl Compiler for FtwCompiler {
                 cmd!(docker run ("-v") (volume_mount)
                      if (target == &FtwTarget::WindowsX86_64Gnu || target == &FtwTarget::WindowsX86_64Msvc) {("-e") ("C_INCLUDE_PATH=/usr/x86_64-w64-mingw32/include")}
                      if (target == &FtwTarget::MacOsX86_64) {("-e") ("CC=/opt/macosx-build-tools/cross-compiler/bin/x86_64-apple-darwin14-cc") ("-e") ("C_INCLUDE_PATH=/opt/macosx-build-tools/cross-compiler/SDK/MacOSX10.10.sdk/usr/include")}
-                     ("ufoot/godot-rust-cross-compiler") ("/bin/bash") ("-c")
+                     (DOCKER_IMAGE) ("/bin/bash") ("-c")
                      (cargo_build_cmd)).run()
             }
         }
@@ -135,7 +137,7 @@ impl Compiler for FtwCompiler {
                     format!("cd godot/ ; godot_headless --export '{}' {}", export_name, export_path);
                 let volume_mount = format!("{}:/build", env::current_dir()?.display());
                 cmd!(docker run ("-v") (volume_mount)
-                    ("ufoot/godot-rust-cross-compiler") ("/bin/bash") ("-c")
+                    (DOCKER_IMAGE) ("/bin/bash") ("-c")
                     (godot_export_cmd))
                 .run()
             }

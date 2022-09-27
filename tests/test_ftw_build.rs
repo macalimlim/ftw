@@ -196,3 +196,43 @@ enable-cross-compilation=true
         .assert()
         .success();
 }
+
+#[test]
+fn test_ftw_cross_build_ios_target() {
+    let project = Project::new();
+    ftw()
+        .arg("new")
+        .arg(&project.get_name())
+        .assert()
+        .success()
+        .stdout(predicates::str::contains("Done!").from_utf8());
+    let contents = r#"[ftw]
+enable-cross-compilation=true
+"#;
+    let _ = project.create(".ftw", contents);
+    assert!(project
+        .read(".ftw")
+        .contains("enable-cross-compilation=true"));
+    let target = FtwTarget::IosAarch64;
+    ftw()
+        .arg("build")
+        .arg("ios-aarch64")
+        .current_dir(&project.get_name())
+        .assert()
+        .success();
+    assert!(project
+        .read("rust/Cargo.toml")
+        .contains(&project.get_name()));
+    assert!(project.exists(&format!(
+        "lib/{}/{}{}.{}",
+        target.to_cli_arg(),
+        target.to_lib_prefix(),
+        project.get_name(),
+        target.to_lib_ext()
+    )));
+    ftw()
+        .arg("clean")
+        .current_dir(&project.get_name())
+        .assert()
+        .success();
+}
