@@ -4,5 +4,6 @@
 Cargo.lock
 debug/
 game*/
+logs/
 target/
 tarpaulin-report.html
