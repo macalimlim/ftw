@@ -9,10 +9,11 @@ use crate::ftw_template::FtwTemplate;
 use crate::traits::{Compiler, Processor, Runner, ToCliArg, ToGitUrl};
 use crate::type_alias::{ClassName, FtwResult, ProjectName};
 use crate::util;
+
 use cargo_generate::{generate, Args, Vcs};
 use command_macros::cmd;
 use fs_extra::remove_items;
-use kstring::KString;
+use kstring::KStringBase;
 use liquid::{object, Object, ParserBuilder};
 use liquid_core::model::{ScalarCow, Value};
 use regex::Regex;
@@ -191,11 +192,11 @@ impl FtwCommand {
     fn create_lib_rs_file(class_name: &str, node_type: FtwNodeType) -> Result<(), FtwError> {
         let mut tmpl_globals = FtwCommand::get_tmpl_globals(class_name, node_type);
         let modules = FtwCommand::get_modules_from_directory("rust/src")?;
-        let k = KString::from_ref("modules");
+        let k = KStringBase::from_ref("modules");
         let v = Value::Scalar(ScalarCow::from(modules));
         tmpl_globals.insert(k, v);
         let classes = FtwCommand::get_classes_from_directory("rust/src")?;
-        let k = KString::from_ref("classes");
+        let k = KStringBase::from_ref("classes");
         let v = Value::Scalar(ScalarCow::from(classes));
         tmpl_globals.insert(k, v);
         let template = &String::from_utf8_lossy(include_bytes!("templates/lib_tmpl.rs"));
@@ -309,7 +310,7 @@ impl FtwCommand {
         let tscn_file = format!("{}/{}.tscn", &tscn_dir_path, class_name._pascal_case());
         if !Path::new(&tscn_file).exists() {
             let mut tmpl_globals = FtwCommand::get_tmpl_globals(class_name, node_type);
-            let k = KString::from_ref("dir_path");
+            let k = KStringBase::from_ref("dir_path");
             let v = Value::Scalar(ScalarCow::from(if directories.is_empty() {
                 "".to_string()
             } else {

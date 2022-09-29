@@ -13,22 +13,22 @@ categories = ["command-line-utilities", "game-development"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-anyhow = { version = "1.0.55", default-features = false }
+anyhow = { version = "1.0.65", default-features = false }
 cargo-edit = "0.7.0"
 cargo-generate = { version = "0.9.0", default-features = false, features = [ "vendored-openssl" ] }
-clap = { version = "3.1.1", default-features = false, features = [ "cargo", "color", "std" ] }
+clap = { version = "4.0.2", default-features = false, features = [ "cargo", "color", "std" ] }
 colored = "2.0.0"
 command-macros = "0.2.9"
 fs_extra = "1.2.0"
-kstring = "1.0.6"
-liquid = { version = "0.23.1", default-features = false, features = [ "stdlib" ] }
-liquid-core = { version = "0.23.2", default-features = false }
+kstring = "2.0.0"
+liquid = { version = "0.26.0", default-features = false, features = [ "stdlib" ] }
+liquid-core = { version = "0.26.0", default-features = false }
 nanoid = "0.4.0"
-regex = { version = "1.4.5", default-features = false }
+regex = { version = "1.6.0", default-features = false }
 rust-ini = { version = "0.18.0", default-features = false }
-strum = "0.24.0"
-strum_macros = "0.24.0"
-thiserror = "1.0.30"
+strum = "0.24.1"
+strum_macros = "0.24.3"
+thiserror = "1.0.37"
 voca_rs = "1.14.0"
 walkdir = "2.3.2"
 

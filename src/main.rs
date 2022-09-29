@@ -31,7 +31,7 @@ fn main() -> Result<(), ()> {
         .map_err(|ftw_error| eprintln!("{}", ftw_error.to_message()))
 }
 
-fn get_clap_command() -> Command<'static> {
+fn get_clap_command() -> Command {
     command!(crate_name!())
         .version(crate_version!())
         .author(crate_authors!("\n"))
@@ -77,12 +77,12 @@ fn parse_matches(matches: &ArgMatches) -> FtwCommand {
     match matches.subcommand() {
         Some(("new", args)) => {
             let project_name = args
-                .value_of("project_name")
-                .unwrap_or("my-awesome-game")
+                .get_one::<String>("project_name")
+                .unwrap_or(&String::from("my-awesome-game"))
                 .to_string();
             let template = args
-                .value_of("template")
-                .unwrap_or("default")
+                .get_one::<String>("template")
+                .unwrap_or(&String::from("default"))
                 .parse()
                 .unwrap_or_default();
             FtwCommand::New {
@@ -91,10 +91,13 @@ fn parse_matches(matches: &ArgMatches) -> FtwCommand {
             }
         }
         Some(("class", args)) => {
-            let class_name = args.value_of("class_name").unwrap_or("MyClass").to_string();
+            let class_name = args
+                .get_one::<String>("class_name")
+                .unwrap_or(&String::from("MyClass"))
+                .to_string();
             let node_type = args
-                .value_of("node_type")
-                .unwrap_or("Node")
+                .get_one::<String>("node_type")
+                .unwrap_or(&String::from("Node"))
                 .parse()
                 .unwrap_or_default();
             FtwCommand::Class {
@@ -104,15 +107,15 @@ fn parse_matches(matches: &ArgMatches) -> FtwCommand {
         }
         Some(("singleton", args)) => {
             let class_name = args
-                .value_of("class_name")
-                .unwrap_or("MySingletonClass")
+                .get_one::<String>("class_name")
+                .unwrap_or(&String::from("MySingleton"))
                 .to_string();
             FtwCommand::Singleton { class_name }
         }
         Some(("run", args)) => {
             let machine_type = args
-                .value_of("machine_type")
-                .unwrap_or("desktop")
+                .get_one::<String>("machine_type")
+                .unwrap_or(&String::from("desktop"))
                 .parse()
                 .unwrap_or_default();
             FtwCommand::Run { machine_type }
@@ -120,13 +123,13 @@ fn parse_matches(matches: &ArgMatches) -> FtwCommand {
         Some(("build", args)) => {
             let current_platform = util::get_current_platform();
             let target = args
-                .value_of("target")
+                .get_one::<String>("target")
                 .unwrap_or(&current_platform)
                 .parse()
                 .unwrap_or_default();
             let build_type = args
-                .value_of("build_type")
-                .unwrap_or("debug")
+                .get_one::<String>("build_type")
+                .unwrap_or(&String::from("debug"))
                 .parse()
                 .unwrap_or_default();
             FtwCommand::Build { target, build_type }
@@ -134,13 +137,13 @@ fn parse_matches(matches: &ArgMatches) -> FtwCommand {
         Some(("export", args)) => {
             let current_platform = util::get_current_platform();
             let target = args
-                .value_of("target")
+                .get_one::<String>("target")
                 .unwrap_or(&current_platform)
                 .parse()
                 .unwrap_or_default();
             let build_type = args
-                .value_of("build_type")
-                .unwrap_or("debug")
+                .get_one::<String>("build_type")
+                .unwrap_or(&String::from("debug"))
                 .parse()
                 .unwrap_or_default();
             FtwCommand::Export { target, build_type }
