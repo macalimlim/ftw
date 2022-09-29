@@ -68,7 +68,7 @@ $ ftw build linux-x86_64 release # builds the library for the `linux-x86_64` pla
 - android-arm
 - android-x86
 - android-x86_64
-- ios-aarch64 (ATM not supported if cross-compilation is enabled)
+- ios-aarch64
 - linux-x86
 - linux-x86_64
 - macos-x86_64
@@ -126,7 +126,7 @@ godot-server-exe=godot-server-script # assuming it's on $PATH
 
 ### Cross Compilation
 
-You can also enable cross compilation, so you could build and export a game from and to any platform. It uses this [docker image](https://github.com/ufoot/godot-rust-cross-compiler) to set up Linux, Android, Mac and Windows toolchains (iOS and WebAssembly toolchains to follow). Please read this [section](https://github.com/ufoot/godot-rust-cross-compiler#bugs-and-limitations) to know what is currently supported.
+You can also enable cross compilation, so you could build and export a game from and to any platform. It uses this [docker image](https://github.com/ufoot/godot-rust-cross-compiler) to set up Linux, Android, Mac iOS and Windows toolchains (WebAssembly toolchains to follow). Please read this [section](https://github.com/macalimlim/godot-rust-cross-compiler#bugs-and-limitations) to know what is currently supported.
 
 ```ini
 [ftw]
