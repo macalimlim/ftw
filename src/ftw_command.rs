@@ -384,7 +384,7 @@ impl Processor for FtwCommand {
                 let current_platform = util::get_current_platform();
                 let target: FtwTarget = current_platform.parse().unwrap_or_default();
                 if machine_type.is_server() {
-                    target.is_linux_x86_64()?;
+                    target.is_linux_server()?;
                 }
                 FtwCommand::build_lib(target, build_type)?;
                 FtwCommand::run_with_godot(machine_type)?;
@@ -899,9 +899,10 @@ enable-cross-compilation=true
             target.to_lib_ext()
         )));
         assert!(project.exists(&format!(
-            "bin/{}/{}.debug.pck",
+            "bin/{}/{}.debug.{}.pck",
             target.to_cli_arg(),
-            project.get_name()
+            project.get_name(),
+            target.to_cli_arg()
         )));
         assert!(project.exists(&format!(
             "bin/{}/{}.debug.{}{}",
@@ -948,9 +949,10 @@ enable-cross-compilation=true
             target.to_lib_ext()
         )));
         assert!(project.exists(&format!(
-            "bin/{}/{}.debug.pck",
+            "bin/{}/{}.debug.{}.pck",
             target.to_cli_arg(),
-            project.get_name()
+            project.get_name(),
+            target.to_cli_arg()
         )));
         assert!(project.exists(&format!(
             "bin/{}/{}.debug.{}{}",

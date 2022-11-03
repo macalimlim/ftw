@@ -38,9 +38,10 @@ fn test_ftw_export_no_target() {
         target.to_lib_ext()
     )));
     assert!(project.exists(&format!(
-        "bin/{}/{}.debug.pck",
+        "bin/{}/{}.debug.{}.pck",
         target.to_cli_arg(),
-        crate_name
+        crate_name,
+        target.to_cli_arg()
     )));
     assert!(project.exists(&format!(
         "bin/{}/{}.debug.{}{}",
@@ -91,9 +92,10 @@ enable-cross-compilation=true
         target.to_lib_ext()
     )));
     assert!(project.exists(&format!(
-        "bin/{}/{}.debug.pck",
+        "bin/{}/{}.debug.{}.pck",
         target.to_cli_arg(),
-        crate_name
+        crate_name,
+        target.to_cli_arg()
     )));
     assert!(project.exists(&format!(
         "bin/{}/{}.debug.{}{}",

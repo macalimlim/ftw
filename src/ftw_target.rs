@@ -31,7 +31,7 @@ impl FtwTarget {
     /// # Errors
     ///
     /// Will return `Err` if `target` is not Linux x86-64
-    pub fn is_linux_x86_64(self) -> Result<bool, FtwError> {
+    pub fn is_linux_server(self) -> Result<bool, FtwError> {
         if self.is(FtwTarget::LinuxX86_64) {
             Ok(true)
         } else {
@@ -52,7 +52,11 @@ impl FtwTarget {
     }
 
     fn is_linux(self) -> bool {
-        matches!(self, FtwTarget::LinuxX86 | FtwTarget::LinuxX86_64)
+        matches!(self, FtwTarget::LinuxX86)
+    }
+
+    fn is_linux_x86_64(self) -> bool {
+        matches!(self, FtwTarget::LinuxX86_64)
     }
 
     fn is_macos(self) -> bool {
@@ -86,7 +90,7 @@ impl ToExportName for FtwTarget {
         match s {
             s if s.is_android() => "Android",
             s if s.is_ios() => "iOS",
-            s if s.is_linux() => "Linux/X11",
+            s if s.is_linux() | s.is_linux_x86_64() => "Linux/X11",
             s if s.is_macos() => "Mac OSX",
             s if s.is_windows() => "Windows Desktop",
             _ => unreachable!(),
@@ -99,9 +103,10 @@ impl ToAppExt for FtwTarget {
     fn to_app_ext(&self) -> AppExt {
         let s = self;
         match s {
-            s if s.is_linux() | s.is_ios() => "",
+            s if s.is_linux() => "",
+            s if s.is_linux_x86_64() => ".x86_64",
             s if s.is_android() => ".apk",
-            s if s.is_macos() => ".dmg",
+            s if s.is_macos() | s.is_ios() => ".zip",
             s if s.is_windows() => ".exe",
             _ => unreachable!(),
         }
@@ -113,7 +118,7 @@ impl ToLibExt for FtwTarget {
     fn to_lib_ext(&self) -> LibExt {
         let s = self;
         match s {
-            s if s.is_android() | s.is_linux() => "so",
+            s if s.is_android() | s.is_linux() | s.is_linux_x86_64() => "so",
             s if s.is_windows() => "dll",
             s if s.is_ios() => "a",
             s if s.is_macos() => "dylib",
@@ -221,10 +226,10 @@ mod ftw_target_tests {
             (".apk", FtwTarget::AndroidLinuxArmV7),
             (".apk", FtwTarget::AndroidLinuxX86),
             (".apk", FtwTarget::AndroidLinuxX86_64),
-            ("", FtwTarget::IosAarch64),
+            (".zip", FtwTarget::IosAarch64),
             ("", FtwTarget::LinuxX86),
-            ("", FtwTarget::LinuxX86_64),
-            (".dmg", FtwTarget::MacOsX86_64),
+            (".x86_64", FtwTarget::LinuxX86_64),
+            (".zip", FtwTarget::MacOsX86_64),
             (".exe", FtwTarget::WindowsX86Gnu),
             (".exe", FtwTarget::WindowsX86Msvc),
             (".exe", FtwTarget::WindowsX86_64Gnu),
@@ -321,9 +326,9 @@ mod ftw_target_tests {
         ];
         for target in targets {
             if target == FtwTarget::LinuxX86_64 {
-                assert!(target.is_linux_x86_64().unwrap());
+                assert!(target.is_linux_server().unwrap());
             } else {
-                let err = target.is_linux_x86_64().unwrap_err();
+                let err = target.is_linux_server().unwrap_err();
                 match err {
                     FtwError::UnsupportedTarget => assert!(true),
                     _ => unreachable!(),

@@ -23,7 +23,7 @@ pub enum FtwCompiler {
     },
 }
 
-const DOCKER_IMAGE: &str = "macalimlim/godot-rust-cross-compiler:0.3.1";
+const DOCKER_IMAGE: &str = "macalimlim/godot-rust-cross-compiler:0.4.0";
 
 #[rustfmt::skip::macros(cmd, format)]
 impl Compiler for FtwCompiler {
