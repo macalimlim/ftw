@@ -9,7 +9,8 @@ use gdnative::prelude::{godot_init, InitHandle};
 fn init(handle: InitHandle) {
 {%- assign classes = classes | split: "|" | compact | sort -%}
 {%- for class in classes %}
-    handle.add_class::<{{class}}>();
+    {%- assign suffix = class | slice: -4, 4 -%}
+    {%- if suffix == "Tool" -%}handle.add_tool_class::<{{class}}>();{%- else -%}handle.add_class::<{{class}}>();{%- endif %}
 {%- endfor %}
 }
 

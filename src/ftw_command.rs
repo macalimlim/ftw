@@ -513,6 +513,51 @@ mod ftw_command_tests {
     }
 
     #[test]
+    fn test_process_ftw_command_tool_class() {
+        let project = Project::new();
+        let cmd = FtwCommand::New {
+            project_name: project.get_name(),
+            template: FtwTemplate::default(),
+        };
+        let _ = cmd.process();
+        let _ = env::set_current_dir(Path::new(&project.get_name()));
+        let cmd = FtwCommand::Class {
+            class_name: "MyButtonTool".to_string(),
+            node_type: FtwNodeType::Button,
+        };
+        let _ = cmd.process();
+        let _ = env::set_current_dir(Path::new("../"));
+        assert!(project.exists("rust/src/my_button_tool.rs"));
+        assert!(project.exists("godot/native/MyButtonTool.gdns"));
+        assert!(project.exists("godot/scenes/MyButtonTool.tscn"));
+        assert!(project.exists("rust/src/lib.rs"));
+        assert!(project
+            .read("rust/src/my_button_tool.rs")
+            .contains("pub struct MyButtonTool"));
+        assert!(project
+            .read("rust/src/my_button_tool.rs")
+            .contains("#[inherit(Button)]"));
+        assert!(project
+            .read("godot/native/MyButtonTool.gdns")
+            .contains("resource_name = \"MyButtonTool\""));
+        assert!(project
+            .read("godot/native/MyButtonTool.gdns")
+            .contains("class_name = \"MyButtonTool\""));
+        assert!(project.read("godot/scenes/MyButtonTool.tscn").contains(
+            "[ext_resource path=\"res://native/MyButtonTool.gdns\" type=\"Script\" id=1]"
+        ));
+        assert!(project
+            .read("godot/scenes/MyButtonTool.tscn")
+            .contains("[node name=\"MyButtonTool\" type=\"Button\"]"));
+        assert!(project
+            .read("rust/src/lib.rs")
+            .contains("mod my_button_tool;"));
+        assert!(project
+            .read("rust/src/lib.rs")
+            .contains("handle.add_tool_class::<my_button_tool::MyButtonTool>();"));
+    }
+
+    #[test]
     fn test_process_ftw_command_class_with_subs() {
         let project = Project::new();
         let cmd = FtwCommand::New {
