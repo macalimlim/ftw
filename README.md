@@ -37,6 +37,12 @@ $ ftw class MyHero Area2D # creates a class that derives from `Area2D`
 ```
 > Note: This creates the following files `rust/src/my_hero.rs`, `godot/scenes/MyHero.tscn` and `godot/native/MyHero.gdns` then adds the class inside `rust/src/lib.rs`. A complete list of node types can be found [here](https://github.com/macalimlim/ftw/blob/main/src/ftw_node_type.rs)
 
+#### Creates a tool class
+```shell
+$ ftw class MyButtonTool Button # creates a tool class called `MyButtonTool` that is deriving from `Button`
+```
+> Note: Same as creating a regular class and also take note of having `Tool` at the end of the class name as a convention
+
 ##### You could also organize rs, tscn and gdns files into submodules or subfolders
 ```shell
 $ ftw class heros/marvel/avengers/IronMan Area2D # creates a class that derives from `Area2D`
@@ -126,7 +132,7 @@ godot-server-exe=godot-server-script # assuming it's on $PATH
 
 ### Cross Compilation
 
-You can also enable cross compilation, so you could build and export a game from and to any platform. It uses this [docker image](https://github.com/ufoot/godot-rust-cross-compiler) to set up Linux, Android, Mac iOS and Windows toolchains (WebAssembly toolchains to follow). Please read this [section](https://github.com/macalimlim/godot-rust-cross-compiler#bugs-and-limitations) to know what is currently supported.
+You can also enable cross compilation, so you could build and export a game from and to any platform. It uses this [docker image](https://github.com/macalimlim/godot-rust-cross-compiler) to set up Linux, Android, Mac, iOS and Windows toolchains (WebAssembly toolchains to follow). Please read this [section](https://github.com/macalimlim/godot-rust-cross-compiler#bugs-and-limitations) to know what is currently supported.
 
 ```ini
 [ftw]
