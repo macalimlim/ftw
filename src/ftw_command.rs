@@ -10,7 +10,7 @@ use crate::traits::{Compiler, Processor, Runner, ToCliArg, ToGitUrl};
 use crate::type_alias::{ClassName, FtwResult, ProjectName};
 use crate::util;
 
-use cargo_generate::{generate, Args, Vcs};
+use cargo_generate::{generate, GenerateArgs, TemplatePath, Vcs};
 use command_macros::cmd;
 use fs_extra::remove_items;
 use kstring::KStringBase;
@@ -55,27 +55,39 @@ pub enum FtwCommand {
 impl FtwCommand {
     fn generate_project(project_name: &str, template: &FtwTemplate) -> Result<(), FtwError> {
         let git_url = &template.to_git_url();
-        let args = Args {
+        let template_path = TemplatePath {
             git: Some(git_url.to_string()),
             branch: None,
-            name: Some(project_name.to_string()),
+            favorite: None,
+            subfolder: None,
+            path: None,
+            auto_path: None,
+            test: false,
+            tag: None, //TODO: set a tag here
+        };
+        let generate_args = GenerateArgs {
+            template_path,
             force: false,
+            name: Some(project_name.to_string()),
             verbose: false,
             config: None,
-            favorite: None,
             list_favorites: false,
             silent: true,
             template_values_file: None,
-            vcs: Vcs::Git,
+            vcs: Some(Vcs::Git),
             bin: false,
             lib: true,
             ssh_identity: None,
-            subfolder: None,
             define: vec![],
             init: false,
-            path: None,
+            destination: None,
+            force_git_init: false,
+            allow_commands: false,
+            overwrite: false,
+            other_args: None,
         };
-        Ok(generate(args)?)
+        generate(generate_args)?;
+        Ok(())
     }
 
     fn append_to_gitignore(project_name: &str) -> Result<(), FtwError> {
