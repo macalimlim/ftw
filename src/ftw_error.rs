@@ -20,7 +20,9 @@ pub enum FtwError {
     #[error("Unknown build type")]
     UnknownBuildType,
     #[error("{0}")]
-    CargoEditError(#[from] cargo_edit::Error),
+    TomlError(#[from] toml::de::Error),
+    #[error("Missing package name error")]
+    MissingPackageNameError,
     #[error("Path error")]
     PathError,
     #[error("String conversion error")]

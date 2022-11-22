@@ -1,12 +1,11 @@
 mod common;
 
 use assert_cmd::prelude::*;
-use cargo_edit::get_crate_name_from_path;
 use common::ftw;
 use ftw::ftw_target::FtwTarget;
 use ftw::test_util::Project;
 use ftw::traits::{ToAppExt, ToCliArg, ToLibExt, ToLibPrefix};
-use ftw::util::get_current_platform;
+use ftw::util::{get_crate_name_from_path, get_current_platform};
 use predicates;
 use predicates::prelude::*;
 

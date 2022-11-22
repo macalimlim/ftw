@@ -14,7 +14,6 @@ categories = ["command-line-utilities", "game-development"]
 
 [dependencies]
 anyhow = { version = "1.0.66", default-features = false }
-cargo-edit = "0.7.0"
 cargo-generate = { version = "0.9.0", default-features = false, features = [ "vendored-openssl" ] }
 clap = { version = "4.0.18", default-features = false, features = [ "cargo", "color", "std" ] }
 colored = "2.0.0"
@@ -26,15 +25,16 @@ liquid-core = { version = "0.26.0", default-features = false }
 nanoid = "0.4.0"
 regex = { version = "1.6.0", default-features = false }
 rust-ini = { version = "0.18.0", default-features = false }
+serde = "1.0.147"
 strum = "0.24.1"
 strum_macros = "0.24.3"
 thiserror = "1.0.37"
+toml = "0.5.9"
 voca_rs = "1.15.0"
 walkdir = "2.3.2"
 
 [dev-dependencies]
 assert_cmd = "2.0.5"
-cargo-edit = "0.7.0"
 nanoid = "0.4.0"
 predicates = { version = "2.1.1", default-features = false }
 proptest = "1.0.0"

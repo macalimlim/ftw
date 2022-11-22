@@ -5,7 +5,6 @@ use crate::traits::{
     Compiler, Runner, ToAppExt, ToCliArg, ToExportArg, ToExportName, ToLibExt, ToLibPrefix,
 };
 use crate::util;
-use cargo_edit::get_crate_name_from_path;
 use command_macros::cmd;
 use fs_extra::dir::CopyOptions;
 use fs_extra::{move_items, remove_items};
@@ -49,7 +48,7 @@ impl Compiler for FtwCompiler {
     fn build(&self) -> Result<(), FtwError> {
         match self {
             FtwCompiler::Local { target, build_type } => {
-                let crate_name = get_crate_name_from_path("./rust/")?;
+                let crate_name = util::get_crate_name_from_path("./rust/")?;
                 let target_cli_arg = target.to_cli_arg();
                 let build_type_cli_arg = build_type.to_cli_arg();
                 let target_lib_ext = target.to_lib_ext();
@@ -103,7 +102,7 @@ impl Compiler for FtwCompiler {
     fn export(&self) -> Result<(), FtwError> {
         match self {
             FtwCompiler::Local { target, build_type } => {
-                let crate_name = get_crate_name_from_path("./rust/")?;
+                let crate_name = util::get_crate_name_from_path("./rust/")?;
                 let target_cli_arg = target.to_cli_arg();
                 let target_export_name = target.to_export_name();
                 let build_type_export_arg = build_type.to_export_arg();
@@ -122,7 +121,7 @@ impl Compiler for FtwCompiler {
                     .run()
             }
             FtwCompiler::Cross { target, build_type } => {
-                let crate_name = get_crate_name_from_path("./rust/")?;
+                let crate_name = util::get_crate_name_from_path("./rust/")?;
                 let target_cli_arg = target.to_cli_arg();
                 let target_export_name = target.to_export_name();
                 let build_type = build_type.to_string().to_lowercase();

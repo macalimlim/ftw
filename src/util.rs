@@ -1,7 +1,12 @@
 use crate::ftw_configuration::FtwConfiguration;
+use crate::ftw_error::FtwError;
 use crate::ftw_machine_type::FtwMachineType;
 use crate::ftw_target::FtwTarget;
+use serde::Deserialize;
 use std::env;
+use std::fs::File;
+use std::io::Read;
+use std::path::Path;
 
 #[must_use]
 pub fn get_current_platform() -> String {
@@ -40,6 +45,29 @@ pub fn get_godot_exe_for_running(machine_type: &FtwMachineType) -> String {
         FtwMachineType::Desktop => ftw_cfg.godot_executable,
         FtwMachineType::Server => ftw_cfg.godot_server_executable,
     }
+}
+
+#[derive(Debug, Deserialize)]
+struct CargoToml {
+    package: Package
+}
+
+#[derive(Debug, Deserialize)]
+struct Package {
+    name: Option<String>
+}
+
+/// # Errors
+///
+/// Will return `Err` can be any of the following:  Cargo.toml cannot be found on the given path, Cargo.toml cannot be parsed or Cargo.toml doesn't have a package.name entry
+pub fn get_crate_name_from_path(path: &str) -> Result<String, FtwError> {
+    let cargo_file = Path::new(path).join("Cargo.toml");
+    let mut file_contents = String::new();
+    let mut file = File::open(&cargo_file.as_path())?;
+    file.read_to_string(&mut file_contents)?;
+    let cargo_toml: CargoToml = toml::from_str(file_contents.as_str())?;
+    let crate_name = cargo_toml.package.name.ok_or(FtwError::MissingPackageNameError)?;
+    Ok(crate_name)
 }
 
 #[cfg(test)]
