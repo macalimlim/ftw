@@ -49,12 +49,12 @@ pub fn get_godot_exe_for_running(machine_type: &FtwMachineType) -> String {
 
 #[derive(Debug, Deserialize)]
 struct CargoToml {
-    package: Package
+    package: Package,
 }
 
 #[derive(Debug, Deserialize)]
 struct Package {
-    name: Option<String>
+    name: Option<String>,
 }
 
 /// # Errors
@@ -66,7 +66,10 @@ pub fn get_crate_name_from_path(path: &str) -> Result<String, FtwError> {
     let mut file = File::open(&cargo_file.as_path())?;
     file.read_to_string(&mut file_contents)?;
     let cargo_toml: CargoToml = toml::from_str(file_contents.as_str())?;
-    let crate_name = cargo_toml.package.name.ok_or(FtwError::MissingPackageNameError)?;
+    let crate_name = cargo_toml
+        .package
+        .name
+        .ok_or(FtwError::MissingPackageNameError)?;
     Ok(crate_name)
 }
 
