@@ -365,4 +365,14 @@ mod main_tests {
         };
         assert_eq!(command, cmd);
     }
+
+    #[test]
+    fn test_clean() {
+        let app = get_clap_command();
+        let arg_vec = vec![crate_name!(), "clean"];
+        let matches = app.get_matches_from(arg_vec);
+        let command = parse_matches(&matches);
+        let cmd = FtwCommand::Clean {};
+        assert_eq!(command, cmd);
+    }
 }
