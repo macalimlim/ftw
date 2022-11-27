@@ -2,6 +2,7 @@ use crate::ftw_error::FtwError;
 use crate::ftw_success::FtwSuccess;
 
 pub type GitUrl = String;
+pub type GitTag = String;
 pub type ProjectName = String;
 pub type ClassName = String;
 pub type CliArg = String;

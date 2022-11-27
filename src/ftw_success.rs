@@ -3,7 +3,7 @@ use crate::ftw_machine_type::FtwMachineType;
 use crate::ftw_node_type::FtwNodeType;
 use crate::ftw_target::FtwTarget;
 use crate::ftw_template::FtwTemplate;
-use crate::traits::{ToGitUrl, ToMessage};
+use crate::traits::ToMessage;
 use crate::type_alias::{ClassName, Message, ProjectName};
 use colored::{ColoredString, Colorize};
 
@@ -46,7 +46,13 @@ impl FtwSuccess<'_> {
 impl ToMessage for FtwSuccess<'_> {
     fn to_message(&self) -> Message {
         let description = match self {
-            FtwSuccess::New { project_name, template } => format!("A new project has been created {} using the {} ({}) template", project_name.blue().bold().italic(), template.to_string().blue().bold().italic(), template.to_git_url().underline()),
+            FtwSuccess::New { project_name, template } => {
+                match template {
+                    FtwTemplate::Default { git_url, tag } | FtwTemplate::Custom { git_url, tag } => {
+                        format!("A new project has been created {} using the {} ({} {}) template", project_name.blue().bold().italic(), template.to_string().blue().bold().italic(), git_url.underline(), tag.clone().unwrap_or_default().underline())
+                    }
+                }
+            },
             FtwSuccess::Class { class_name, node_type } => format!("A new class has been created {} using the {} node type", class_name.blue().bold().italic(), node_type.to_string().blue().bold().italic()),
             FtwSuccess::Singleton { class_name } => format!("A new singleton class has been created {}", class_name.blue().bold().italic()),
             FtwSuccess::Run { machine_type } => format!("The game was run as a {} application", machine_type.to_string().blue().bold().italic()),
@@ -66,40 +72,24 @@ mod ftw_success_tests {
     fn test_to_message() {
         let new_game = "my-awesome-game".to_string();
         let default_template = FtwTemplate::default();
-        let ftw_success_new_default = FtwSuccess::New {
-            project_name: new_game.clone(),
-            template: &default_template,
-        };
-        assert_eq!(
-            format!(
-                "{} {} A new project has been created {} using the {} ({}) template",
-                FtwSuccess::THUMBS_UP,
-                FtwSuccess::get_styled_success(),
-                new_game.blue().bold().italic(),
-                default_template.to_string().blue().bold().italic(),
-                default_template.to_git_url().underline()
-            ),
-            format!("{}", ftw_success_new_default.to_message())
-        );
-        //
-        let custom_template = FtwTemplate::Custom {
-            git_url: "/path/to/custom/template".to_string(),
-        };
-        let ftw_success_new_custom = FtwSuccess::New {
-            project_name: new_game.clone(),
-            template: &custom_template,
-        };
-        assert_eq!(
-            format!(
-                "{} {} A new project has been created {} using the {} ({}) template",
-                FtwSuccess::THUMBS_UP,
-                FtwSuccess::get_styled_success(),
-                new_game.blue().bold().italic(),
-                custom_template.to_string().blue().bold().italic(),
-                custom_template.to_git_url().underline()
-            ),
-            format!("{}", ftw_success_new_custom.to_message())
-        );
+        if let FtwTemplate::Default { git_url, tag } = FtwTemplate::default() {
+            let ftw_success_new_default = FtwSuccess::New {
+                project_name: new_game.clone(),
+                template: &default_template,
+            };
+            assert_eq!(
+                format!(
+                    "{} {} A new project has been created {} using the {} ({} {}) template",
+                    FtwSuccess::THUMBS_UP,
+                    FtwSuccess::get_styled_success(),
+                    new_game.blue().bold().italic(),
+                    default_template.to_string().blue().bold().italic(),
+                    git_url.underline(),
+                    tag.unwrap_or_default().underline(),
+                ),
+                format!("{}", ftw_success_new_default.to_message())
+            );
+        }
         //
         let class_name = "IronMan".to_string();
         let node_type = FtwNodeType::Area2D;
@@ -230,5 +220,36 @@ mod ftw_success_tests {
             ),
             format!("{}", ftw_success_clean.to_message())
         );
+    }
+
+    #[test]
+    fn test_new_custom_template_to_message() {
+        let new_game = "my-awesome-game".to_string();
+        let custom_template = FtwTemplate::Custom {
+            git_url: "/path/to/custom/template".to_string(),
+            tag: None,
+        };
+        if let FtwTemplate::Custom {
+            ref git_url,
+            ref tag,
+        } = custom_template
+        {
+            let ftw_success_new_custom = FtwSuccess::New {
+                project_name: new_game.clone(),
+                template: &custom_template,
+            };
+            assert_eq!(
+                format!(
+                    "{} {} A new project has been created {} using the {} ({} {}) template",
+                    FtwSuccess::THUMBS_UP,
+                    FtwSuccess::get_styled_success(),
+                    new_game.blue().bold().italic(),
+                    custom_template.to_string().blue().bold().italic(),
+                    git_url.underline(),
+                    tag.clone().unwrap_or_default().underline(),
+                ),
+                format!("{}", ftw_success_new_custom.to_message())
+            );
+        }
     }
 }

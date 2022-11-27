@@ -204,6 +204,7 @@ mod main_tests {
             project_name: project_name.to_string(),
             template: FtwTemplate::Custom {
                 git_url: git_url.to_string(),
+                tag: None,
             },
         };
         assert_eq!(command, cmd);

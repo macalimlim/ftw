@@ -6,7 +6,7 @@ use crate::ftw_node_type::FtwNodeType;
 use crate::ftw_success::FtwSuccess;
 use crate::ftw_target::FtwTarget;
 use crate::ftw_template::FtwTemplate;
-use crate::traits::{Compiler, Processor, Runner, ToCliArg, ToGitUrl};
+use crate::traits::{Compiler, Processor, Runner, ToCliArg};
 use crate::type_alias::{ClassName, FtwResult, ProjectName};
 use crate::util;
 
@@ -54,16 +54,20 @@ pub enum FtwCommand {
 #[rustfmt::skip::macros(cmd, format)]
 impl FtwCommand {
     fn generate_project(project_name: &str, template: &FtwTemplate) -> Result<(), FtwError> {
-        let git_url = &template.to_git_url();
+        let (git_url, tag) = match template {
+            FtwTemplate::Default { git_url, tag } | FtwTemplate::Custom { git_url, tag } => {
+                (git_url.to_string(), tag.clone())
+            }
+        };
         let template_path = TemplatePath {
-            git: Some(git_url.to_string()),
+            git: Some(git_url),
             branch: None,
             favorite: None,
             subfolder: None,
             path: None,
             auto_path: None,
             test: false,
-            tag: None, //TODO: set a tag here
+            tag,
         };
         let generate_args = GenerateArgs {
             template_path,
