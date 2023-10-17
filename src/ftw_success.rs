@@ -48,8 +48,8 @@ impl ToMessage for FtwSuccess<'_> {
         let description = match self {
             FtwSuccess::New { project_name, template } => {
                 match template {
-                    FtwTemplate::Default { git_url, tag } | FtwTemplate::Custom { git_url, tag } => {
-                        format!("A new project has been created {} using the {} ({} {}) template", project_name.blue().bold().italic(), template.to_string().blue().bold().italic(), git_url.underline(), tag.clone().unwrap_or_default().underline())
+                    FtwTemplate::Default { git_url } | FtwTemplate::Custom { git_url } => {
+                        format!("A new project has been created {} using the {} ({}) template", project_name.blue().bold().italic(), template.to_string().blue().bold().italic(), git_url.underline())
                     }
                 }
             },
@@ -72,20 +72,19 @@ mod ftw_success_tests {
     fn test_to_message() {
         let new_game = "my-awesome-game".to_string();
         let default_template = FtwTemplate::default();
-        if let FtwTemplate::Default { git_url, tag } = FtwTemplate::default() {
+        if let FtwTemplate::Default { git_url } = FtwTemplate::default() {
             let ftw_success_new_default = FtwSuccess::New {
                 project_name: new_game.clone(),
                 template: &default_template,
             };
             assert_eq!(
                 format!(
-                    "{} {} A new project has been created {} using the {} ({} {}) template",
+                    "{} {} A new project has been created {} using the {} ({}) template",
                     FtwSuccess::THUMBS_UP,
                     FtwSuccess::get_styled_success(),
                     new_game.blue().bold().italic(),
                     default_template.to_string().blue().bold().italic(),
                     git_url.underline(),
-                    tag.unwrap_or_default().underline(),
                 ),
                 format!("{}", ftw_success_new_default.to_message())
             );
@@ -227,26 +226,20 @@ mod ftw_success_tests {
         let new_game = "my-awesome-game".to_string();
         let custom_template = FtwTemplate::Custom {
             git_url: "/path/to/custom/template".to_string(),
-            tag: None,
         };
-        if let FtwTemplate::Custom {
-            ref git_url,
-            ref tag,
-        } = custom_template
-        {
+        if let FtwTemplate::Custom { ref git_url } = custom_template {
             let ftw_success_new_custom = FtwSuccess::New {
                 project_name: new_game.clone(),
                 template: &custom_template,
             };
             assert_eq!(
                 format!(
-                    "{} {} A new project has been created {} using the {} ({} {}) template",
+                    "{} {} A new project has been created {} using the {} ({}) template",
                     FtwSuccess::THUMBS_UP,
                     FtwSuccess::get_styled_success(),
                     new_game.blue().bold().italic(),
                     custom_template.to_string().blue().bold().italic(),
                     git_url.underline(),
-                    tag.clone().unwrap_or_default().underline(),
                 ),
                 format!("{}", ftw_success_new_custom.to_message())
             );

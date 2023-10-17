@@ -1,6 +1,6 @@
 use crate::ftw_error::FtwError;
 use crate::type_alias::{
-    AppExt, CliArg, ExportArg, ExportName, FtwResult, LibExt, LibPrefix, Message,
+    AppExt, CliArg, ExportArg, ExportName, FtwResult, GitTag, GitUrl, LibExt, LibPrefix, Message,
 };
 
 pub trait Processor {
@@ -30,6 +30,14 @@ pub trait Compiler {
     ///
     /// Will return `Err` if an error happened in the implementation
     fn export(&self) -> Result<(), FtwError>;
+}
+
+pub trait ToGitUrl {
+    fn to_git_url(&self) -> GitUrl;
+}
+
+pub trait ToGitTag {
+    fn to_git_tag(&self) -> GitTag;
 }
 
 pub trait ToCliArg {

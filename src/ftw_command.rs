@@ -4,9 +4,10 @@ use crate::ftw_error::FtwError;
 use crate::ftw_machine_type::FtwMachineType;
 use crate::ftw_node_type::FtwNodeType;
 use crate::ftw_success::FtwSuccess;
+use crate::ftw_tag::FtwTag;
 use crate::ftw_target::FtwTarget;
 use crate::ftw_template::FtwTemplate;
-use crate::traits::{Compiler, Processor, Runner, ToCliArg};
+use crate::traits::{Compiler, Processor, Runner, ToCliArg, ToGitTag, ToGitUrl};
 use crate::type_alias::{ClassName, FtwResult, ProjectName};
 use crate::util;
 
@@ -29,6 +30,7 @@ pub enum FtwCommand {
     New {
         project_name: ProjectName,
         template: FtwTemplate,
+        tag: FtwTag,
     },
     Class {
         class_name: ClassName,
@@ -53,21 +55,22 @@ pub enum FtwCommand {
 
 #[rustfmt::skip::macros(cmd, format)]
 impl FtwCommand {
-    fn generate_project(project_name: &str, template: &FtwTemplate) -> Result<(), FtwError> {
-        let (git_url, tag) = match template {
-            FtwTemplate::Default { git_url, tag } | FtwTemplate::Custom { git_url, tag } => {
-                (git_url.to_string(), tag.clone())
-            }
-        };
+    fn generate_project(
+        project_name: &str,
+        template: &FtwTemplate,
+        tag: &FtwTag,
+    ) -> Result<(), FtwError> {
+        let git_url = &template.to_git_url();
+        let git_tag = &tag.to_git_tag();
         let template_path = TemplatePath {
-            git: Some(git_url),
+            git: Some(git_url.to_string()),
             branch: None,
             favorite: None,
             subfolder: None,
             path: None,
             auto_path: None,
             test: false,
-            tag,
+            tag: Some(git_tag.to_string()),
         };
         let generate_args = GenerateArgs {
             template_path,
@@ -178,7 +181,7 @@ impl FtwCommand {
             let is_file = path.is_file();
             if is_file {
                 let mut file_contents = String::new();
-                let mut file = File::open(&entry.path())?;
+                let mut file = File::open(entry.path())?;
                 file.read_to_string(&mut file_contents)?;
                 let is_native_class = FtwCommand::is_derving_native_class(&file_contents)?;
                 if is_native_class {
@@ -328,7 +331,7 @@ impl FtwCommand {
             let mut tmpl_globals = FtwCommand::get_tmpl_globals(class_name, node_type);
             let k = KStringBase::from_ref("dir_path");
             let v = Value::Scalar(ScalarCow::from(if directories.is_empty() {
-                "".to_string()
+                String::new()
             } else {
                 let mut dir = directories.join("/");
                 dir.push('/');
@@ -367,8 +370,8 @@ impl FtwCommand {
 impl Processor for FtwCommand {
     fn process(&self) -> FtwResult {
         match self {
-            FtwCommand::New { project_name, template } => {
-                FtwCommand::generate_project(project_name, template)?;
+            FtwCommand::New { project_name, template, tag } => {
+                FtwCommand::generate_project(project_name, template, tag)?;
                 FtwCommand::append_to_gitignore(project_name)?;
                 FtwCommand::delete_items(project_name)?;
                 let project_name = project_name.to_string();
@@ -443,6 +446,7 @@ mod ftw_command_tests {
         let cmd = FtwCommand::New {
             project_name: project.get_name(),
             template: FtwTemplate::default(),
+            tag: FtwTag::default(),
         };
         let _ = cmd.process();
         let _ = env::set_current_dir(Path::new(&project.get_name()));
@@ -462,6 +466,7 @@ mod ftw_command_tests {
         let cmd = FtwCommand::New {
             project_name: project.get_name(),
             template: FtwTemplate::default(),
+            tag: FtwTag::default(),
         };
         let _ = cmd.process();
         assert!(project.exists(".gitignore"));
@@ -491,6 +496,7 @@ mod ftw_command_tests {
         let cmd = FtwCommand::New {
             project_name: project.get_name(),
             template: FtwTemplate::default(),
+            tag: FtwTag::default(),
         };
         let _ = cmd.process();
         let _ = env::set_current_dir(Path::new(&project.get_name()));
@@ -534,6 +540,7 @@ mod ftw_command_tests {
         let cmd = FtwCommand::New {
             project_name: project.get_name(),
             template: FtwTemplate::default(),
+            tag: FtwTag::default(),
         };
         let _ = cmd.process();
         let _ = env::set_current_dir(Path::new(&project.get_name()));
@@ -579,6 +586,7 @@ mod ftw_command_tests {
         let cmd = FtwCommand::New {
             project_name: project.get_name(),
             template: FtwTemplate::default(),
+            tag: FtwTag::default(),
         };
         let _ = cmd.process();
         let _ = env::set_current_dir(Path::new(&project.get_name()));
@@ -634,6 +642,7 @@ mod ftw_command_tests {
         let cmd = FtwCommand::New {
             project_name: project.get_name(),
             template: FtwTemplate::default(),
+            tag: FtwTag::default(),
         };
         let _ = cmd.process();
         let _ = env::set_current_dir(Path::new(&project.get_name()));
@@ -669,6 +678,7 @@ mod ftw_command_tests {
         let cmd = FtwCommand::New {
             project_name: project.get_name(),
             template: FtwTemplate::default(),
+            tag: FtwTag::default(),
         };
         let _ = cmd.process();
         let _ = env::set_current_dir(Path::new(&project.get_name()));
@@ -697,6 +707,7 @@ mod ftw_command_tests {
         let cmd = FtwCommand::New {
             project_name: project.get_name(),
             template: FtwTemplate::default(),
+            tag: FtwTag::default(),
         };
         let _ = cmd.process();
         let contents = r#"[ftw]
@@ -734,6 +745,7 @@ enable-cross-compilation=true
         let cmd = FtwCommand::New {
             project_name: project.get_name(),
             template: FtwTemplate::default(),
+            tag: FtwTag::default(),
         };
         let _ = cmd.process();
         let contents = r#"[ftw]
@@ -771,6 +783,7 @@ enable-cross-compilation=true
         let cmd = FtwCommand::New {
             project_name: project.get_name(),
             template: FtwTemplate::default(),
+            tag: FtwTag::default(),
         };
         let _ = cmd.process();
         let contents = r#"[ftw]
@@ -808,6 +821,7 @@ enable-cross-compilation=true
         let cmd = FtwCommand::New {
             project_name: project.get_name(),
             template: FtwTemplate::default(),
+            tag: FtwTag::default(),
         };
         let _ = cmd.process();
         let contents = r#"[ftw]
@@ -845,6 +859,7 @@ enable-cross-compilation=true
         let cmd = FtwCommand::New {
             project_name: project.get_name(),
             template: FtwTemplate::default(),
+            tag: FtwTag::default(),
         };
         let _ = cmd.process();
         let contents = r#"[ftw]
@@ -882,6 +897,7 @@ enable-cross-compilation=true
         let cmd = FtwCommand::New {
             project_name: project.get_name(),
             template: FtwTemplate::default(),
+            tag: FtwTag::default(),
         };
         let _ = cmd.process();
         let _ = env::set_current_dir(Path::new(&project.get_name()));
@@ -911,6 +927,7 @@ enable-cross-compilation=true
         let cmd = FtwCommand::New {
             project_name: project.get_name(),
             template: FtwTemplate::default(),
+            tag: FtwTag::default(),
         };
         let _ = cmd.process();
         let _ = env::set_current_dir(Path::new(&project.get_name()));
@@ -939,6 +956,7 @@ enable-cross-compilation=true
         let cmd = FtwCommand::New {
             project_name: project.get_name(),
             template: FtwTemplate::default(),
+            tag: FtwTag::default(),
         };
         let _ = cmd.process();
         let _ = env::set_current_dir(Path::new(&project.get_name()));
@@ -980,6 +998,7 @@ enable-cross-compilation=true
         let cmd = FtwCommand::New {
             project_name: project.get_name(),
             template: FtwTemplate::default(),
+            tag: FtwTag::default(),
         };
         let _ = cmd.process();
         let contents = r#"[ftw]
@@ -1030,6 +1049,7 @@ enable-cross-compilation=true
         let cmd = FtwCommand::New {
             project_name: project.get_name(),
             template: FtwTemplate::default(),
+            tag: FtwTag::default(),
         };
         let _ = cmd.process();
         let contents = r#"[ftw]

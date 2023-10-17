@@ -6,6 +6,7 @@ mod ftw_error;
 mod ftw_machine_type;
 mod ftw_node_type;
 mod ftw_success;
+mod ftw_tag;
 mod ftw_target;
 mod ftw_template;
 mod run_command;
@@ -15,7 +16,9 @@ mod type_alias;
 mod util;
 
 use crate::ftw_command::FtwCommand;
+use crate::ftw_tag::FtwTag;
 use crate::traits::{Processor, ToMessage};
+
 use clap::{
     arg, command, crate_authors, crate_description, crate_name, crate_version, ArgMatches, Command,
 };
@@ -40,7 +43,8 @@ fn get_clap_command() -> Command {
             Command::new("new")
                 .about("create a new godot-rust project directory")
                 .arg(arg!(<project_name> "set the name of your project"))
-                .arg(arg!([template] "set the template to be used in your project")),
+                .arg(arg!([template] "set the template to be used in your project"))
+                .arg(arg!([tag] "it can be any tag defined in the template or 'latest'")),
         )
         .subcommand(
             Command::new("class")
@@ -85,9 +89,15 @@ fn parse_matches(matches: &ArgMatches) -> FtwCommand {
                 .unwrap_or(&String::from("default"))
                 .parse()
                 .unwrap_or_default();
+            let tag = args
+                .get_one::<String>("tag")
+                .unwrap_or(&String::from("latest"))
+                .parse::<FtwTag>()
+                .unwrap_or_default();
             FtwCommand::New {
                 project_name,
                 template,
+                tag,
             }
         }
         Some(("class", args)) => {
@@ -174,6 +184,7 @@ mod main_tests {
         let cmd = FtwCommand::New {
             project_name: project_name.to_string(),
             template: FtwTemplate::default(),
+            tag: FtwTag::default(),
         };
         assert_eq!(command, cmd);
     }
@@ -188,6 +199,7 @@ mod main_tests {
         let cmd = FtwCommand::New {
             project_name: project_name.to_string(),
             template: FtwTemplate::default(),
+            tag: FtwTag::default(),
         };
         assert_eq!(command, cmd);
     }
@@ -204,8 +216,8 @@ mod main_tests {
             project_name: project_name.to_string(),
             template: FtwTemplate::Custom {
                 git_url: git_url.to_string(),
-                tag: None,
             },
+            tag: FtwTag::default(),
         };
         assert_eq!(command, cmd);
     }

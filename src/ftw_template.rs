@@ -1,22 +1,17 @@
-use crate::type_alias::{GitTag, GitUrl};
+use crate::traits::ToGitUrl;
+use crate::type_alias::GitUrl;
+
 use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum FtwTemplate {
-    Default {
-        git_url: GitUrl,
-        tag: Option<GitTag>,
-    },
-    Custom {
-        git_url: GitUrl,
-        tag: Option<GitTag>,
-    },
+    Default { git_url: GitUrl },
+    Custom { git_url: GitUrl },
 }
 
 const DEFAULT_TEMPLATE_URL: &str = "https://github.com/macalimlim/godot-rust-template";
-const DEFAULT_TEMPLATE_TAG: &str = "v1.0.0";
 
 impl FromStr for FtwTemplate {
     type Err = ();
@@ -25,17 +20,25 @@ impl FromStr for FtwTemplate {
             "default" => Ok(FtwTemplate::default()),
             git_url => Ok(FtwTemplate::Custom {
                 git_url: git_url.to_string(),
-                tag: None,
             }),
         }
+    }
+}
+
+impl ToGitUrl for FtwTemplate {
+    fn to_git_url(&self) -> GitUrl {
+        match self {
+            FtwTemplate::Default { git_url } | FtwTemplate::Custom { git_url } => git_url,
+        }
+        .to_string()
     }
 }
 
 impl Display for FtwTemplate {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         let message = match self {
-            FtwTemplate::Default { git_url: _, tag: _ } => "default",
-            FtwTemplate::Custom { git_url: _, tag: _ } => "custom",
+            FtwTemplate::Default { git_url: _ } => "default",
+            FtwTemplate::Custom { git_url: _ } => "custom",
         };
         write!(f, "{}", message)
     }
@@ -45,7 +48,6 @@ impl Default for FtwTemplate {
     fn default() -> Self {
         FtwTemplate::Default {
             git_url: DEFAULT_TEMPLATE_URL.to_string(),
-            tag: Some(DEFAULT_TEMPLATE_TAG.to_string()),
         }
     }
 }
@@ -64,7 +66,6 @@ mod ftw_template_tests {
         assert_eq!(
             FtwTemplate::Custom {
                 git_url: custom_template.clone(),
-                tag: None
             },
             custom_template.parse()?
         );
@@ -73,18 +74,15 @@ mod ftw_template_tests {
 
     #[test]
     fn test_to_git_url() {
-        if let FtwTemplate::Default { git_url, tag } = FtwTemplate::default() {
+        if let FtwTemplate::Default { git_url } = FtwTemplate::default() {
             assert_eq!(git_url, DEFAULT_TEMPLATE_URL);
-            assert_eq!(tag.unwrap_or_default(), DEFAULT_TEMPLATE_TAG);
         }
         let custom_template = CUSTOM_TEMPLATE.to_string();
         let tpl = FtwTemplate::Custom {
             git_url: custom_template.clone(),
-            tag: None,
         };
-        if let FtwTemplate::Custom { git_url, tag } = tpl {
+        if let FtwTemplate::Custom { git_url } = tpl {
             assert_eq!(git_url, custom_template);
-            assert_eq!(tag, None);
         }
     }
 
@@ -101,7 +99,6 @@ mod ftw_template_tests {
                 "{}",
                 FtwTemplate::Custom {
                     git_url: custom_template,
-                    tag: None
                 }
             )
         );
@@ -113,7 +110,6 @@ mod ftw_template_tests {
             FtwTemplate::default(),
             FtwTemplate::Default {
                 git_url: DEFAULT_TEMPLATE_URL.to_string(),
-                tag: Some(DEFAULT_TEMPLATE_TAG.to_string())
             }
         );
     }
@@ -123,7 +119,7 @@ mod ftw_template_tests {
         fn test_from_str_custom(template_input in "\\PC*") {
             prop_assume!(template_input != "default");
             prop_assert!(template_input.parse::<FtwTemplate>().is_ok());
-            prop_assert_eq!(FtwTemplate::Custom{git_url: template_input.to_string(), tag: None}, template_input.parse::<FtwTemplate>().unwrap());
+            prop_assert_eq!(FtwTemplate::Custom{git_url: template_input.to_string()}, template_input.parse::<FtwTemplate>().unwrap());
         }
     }
 }

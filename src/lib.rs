@@ -6,6 +6,7 @@ pub mod ftw_error;
 pub mod ftw_machine_type;
 pub mod ftw_node_type;
 pub mod ftw_success;
+pub mod ftw_tag;
 pub mod ftw_target;
 pub mod ftw_template;
 pub mod run_command;

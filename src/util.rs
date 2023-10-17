@@ -63,7 +63,7 @@ struct Package {
 pub fn get_crate_name_from_path(path: &str) -> Result<String, FtwError> {
     let cargo_file = Path::new(path).join("Cargo.toml");
     let mut file_contents = String::new();
-    let mut file = File::open(&cargo_file.as_path())?;
+    let mut file = File::open(cargo_file.as_path())?;
     file.read_to_string(&mut file_contents)?;
     let cargo_toml: CargoToml = toml::from_str(file_contents.as_str())?;
     let crate_name = cargo_toml
