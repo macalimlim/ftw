@@ -5,8 +5,9 @@ use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Default, Debug, Eq, PartialEq)]
 pub enum FtwBuildType {
+    #[default]
     Debug,
     Release,
 }
@@ -49,7 +50,7 @@ impl Display for FtwBuildType {
             FtwBuildType::Debug => "debug",
             FtwBuildType::Release => "release",
         };
-        write!(f, "{}", build_type)
+        write!(f, "{build_type}")
     }
 }
 
@@ -61,12 +62,6 @@ impl FromStr for FtwBuildType {
             "release" => Ok(FtwBuildType::Release),
             _ => Err(FtwError::UnknownBuildType),
         }
-    }
-}
-
-impl Default for FtwBuildType {
-    fn default() -> Self {
-        FtwBuildType::Debug
     }
 }
 
@@ -101,8 +96,10 @@ mod ftw_build_type_tests {
 
     #[test]
     fn test_fmt() {
-        assert_eq!("debug", format!("{}", FtwBuildType::Debug));
-        assert_eq!("release", format!("{}", FtwBuildType::Release));
+        let debug = FtwBuildType::Debug;
+        let release = FtwBuildType::Release;
+        assert_eq!("debug", format!("{debug}"));
+        assert_eq!("release", format!("{release}"));
     }
 
     #[test]

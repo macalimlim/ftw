@@ -98,11 +98,11 @@ impl FtwCommand {
     }
 
     fn append_to_gitignore(project_name: &str) -> Result<(), FtwError> {
-        let gitignore_path: String = format!("{}/.gitignore", project_name);
+        let gitignore_path: String = format!("{project_name}/.gitignore");
         let mut gitignore_file = OpenOptions::new().append(true).open(gitignore_path)?;
         let things_to_be_ignored = vec![".ftw", "bin/*", "godot/export_presets.cfg", "lib/*"];
         for thing in things_to_be_ignored {
-            writeln!(gitignore_file, "{}", thing)?;
+            writeln!(gitignore_file, "{thing}")?;
         }
         Ok(())
     }
@@ -110,7 +110,7 @@ impl FtwCommand {
     fn delete_items(project_name: &str) -> Result<(), FtwError> {
         let files_to_be_removed: Vec<String> = vec![".travis.yml", "LICENSE", "sh"]
             .into_iter()
-            .map(|i| format!("{}/{}", project_name, i))
+            .map(|file| format!("{project_name}/{file}"))
             .collect();
         Ok(remove_items(&files_to_be_removed)?)
     }
@@ -124,12 +124,12 @@ impl FtwCommand {
         let template = builder.parse(template_contents)?;
         let output = template.render(template_globals)?;
         write(target_file_path, output.as_bytes())?;
-        println!("{} has been created...", target_file_path);
+        println!("{target_file_path} has been created...");
         Ok(())
     }
 
     fn is_valid_project() -> Result<bool, FtwError> {
-        let project_files = vec![
+        let project_files = [
             "Cargo.toml",
             "Makefile",
             "godot/default_env.tres",
@@ -140,22 +140,23 @@ impl FtwCommand {
             "rust/Cargo.toml",
         ];
         let targets: Vec<String> = FtwTarget::iter()
-            .flat_map(|t| {
-                let gitkeep = format!("{}/.gitkeep", t.to_cli_arg());
-                let bin_gitkeep = format!("bin/{}", gitkeep);
-                let lib_gitkeep = format!("lib/{}", gitkeep);
+            .flat_map(|target| {
+                let target_cli_arg = target.to_cli_arg();
+                let gitkeep = format!("{target_cli_arg}/.gitkeep");
+                let bin_gitkeep = format!("bin/{gitkeep}");
+                let lib_gitkeep = format!("lib/{gitkeep}");
                 vec![bin_gitkeep, lib_gitkeep]
             })
             .collect();
-        let is_valid_project = project_files.iter().all(|i| {
+        let is_valid_project = project_files.iter().all(|project_file| {
             // TODO: Remove the check for the Makefile in the future
-            if i == &"Makefile" {
-                Path::new(i).exists() || Path::new("Makefile.toml").exists()
+            if project_file == &"Makefile" {
+                Path::new(project_file).exists() || Path::new("Makefile.toml").exists()
             } else {
-                Path::new(i).exists()
+                Path::new(project_file).exists()
             }
         });
-        let is_valid_targets = targets.iter().all(|t| Path::new(&t).exists());
+        let is_valid_targets = targets.iter().all(|target| Path::new(&target).exists());
         if is_valid_project && is_valid_targets {
             println!("Project is valid...");
             Ok(true)
@@ -189,7 +190,8 @@ impl FtwCommand {
                     let class_name = class_name.to_str().ok_or(FtwError::StringConversionError)?;
                     let class_name = class_name.replace(".rs", "")._pascal_case();
                     let module_name = class_name._snake_case();
-                    let path_display = format!("{}", path.display());
+                    let path_display = path.display();
+                    let path_display = format!("{path_display}");
                     let replaced_path_display = path_display.as_str().replace('\\', "/");
                     let module_name_vec: Vec<&str> = replaced_path_display.split('/').collect();
                     let (_, module_path) = module_name_vec.split_at(2);
@@ -224,7 +226,7 @@ impl FtwCommand {
 
     fn create_directory(base_path: &str, directories: &[String]) -> Result<String, FtwError> {
         let dir_path = directories.join("/");
-        let full_path = format!("{}/{}", base_path, dir_path);
+        let full_path = format!("{base_path}/{dir_path}");
         create_dir_all(&full_path)?;
         Ok(full_path)
     }
@@ -254,7 +256,8 @@ impl FtwCommand {
                 }
             }
             let is_dir = path.is_dir();
-            let mod_rs_file = format!("{}/mod.rs", entry_path.as_path().display());
+            let entry_path_display = entry_path.as_path().display();
+            let mod_rs_file = format!("{entry_path_display}/mod.rs");
             let mod_rs_file_path = Path::new(&mod_rs_file);
             let is_contains_mod_rs = mod_rs_file_path.exists();
             if is_dir && is_contains_mod_rs {
@@ -275,8 +278,8 @@ impl FtwCommand {
             Ok(())
         } else {
             let dir = directories.join("/");
-            let current_path = format!("{}/{}", &base_src_path, &dir);
-            let mod_rs_file = format!("{}/mod.rs", &current_path);
+            let current_path = format!("{base_src_path}/{dir}");
+            let mod_rs_file = format!("{current_path}/mod.rs");
             let modules = FtwCommand::get_modules_from_directory(&current_path)?;
             let tmpl_globals = object!({ "modules": modules });
             let template = &String::from_utf8_lossy(include_bytes!("templates/mod_tmpl.rs"));
@@ -295,7 +298,8 @@ impl FtwCommand {
     ) -> Result<(), FtwError> {
         let base_src_path = "rust/src";
         let src_dir_path = FtwCommand::create_directory(base_src_path, directories)?;
-        let class_rs_file = format!("{}/{}.rs", &src_dir_path, class_name._snake_case());
+        let class_name_snake_case = class_name._snake_case();
+        let class_rs_file = format!("{src_dir_path}/{class_name_snake_case}.rs");
         if !Path::new(&class_rs_file).exists() {
             let tmpl_globals = FtwCommand::get_tmpl_globals(class_name, node_type);
             let template = &String::from_utf8_lossy(include_bytes!("templates/class_tmpl.rs"));
@@ -311,7 +315,8 @@ impl FtwCommand {
         node_type: FtwNodeType,
     ) -> Result<(), FtwError> {
         let gdns_dir_path = FtwCommand::create_directory("godot/native", directories)?;
-        let gdns_file = format!("{}/{}.gdns", &gdns_dir_path, class_name._pascal_case());
+        let class_name_pascal_case = class_name._pascal_case();
+        let gdns_file = format!("{gdns_dir_path}/{class_name_pascal_case}.gdns");
         if !Path::new(&gdns_file).exists() {
             let tmpl_globals = FtwCommand::get_tmpl_globals(class_name, node_type);
             let template = &String::from_utf8_lossy(include_bytes!("templates/gdns_tmpl.gdns"));
@@ -326,7 +331,8 @@ impl FtwCommand {
         node_type: FtwNodeType,
     ) -> Result<(), FtwError> {
         let tscn_dir_path = FtwCommand::create_directory("godot/scenes", directories)?;
-        let tscn_file = format!("{}/{}.tscn", &tscn_dir_path, class_name._pascal_case());
+        let class_name_pascal_case = class_name._pascal_case();
+        let tscn_file = format!("{tscn_dir_path}/{class_name_pascal_case}.tscn");
         if !Path::new(&tscn_file).exists() {
             let mut tmpl_globals = FtwCommand::get_tmpl_globals(class_name, node_type);
             let k = KStringBase::from_ref("dir_path");
@@ -692,12 +698,12 @@ mod ftw_command_tests {
         assert!(project
             .read("rust/Cargo.toml")
             .contains(&project.get_name()));
+        let target_cli_arg = target.to_cli_arg();
+        let target_lib_prefix = target.to_lib_prefix();
+        let project_name = project.get_name();
+        let target_lib_ext = target.to_lib_ext();
         assert!(project.exists(&format!(
-            "lib/{}/{}{}.{}",
-            target.to_cli_arg(),
-            target.to_lib_prefix(),
-            project.get_name(),
-            target.to_lib_ext()
+            "lib/{target_cli_arg}/{target_lib_prefix}{project_name}.{target_lib_ext}"
         )));
     }
 
@@ -730,12 +736,12 @@ enable-cross-compilation=true
         assert!(project
             .read("rust/Cargo.toml")
             .contains(&project.get_name()));
+        let target_cli_arg = target.to_cli_arg();
+        let target_lib_prefix = target.to_lib_prefix();
+        let project_name = project.get_name();
+        let target_lib_ext = target.to_lib_ext();
         assert!(project.exists(&format!(
-            "lib/{}/{}{}.{}",
-            target.to_cli_arg(),
-            target.to_lib_prefix(),
-            project.get_name(),
-            target.to_lib_ext()
+            "lib/{target_cli_arg}/{target_lib_prefix}{project_name}.{target_lib_ext}"
         )));
     }
 
@@ -768,12 +774,12 @@ enable-cross-compilation=true
         assert!(project
             .read("rust/Cargo.toml")
             .contains(&project.get_name()));
+        let target_cli_arg = target.to_cli_arg();
+        let target_lib_prefix = target.to_lib_prefix();
+        let project_name = project.get_name();
+        let target_lib_ext = target.to_lib_ext();
         assert!(project.exists(&format!(
-            "lib/{}/{}{}.{}",
-            target.to_cli_arg(),
-            target.to_lib_prefix(),
-            project.get_name(),
-            target.to_lib_ext()
+            "lib/{target_cli_arg}/{target_lib_prefix}{project_name}.{target_lib_ext}"
         )));
     }
 
@@ -806,12 +812,12 @@ enable-cross-compilation=true
         assert!(project
             .read("rust/Cargo.toml")
             .contains(&project.get_name()));
+        let target_cli_arg = target.to_cli_arg();
+        let target_lib_prefix = target.to_lib_prefix();
+        let project_name = project.get_name();
+        let target_lib_ext = target.to_lib_ext();
         assert!(project.exists(&format!(
-            "lib/{}/{}{}.{}",
-            target.to_cli_arg(),
-            target.to_lib_prefix(),
-            project.get_name(),
-            target.to_lib_ext()
+            "lib/{target_cli_arg}/{target_lib_prefix}{project_name}.{target_lib_ext}"
         )));
     }
 
@@ -844,12 +850,12 @@ enable-cross-compilation=true
         assert!(project
             .read("rust/Cargo.toml")
             .contains(&project.get_name()));
+        let target_cli_arg = target.to_cli_arg();
+        let target_lib_prefix = target.to_lib_prefix();
+        let project_name = project.get_name();
+        let target_lib_ext = target.to_lib_ext();
         assert!(project.exists(&format!(
-            "lib/{}/{}{}.{}",
-            target.to_cli_arg(),
-            target.to_lib_prefix(),
-            project.get_name(),
-            target.to_lib_ext()
+            "lib/{target_cli_arg}/{target_lib_prefix}{project_name}.{target_lib_ext}"
         )));
     }
 
@@ -882,12 +888,12 @@ enable-cross-compilation=true
         assert!(project
             .read("rust/Cargo.toml")
             .contains(&project.get_name()));
+        let target_cli_arg = target.to_cli_arg();
+        let target_lib_prefix = target.to_lib_prefix();
+        let project_name = project.get_name();
+        let target_lib_ext = target.to_lib_ext();
         assert!(project.exists(&format!(
-            "lib/{}/{}{}.{}",
-            target.to_cli_arg(),
-            target.to_lib_prefix(),
-            project.get_name(),
-            target.to_lib_ext()
+            "lib/{target_cli_arg}/{target_lib_prefix}{project_name}.{target_lib_ext}"
         )));
     }
 
@@ -912,12 +918,12 @@ enable-cross-compilation=true
         assert!(project
             .read("rust/Cargo.toml")
             .contains(&project.get_name()));
+        let target_cli_arg = target.to_cli_arg();
+        let target_lib_prefix = target.to_lib_prefix();
+        let project_name = project.get_name();
+        let target_lib_ext = target.to_lib_ext();
         assert!(project.exists(&format!(
-            "lib/{}/{}{}.{}",
-            target.to_cli_arg(),
-            target.to_lib_prefix(),
-            project.get_name(),
-            target.to_lib_ext()
+            "lib/{target_cli_arg}/{target_lib_prefix}{project_name}.{target_lib_ext}"
         )));
     }
 
@@ -941,12 +947,12 @@ enable-cross-compilation=true
         assert!(project
             .read("rust/Cargo.toml")
             .contains(&project.get_name()));
+        let target_cli_arg = target.to_cli_arg();
+        let target_lib_prefix = target.to_lib_prefix();
+        let project_name = project.get_name();
+        let target_lib_ext = target.to_lib_ext();
         assert!(project.exists(&format!(
-            "lib/{}/{}{}.{}",
-            target.to_cli_arg(),
-            target.to_lib_prefix(),
-            project.get_name(),
-            target.to_lib_ext()
+            "lib/{target_cli_arg}/{target_lib_prefix}{project_name}.{target_lib_ext}"
         )));
     }
 
@@ -970,25 +976,19 @@ enable-cross-compilation=true
         assert!(project
             .read("rust/Cargo.toml")
             .contains(&project.get_name()));
+        let target_cli_arg = target.to_cli_arg();
+        let target_lib_prefix = target.to_lib_prefix();
+        let project_name = project.get_name();
+        let target_lib_ext = target.to_lib_ext();
+        let target_app_ext = target.to_app_ext();
         assert!(project.exists(&format!(
-            "bin/{}/{}{}.{}",
-            target.to_cli_arg(),
-            target.to_lib_prefix(),
-            project.get_name(),
-            target.to_lib_ext()
+            "bin/{target_cli_arg}/{target_lib_prefix}{project_name}.{target_lib_ext}"
         )));
         assert!(project.exists(&format!(
-            "bin/{}/{}.debug.{}.pck",
-            target.to_cli_arg(),
-            project.get_name(),
-            target.to_cli_arg()
+            "bin/{target_cli_arg}/{project_name}.debug.{target_cli_arg}.pck"
         )));
         assert!(project.exists(&format!(
-            "bin/{}/{}.debug.{}{}",
-            target.to_cli_arg(),
-            project.get_name(),
-            target.to_cli_arg(),
-            target.to_app_ext()
+            "bin/{target_cli_arg}/{project_name}.debug.{target_cli_arg}{target_app_ext}"
         )));
     }
 
@@ -1021,25 +1021,19 @@ enable-cross-compilation=true
         assert!(project
             .read("rust/Cargo.toml")
             .contains(&project.get_name()));
+        let target_cli_arg = target.to_cli_arg();
+        let target_lib_prefix = target.to_lib_prefix();
+        let project_name = project.get_name();
+        let target_lib_ext = target.to_lib_ext();
+        let target_app_ext = target.to_app_ext();
         assert!(project.exists(&format!(
-            "bin/{}/{}{}.{}",
-            target.to_cli_arg(),
-            target.to_lib_prefix(),
-            project.get_name(),
-            target.to_lib_ext()
+            "bin/{target_cli_arg}/{target_lib_prefix}{project_name}.{target_lib_ext}"
         )));
         assert!(project.exists(&format!(
-            "bin/{}/{}.debug.{}.pck",
-            target.to_cli_arg(),
-            project.get_name(),
-            target.to_cli_arg()
+            "bin/{target_cli_arg}/{project_name}.debug.{target_cli_arg}.pck"
         )));
         assert!(project.exists(&format!(
-            "bin/{}/{}.debug.{}{}",
-            target.to_cli_arg(),
-            project.get_name(),
-            target.to_cli_arg(),
-            target.to_app_ext()
+            "bin/{target_cli_arg}/{project_name}.debug.{target_cli_arg}{target_app_ext}"
         )));
     }
 
@@ -1072,12 +1066,11 @@ enable-cross-compilation=true
         assert!(project
             .read("rust/Cargo.toml")
             .contains(&project.get_name()));
+        let target_cli_arg = target.to_cli_arg();
+        let project_name = project.get_name();
+        let target_app_ext = target.to_app_ext();
         assert!(project.exists(&format!(
-            "bin/{}/{}.debug.{}{}",
-            target.to_cli_arg(),
-            project.get_name(),
-            target.to_cli_arg(),
-            target.to_app_ext()
+            "bin/{target_cli_arg}/{project_name}.debug.{target_cli_arg}{target_app_ext}"
         )));
     }
 }

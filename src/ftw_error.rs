@@ -44,7 +44,11 @@ impl FtwError {
 #[rustfmt::skip::macros(format)]
 impl ToMessage for FtwError {
     fn to_message(&self) -> Message {
-        format!("{} {} {}", FtwError::THUMBS_DOWN, FtwError::get_styled_error(), self.to_string().split('\n').next().unwrap_or("Unknown error"))
+        let thumbs_down = FtwError::THUMBS_DOWN;
+        let styled_error = FtwError::get_styled_error();
+        let error_string = self.to_string();
+        let description = error_string.split('\n').next().unwrap_or("Unknown error");
+        format!("{thumbs_down} {styled_error} {description}")
     }
 }
 
@@ -54,110 +58,78 @@ mod ftw_error_tests {
 
     #[test]
     fn test_to_message() {
-        let io_error = FtwError::Error(std::io::Error::new(std::io::ErrorKind::Other, "IO error"));
+        let error_description = "IO error";
+        let io_error_message = FtwError::Error(std::io::Error::new(
+            std::io::ErrorKind::Other,
+            error_description,
+        ))
+        .to_message();
+        let thumbs_down = FtwError::THUMBS_DOWN;
+        let styled_error = FtwError::get_styled_error();
         assert_eq!(
-            format!(
-                "{} {} {}",
-                FtwError::THUMBS_DOWN,
-                FtwError::get_styled_error(),
-                "IO error"
-            ),
-            io_error.to_message()
+            format!("{thumbs_down} {styled_error} {error_description}"),
+            io_error_message
         );
         //
-        let invalid_project_error = FtwError::InvalidProject;
+        let invalid_project_error_message = FtwError::InvalidProject.to_message();
         assert_eq!(
-            format!(
-                "{} {} {}",
-                FtwError::THUMBS_DOWN,
-                FtwError::get_styled_error(),
-                "Invalid project"
-            ),
-            invalid_project_error.to_message()
+            format!("{thumbs_down} {styled_error} Invalid project"),
+            invalid_project_error_message
         );
         //
-        let liquid_error = FtwError::LiquidError(liquid_core::Error::with_msg("Liquid error"));
+        let error_description = "Liquid error";
+        let liquid_error_message =
+            FtwError::LiquidError(liquid_core::Error::with_msg(error_description)).to_message();
         assert_eq!(
-            format!(
-                "{} {} {}",
-                FtwError::THUMBS_DOWN,
-                FtwError::get_styled_error(),
-                "liquid: Liquid error"
-            ),
-            liquid_error.to_message()
+            format!("{thumbs_down} {styled_error} liquid: {error_description}"),
+            liquid_error_message
         );
         //
         // TODO: walkdir error
         //
         let unsupported_target_error = FtwError::UnsupportedTarget;
         assert_eq!(
-            format!(
-                "{} {} {}",
-                FtwError::THUMBS_DOWN,
-                FtwError::get_styled_error(),
-                "Unsupported target"
-            ),
+            format!("{thumbs_down} {styled_error} Unsupported target"),
             unsupported_target_error.to_message()
         );
         //
-        let fs_extra_error = FtwError::FsExtraError(fs_extra::error::Error::new(
+        let error_description = "Fs extra error";
+        let fs_extra_error_message = FtwError::FsExtraError(fs_extra::error::Error::new(
             fs_extra::error::ErrorKind::Other,
-            "Fs extra error",
-        ));
+            error_description,
+        ))
+        .to_message();
         assert_eq!(
-            format!(
-                "{} {} {}",
-                FtwError::THUMBS_DOWN,
-                FtwError::get_styled_error(),
-                "Fs extra error"
-            ),
-            fs_extra_error.to_message()
+            format!("{thumbs_down} {styled_error} {error_description}"),
+            fs_extra_error_message
         );
         //
-        let unknown_build_type_error = FtwError::UnknownBuildType;
+        let unknown_build_type_error_message = FtwError::UnknownBuildType.to_message();
         assert_eq!(
-            format!(
-                "{} {} {}",
-                FtwError::THUMBS_DOWN,
-                FtwError::get_styled_error(),
-                "Unknown build type"
-            ),
-            unknown_build_type_error.to_message()
+            format!("{thumbs_down} {styled_error} Unknown build type"),
+            unknown_build_type_error_message
         );
         //
         // TODO: cargo edit error
         //
-        let path_error = FtwError::PathError;
+        let path_error_message = FtwError::PathError.to_message();
         assert_eq!(
-            format!(
-                "{} {} {}",
-                FtwError::THUMBS_DOWN,
-                FtwError::get_styled_error(),
-                "Path error"
-            ),
-            path_error.to_message()
+            format!("{thumbs_down} {styled_error} Path error"),
+            path_error_message
         );
         //
-        let string_conversion_error = FtwError::StringConversionError;
+        let string_conversion_error_message = FtwError::StringConversionError.to_message();
         assert_eq!(
-            format!(
-                "{} {} {}",
-                FtwError::THUMBS_DOWN,
-                FtwError::get_styled_error(),
-                "String conversion error"
-            ),
-            string_conversion_error.to_message()
+            format!("{thumbs_down} {styled_error} String conversion error"),
+            string_conversion_error_message
         );
         //
-        let regex_error = FtwError::RegexError(regex::Error::Syntax("Syntax error".to_string()));
+        let error_description = "Syntax error";
+        let regex_error_message =
+            FtwError::RegexError(regex::Error::Syntax(error_description.to_string())).to_message();
         assert_eq!(
-            format!(
-                "{} {} {}",
-                FtwError::THUMBS_DOWN,
-                FtwError::get_styled_error(),
-                "Syntax error"
-            ),
-            regex_error.to_message()
+            format!("{thumbs_down} {styled_error} {error_description}"),
+            regex_error_message
         );
         //
         // TODO: anyhow error

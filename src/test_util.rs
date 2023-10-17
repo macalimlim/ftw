@@ -54,9 +54,9 @@ impl Project {
     /// Will panic if it can't create the file
     pub fn create(&self, path: &str, contents: &str) {
         File::create(self.root.join(path))
-            .unwrap_or_else(|_| panic!("couldn't create file {:?}", path))
+            .unwrap_or_else(|_| panic!("couldn't create file {path:?}"))
             .write_all(contents.as_ref())
-            .unwrap_or_else(|_| panic!("couldn't write to file {:?}: {:?}", path, contents));
+            .unwrap_or_else(|_| panic!("couldn't write to file {path:?}: {contents:?}"));
     }
 }
 

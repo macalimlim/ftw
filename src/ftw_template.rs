@@ -40,7 +40,7 @@ impl Display for FtwTemplate {
             FtwTemplate::Default { git_url: _ } => "default",
             FtwTemplate::Custom { git_url: _ } => "custom",
         };
-        write!(f, "{}", message)
+        write!(f, "{message}")
     }
 }
 
@@ -88,20 +88,13 @@ mod ftw_template_tests {
 
     #[test]
     fn test_fmt() {
-        assert_eq!(
-            format!("{}", "default"),
-            format!("{}", FtwTemplate::default())
-        );
+        let template_default = FtwTemplate::default();
+        assert_eq!("default", format!("{template_default}"));
         let custom_template = CUSTOM_TEMPLATE.to_string();
-        assert_eq!(
-            format!("{}", "custom"),
-            format!(
-                "{}",
-                FtwTemplate::Custom {
-                    git_url: custom_template,
-                }
-            )
-        );
+        let template_custom = FtwTemplate::Custom {
+            git_url: custom_template,
+        };
+        assert_eq!("custom", format!("{template_custom}",));
     }
 
     #[test]

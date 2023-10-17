@@ -10,7 +10,9 @@ use std::path::Path;
 
 #[must_use]
 pub fn get_current_platform() -> String {
-    format!("{}-{}", env::consts::OS, env::consts::ARCH)
+    let os = env::consts::OS;
+    let arch = env::consts::ARCH;
+    format!("{os}-{arch}")
 }
 
 #[must_use]

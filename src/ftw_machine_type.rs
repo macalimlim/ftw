@@ -4,8 +4,9 @@ use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Default, Eq, PartialEq)]
 pub enum FtwMachineType {
+    #[default]
     Desktop,
     Server,
 }
@@ -38,7 +39,7 @@ impl Display for FtwMachineType {
             FtwMachineType::Desktop => "desktop",
             FtwMachineType::Server => "server",
         };
-        write!(f, "{}", message)
+        write!(f, "{message}")
     }
 }
 
@@ -49,12 +50,6 @@ impl ToCliArg for FtwMachineType {
             FtwMachineType::Server => "",
         }
         .to_string()
-    }
-}
-
-impl Default for FtwMachineType {
-    fn default() -> Self {
-        FtwMachineType::Desktop
     }
 }
 
@@ -84,8 +79,10 @@ mod ftw_machine_type_tests {
 
     #[test]
     fn test_fmt() {
-        assert_eq!("desktop", format!("{}", FtwMachineType::Desktop));
-        assert_eq!("server", format!("{}", FtwMachineType::Server));
+        let desktop = FtwMachineType::Desktop;
+        let server = FtwMachineType::Server;
+        assert_eq!("desktop", format!("{desktop}"));
+        assert_eq!("server", format!("{server}"));
     }
 
     #[test]

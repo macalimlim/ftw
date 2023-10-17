@@ -25,29 +25,23 @@ fn test_ftw_export_no_target() {
         .success();
     let current_platform = get_current_platform();
     let target: FtwTarget = current_platform.parse().unwrap();
-    let crate_name = get_crate_name_from_path(&format!("{}/rust/", &project.get_name())).unwrap();
+    let project_name = project.get_name();
+    let crate_name = get_crate_name_from_path(&format!("{project_name}/rust/")).unwrap();
     assert!(project
         .read("rust/Cargo.toml")
         .contains(&project.get_name()));
+    let target_cli_arg = target.to_cli_arg();
+    let target_lib_prefix = target.to_lib_prefix();
+    let target_lib_ext = target.to_lib_ext();
+    let target_app_ext = target.to_app_ext();
     assert!(project.exists(&format!(
-        "bin/{}/{}{}.{}",
-        target.to_cli_arg(),
-        target.to_lib_prefix(),
-        project.get_name(),
-        target.to_lib_ext()
+        "bin/{target_cli_arg}/{target_lib_prefix}{project_name}.{target_lib_ext}"
     )));
     assert!(project.exists(&format!(
-        "bin/{}/{}.debug.{}.pck",
-        target.to_cli_arg(),
-        crate_name,
-        target.to_cli_arg()
+        "bin/{target_cli_arg}/{crate_name}.debug.{target_cli_arg}.pck"
     )));
     assert!(project.exists(&format!(
-        "bin/{}/{}.debug.{}{}",
-        target.to_cli_arg(),
-        crate_name,
-        target.to_cli_arg(),
-        target.to_app_ext()
+        "bin/{target_cli_arg}/{crate_name}.debug.{target_cli_arg}{target_app_ext}"
     )));
 }
 
@@ -79,29 +73,23 @@ enable-cross-compilation=true
         .current_dir(&project.get_name())
         .assert()
         .success();
-    let crate_name = get_crate_name_from_path(&format!("{}/rust/", &project.get_name())).unwrap();
+    let project_name = project.get_name();
+    let crate_name = get_crate_name_from_path(&format!("{project_name}/rust/")).unwrap();
     assert!(project
         .read("rust/Cargo.toml")
         .contains(&project.get_name()));
+    let target_cli_arg = target.to_cli_arg();
+    let target_lib_prefix = target.to_lib_prefix();
+    let target_lib_ext = target.to_lib_ext();
+    let target_app_ext = target.to_app_ext();
     assert!(project.exists(&format!(
-        "bin/{}/{}{}.{}",
-        target.to_cli_arg(),
-        target.to_lib_prefix(),
-        project.get_name(),
-        target.to_lib_ext()
+        "bin/{target_cli_arg}/{target_lib_prefix}{project_name}.{target_lib_ext}"
     )));
     assert!(project.exists(&format!(
-        "bin/{}/{}.debug.{}.pck",
-        target.to_cli_arg(),
-        crate_name,
-        target.to_cli_arg()
+        "bin/{target_cli_arg}/{crate_name}.debug.{target_cli_arg}.pck"
     )));
     assert!(project.exists(&format!(
-        "bin/{}/{}.debug.{}{}",
-        target.to_cli_arg(),
-        crate_name,
-        target.to_cli_arg(),
-        target.to_app_ext()
+        "bin/{target_cli_arg}/{crate_name}.debug.{target_cli_arg}{target_app_ext}"
     )));
 }
 
@@ -133,15 +121,14 @@ enable-cross-compilation=true
         .current_dir(&project.get_name())
         .assert()
         .success();
-    let crate_name = get_crate_name_from_path(&format!("{}/rust/", &project.get_name())).unwrap();
+    let project_name = project.get_name();
+    let crate_name = get_crate_name_from_path(&format!("{project_name}/rust/")).unwrap();
     assert!(project
         .read("rust/Cargo.toml")
         .contains(&project.get_name()));
+    let target_cli_arg = target.to_cli_arg();
+    let target_app_ext = target.to_app_ext();
     assert!(project.exists(&format!(
-        "bin/{}/{}.debug.{}{}",
-        target.to_cli_arg(),
-        crate_name,
-        target.to_cli_arg(),
-        target.to_app_ext()
+        "bin/{target_cli_arg}/{crate_name}.debug.{target_cli_arg}{target_app_ext}"
     )));
 }

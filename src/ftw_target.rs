@@ -6,7 +6,7 @@ use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 use strum_macros::EnumIter;
 
-#[derive(Clone, Copy, Debug, EnumIter, Eq, PartialEq)]
+#[derive(Clone, Copy, Default, Debug, EnumIter, Eq, PartialEq)]
 pub enum FtwTarget {
     AndroidLinuxAarch64,
     AndroidLinuxArmV7,
@@ -19,6 +19,7 @@ pub enum FtwTarget {
     WindowsX86Gnu,
     WindowsX86Msvc,
     WindowsX86_64Gnu,
+    #[default]
     WindowsX86_64Msvc,
 }
 
@@ -162,13 +163,8 @@ impl FromStr for FtwTarget {
 
 impl Display for FtwTarget {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(f, "{}", self.to_cli_arg())
-    }
-}
-
-impl Default for FtwTarget {
-    fn default() -> Self {
-        FtwTarget::WindowsX86_64Msvc
+        let cli_arg = self.to_cli_arg();
+        write!(f, "{cli_arg}")
     }
 }
 
@@ -355,7 +351,7 @@ mod ftw_target_tests {
             ("x86_64-pc-windows-msvc", FtwTarget::WindowsX86_64Msvc),
         ];
         for (cli_arg, target) in cli_arg_targets {
-            assert_eq!(cli_arg, format!("{}", target));
+            assert_eq!(cli_arg, format!("{target}"));
         }
     }
 

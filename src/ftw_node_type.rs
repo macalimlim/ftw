@@ -26,7 +26,7 @@ macro_rules! generate_ftw_node_types {
                 let node_type: &str = match self {
                     $(FtwNodeType::$i => stringify!($i),)*
                 };
-                write!(f, "{}", node_type)
+                write!(f, "{node_type}")
             }
         }
 
@@ -49,7 +49,8 @@ macro_rules! generate_ftw_node_types {
 
             #[test]
             fn test_fmt() {
-                $(assert_eq!(stringify!($i), format!("{}", FtwNodeType::$i));)*
+                $(let node_type = FtwNodeType::$i;
+                  assert_eq!(stringify!($i), format!("{node_type}"));)*
             }
 
             #[test]

@@ -42,25 +42,53 @@ impl FtwSuccess<'_> {
     }
 }
 
-#[rustfmt::skip::macros(format)]
 impl ToMessage for FtwSuccess<'_> {
     fn to_message(&self) -> Message {
         let description = match self {
-            FtwSuccess::New { project_name, template } => {
-                match template {
-                    FtwTemplate::Default { git_url } | FtwTemplate::Custom { git_url } => {
-                        format!("A new project has been created {} using the {} ({}) template", project_name.blue().bold().italic(), template.to_string().blue().bold().italic(), git_url.underline())
-                    }
+            FtwSuccess::New {
+                project_name,
+                template,
+            } => match template {
+                FtwTemplate::Default { git_url } | FtwTemplate::Custom { git_url } => {
+                    let styled_project_name = project_name.blue().bold().italic();
+                    let styled_template = template.to_string().blue().bold().italic();
+                    let styled_git_url = git_url.underline();
+                    format!("A new project has been created {styled_project_name} using the {styled_template} ({styled_git_url}) template")
                 }
             },
-            FtwSuccess::Class { class_name, node_type } => format!("A new class has been created {} using the {} node type", class_name.blue().bold().italic(), node_type.to_string().blue().bold().italic()),
-            FtwSuccess::Singleton { class_name } => format!("A new singleton class has been created {}", class_name.blue().bold().italic()),
-            FtwSuccess::Run { machine_type } => format!("The game was run as a {} application", machine_type.to_string().blue().bold().italic()),
-            FtwSuccess::Build { target, build_type } => format!("A library was created at lib/{} with a {} profile", target.to_string().blue().bold().italic(), build_type.to_string().blue().bold().italic()),
-            FtwSuccess::Export { target, build_type } => format!("A game was created at bin/{} with a {} profile", target.to_string().blue().bold().italic(), build_type.to_string().blue().bold().italic()),
+            FtwSuccess::Class {
+                class_name,
+                node_type,
+            } => {
+                let styled_class_name = class_name.blue().bold().italic();
+                let styled_node_type = node_type.to_string().blue().bold().italic();
+                format!("A new class has been created {styled_class_name} using the {styled_node_type} node type")
+            }
+            FtwSuccess::Singleton { class_name } => {
+                let styled_class_name = class_name.blue().bold().italic();
+                format!("A new singleton class has been created {styled_class_name}")
+            }
+            FtwSuccess::Run { machine_type } => {
+                let styled_machine_type = machine_type.to_string().blue().bold().italic();
+                format!("The game was run as a {styled_machine_type} application")
+            }
+            FtwSuccess::Build { target, build_type } => {
+                let styled_target = target.to_string().blue().bold().italic();
+                let styled_build_type = build_type.to_string().blue().bold().italic();
+                format!("A library was created at lib/{styled_target} with a {styled_build_type} profile")
+            }
+            FtwSuccess::Export { target, build_type } => {
+                let styled_target = target.to_string().blue().bold().italic();
+                let styled_build_type = build_type.to_string().blue().bold().italic();
+                format!(
+                    "A game was created at bin/{styled_target} with a {styled_build_type} profile"
+                )
+            }
             FtwSuccess::Clean => "The project is now clean from excess artifacts".to_string(),
         };
-        format!("{} {} {}", FtwSuccess::THUMBS_UP, FtwSuccess::get_styled_success(), description)
+        let thumbs_up = FtwSuccess::THUMBS_UP;
+        let styled_success = FtwSuccess::get_styled_success();
+        format!("{thumbs_up} {styled_success} {description}")
     }
 }
 
@@ -72,152 +100,117 @@ mod ftw_success_tests {
     fn test_to_message() {
         let new_game = "my-awesome-game".to_string();
         let default_template = FtwTemplate::default();
+        let thumbs_up = FtwSuccess::THUMBS_UP;
+        let styled_success = FtwSuccess::get_styled_success();
+        let styled_new_game = new_game.blue().bold().italic();
+        let styled_default_template = default_template.to_string().blue().bold().italic();
         if let FtwTemplate::Default { git_url } = FtwTemplate::default() {
-            let ftw_success_new_default = FtwSuccess::New {
+            let styled_git_url = git_url.underline();
+            let ftw_success_new_default_message = FtwSuccess::New {
                 project_name: new_game.clone(),
                 template: &default_template,
-            };
+            }
+            .to_message();
             assert_eq!(
-                format!(
-                    "{} {} A new project has been created {} using the {} ({}) template",
-                    FtwSuccess::THUMBS_UP,
-                    FtwSuccess::get_styled_success(),
-                    new_game.blue().bold().italic(),
-                    default_template.to_string().blue().bold().italic(),
-                    git_url.underline(),
-                ),
-                format!("{}", ftw_success_new_default.to_message())
+                format!("{thumbs_up} {styled_success} A new project has been created {styled_new_game} using the {styled_default_template} ({styled_git_url}) template"),
+                format!("{ftw_success_new_default_message}")
             );
         }
         //
         let class_name = "IronMan".to_string();
         let node_type = FtwNodeType::Area2D;
-        let ftw_success_class = FtwSuccess::Class {
+        let ftw_success_class_message = FtwSuccess::Class {
             class_name: class_name.clone(),
             node_type: &node_type,
-        };
+        }
+        .to_message();
+        let styled_class_name = class_name.blue().bold().italic();
+        let styled_node_type = node_type.to_string().blue().bold().italic();
         assert_eq!(
-            format!(
-                "{} {} A new class has been created {} using the {} node type",
-                FtwSuccess::THUMBS_UP,
-                FtwSuccess::get_styled_success(),
-                class_name.blue().bold().italic(),
-                node_type.to_string().blue().bold().italic()
-            ),
-            format!("{}", ftw_success_class.to_message())
+            format!("{thumbs_up} {styled_success} A new class has been created {styled_class_name} using the {styled_node_type} node type"),
+            format!("{ftw_success_class_message}")
         );
         //
-        let ftw_success_singleton = FtwSuccess::Singleton {
+        let ftw_success_singleton_message = FtwSuccess::Singleton {
             class_name: class_name.clone(),
-        };
+        }
+        .to_message();
         assert_eq!(
-            format!(
-                "{} {} A new singleton class has been created {}",
-                FtwSuccess::THUMBS_UP,
-                FtwSuccess::get_styled_success(),
-                class_name.blue().bold().italic()
-            ),
-            format!("{}", ftw_success_singleton.to_message())
+            format!("{thumbs_up} {styled_success} A new singleton class has been created {styled_class_name}"),
+            format!("{ftw_success_singleton_message}")
         );
         //
         let machine_type = FtwMachineType::Desktop;
-        let ftw_success_run = FtwSuccess::Run {
+        let ftw_success_run_message = FtwSuccess::Run {
             machine_type: &machine_type,
-        };
+        }
+        .to_message();
+        let styled_machine_type = machine_type.to_string().blue().bold().italic();
         assert_eq!(
-            format!(
-                "{} {} The game was run as a {} application",
-                FtwSuccess::THUMBS_UP,
-                FtwSuccess::get_styled_success(),
-                machine_type.to_string().blue().bold().italic()
-            ),
-            format!("{}", ftw_success_run.to_message())
+            format!("{thumbs_up} {styled_success} The game was run as a {styled_machine_type} application"),
+            format!("{ftw_success_run_message}")
         );
         let machine_type = FtwMachineType::Server;
-        let ftw_success_run = FtwSuccess::Run {
+        let ftw_success_run_message = FtwSuccess::Run {
             machine_type: &machine_type,
-        };
+        }
+        .to_message();
+        let styled_machine_type = machine_type.to_string().blue().bold().italic();
         assert_eq!(
-            format!(
-                "{} {} The game was run as a {} application",
-                FtwSuccess::THUMBS_UP,
-                FtwSuccess::get_styled_success(),
-                machine_type.to_string().blue().bold().italic()
-            ),
-            format!("{}", ftw_success_run.to_message())
+            format!("{thumbs_up} {styled_success} The game was run as a {styled_machine_type} application"),
+            format!("{ftw_success_run_message}")
         );
         //
         let target = FtwTarget::LinuxX86_64;
         let debug = FtwBuildType::Debug;
-        let ftw_success_build_debug = FtwSuccess::Build {
+        let ftw_success_build_debug_message = FtwSuccess::Build {
             target: &target,
             build_type: &debug,
-        };
+        }
+        .to_message();
+        let styled_target = target.to_string().blue().bold().italic();
+        let styled_debug = debug.to_string().blue().bold().italic();
         assert_eq!(
-            format!(
-                "{} {} A library was created at lib/{} with a {} profile",
-                FtwSuccess::THUMBS_UP,
-                FtwSuccess::get_styled_success(),
-                target.to_string().blue().bold().italic(),
-                debug.to_string().blue().bold().italic()
-            ),
-            format!("{}", ftw_success_build_debug.to_message())
+            format!("{thumbs_up} {styled_success} A library was created at lib/{styled_target} with a {styled_debug} profile"),
+            format!("{ftw_success_build_debug_message}")
         );
         //
         let release = FtwBuildType::Release;
-        let ftw_success_build_release = FtwSuccess::Build {
+        let ftw_success_build_release_message = FtwSuccess::Build {
             target: &target,
             build_type: &release,
-        };
+        }
+        .to_message();
+        let styled_release = release.to_string().blue().bold().italic();
         assert_eq!(
-            format!(
-                "{} {} A library was created at lib/{} with a {} profile",
-                FtwSuccess::THUMBS_UP,
-                FtwSuccess::get_styled_success(),
-                target.to_string().blue().bold().italic(),
-                release.to_string().blue().bold().italic()
-            ),
-            format!("{}", ftw_success_build_release.to_message())
+            format!("{thumbs_up} {styled_success} A library was created at lib/{styled_target} with a {styled_release} profile"),
+            format!("{ftw_success_build_release_message}")
         );
         //
-        let ftw_success_export_debug = FtwSuccess::Export {
+        let ftw_success_export_debug_message = FtwSuccess::Export {
             target: &target,
             build_type: &debug,
-        };
+        }
+        .to_message();
         assert_eq!(
-            format!(
-                "{} {} A game was created at bin/{} with a {} profile",
-                FtwSuccess::THUMBS_UP,
-                FtwSuccess::get_styled_success(),
-                target.to_string().blue().bold().italic(),
-                debug.to_string().blue().bold().italic()
-            ),
-            format!("{}", ftw_success_export_debug.to_message())
+            format!("{thumbs_up} {styled_success} A game was created at bin/{styled_target} with a {styled_debug} profile"),
+            format!("{ftw_success_export_debug_message}")
         );
         //
-        let ftw_success_export_release = FtwSuccess::Export {
+        let ftw_success_export_release_message = FtwSuccess::Export {
             target: &target,
             build_type: &release,
-        };
+        }
+        .to_message();
         assert_eq!(
-            format!(
-                "{} {} A game was created at bin/{} with a {} profile",
-                FtwSuccess::THUMBS_UP,
-                FtwSuccess::get_styled_success(),
-                target.to_string().blue().bold().italic(),
-                release.to_string().blue().bold().italic()
-            ),
-            format!("{}", ftw_success_export_release.to_message())
+            format!("{thumbs_up} {styled_success} A game was created at bin/{styled_target} with a {styled_release} profile"),
+            format!("{ftw_success_export_release_message}")
         );
         //
-        let ftw_success_clean = FtwSuccess::Clean;
+        let ftw_success_clean_message = FtwSuccess::Clean.to_message();
         assert_eq!(
-            format!(
-                "{} {} The project is now clean from excess artifacts",
-                FtwSuccess::THUMBS_UP,
-                FtwSuccess::get_styled_success()
-            ),
-            format!("{}", ftw_success_clean.to_message())
+            format!("{thumbs_up} {styled_success} The project is now clean from excess artifacts"),
+            format!("{ftw_success_clean_message}")
         );
     }
 
@@ -227,21 +220,20 @@ mod ftw_success_tests {
         let custom_template = FtwTemplate::Custom {
             git_url: "/path/to/custom/template".to_string(),
         };
+        let thumbs_up = FtwSuccess::THUMBS_UP;
+        let styled_success = FtwSuccess::get_styled_success();
+        let styled_new_game = new_game.blue().bold().italic();
+        let styled_custom_template = custom_template.to_string().blue().bold().italic();
         if let FtwTemplate::Custom { ref git_url } = custom_template {
-            let ftw_success_new_custom = FtwSuccess::New {
+            let ftw_success_new_custom_message = FtwSuccess::New {
                 project_name: new_game.clone(),
                 template: &custom_template,
-            };
+            }
+            .to_message();
+            let styled_git_url = git_url.underline();
             assert_eq!(
-                format!(
-                    "{} {} A new project has been created {} using the {} ({}) template",
-                    FtwSuccess::THUMBS_UP,
-                    FtwSuccess::get_styled_success(),
-                    new_game.blue().bold().italic(),
-                    custom_template.to_string().blue().bold().italic(),
-                    git_url.underline(),
-                ),
-                format!("{}", ftw_success_new_custom.to_message())
+                format!("{thumbs_up} {styled_success} A new project has been created {styled_new_game} using the {styled_custom_template} ({styled_git_url}) template"),
+                format!("{ftw_success_new_custom_message}")
             );
         }
     }

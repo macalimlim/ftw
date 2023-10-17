@@ -21,7 +21,7 @@ impl FtwConfiguration {
         let ini = Ini::load_from_file(".ftw").unwrap_or_default();
         let default_properties = Properties::new();
         let ftw_section = ini.section(Some("ftw")).unwrap_or(&default_properties);
-        let exe_key_default_pairs = vec![
+        let exe_key_default_pairs = [
             ("godot-exe", GODOT_EXE),
             ("godot-headless-exe", GODOT_HEADLESS_EXE),
             ("godot-server-exe", GODOT_SERVER_EXE),

@@ -28,12 +28,12 @@ fn test_ftw_build_no_target() {
     assert!(project
         .read("rust/Cargo.toml")
         .contains(&project.get_name()));
+    let target_cli_arg = target.to_cli_arg();
+    let target_lib_prefix = target.to_lib_prefix();
+    let project_name = project.get_name();
+    let target_lib_ext = target.to_lib_ext();
     assert!(project.exists(&format!(
-        "lib/{}/{}{}.{}",
-        target.to_cli_arg(),
-        target.to_lib_prefix(),
-        project.get_name(),
-        target.to_lib_ext()
+        "lib/{target_cli_arg}/{target_lib_prefix}{project_name}.{target_lib_ext}"
     )));
 }
 
@@ -63,12 +63,12 @@ enable-cross-compilation=true
     assert!(project
         .read("rust/Cargo.toml")
         .contains(&project.get_name()));
+    let target_cli_arg = target.to_cli_arg();
+    let target_lib_prefix = target.to_lib_prefix();
+    let project_name = project.get_name();
+    let target_lib_ext = target.to_lib_ext();
     assert!(project.exists(&format!(
-        "lib/{}/{}{}.{}",
-        target.to_cli_arg(),
-        target.to_lib_prefix(),
-        project.get_name(),
-        target.to_lib_ext()
+        "lib/{target_cli_arg}/{target_lib_prefix}{project_name}.{target_lib_ext}"
     )));
     ftw()
         .arg("clean")
@@ -103,12 +103,12 @@ enable-cross-compilation=true
     assert!(project
         .read("rust/Cargo.toml")
         .contains(&project.get_name()));
+    let target_cli_arg = target.to_cli_arg();
+    let target_lib_prefix = target.to_lib_prefix();
+    let project_name = project.get_name();
+    let target_lib_ext = target.to_lib_ext();
     assert!(project.exists(&format!(
-        "lib/{}/{}{}.{}",
-        target.to_cli_arg(),
-        target.to_lib_prefix(),
-        project.get_name(),
-        target.to_lib_ext()
+        "lib/{target_cli_arg}/{target_lib_prefix}{project_name}.{target_lib_ext}"
     )));
     ftw()
         .arg("clean")
@@ -143,12 +143,12 @@ enable-cross-compilation=true
     assert!(project
         .read("rust/Cargo.toml")
         .contains(&project.get_name()));
+    let target_cli_arg = target.to_cli_arg();
+    let target_lib_prefix = target.to_lib_prefix();
+    let project_name = project.get_name();
+    let target_lib_ext = target.to_lib_ext();
     assert!(project.exists(&format!(
-        "lib/{}/{}{}.{}",
-        target.to_cli_arg(),
-        target.to_lib_prefix(),
-        project.get_name(),
-        target.to_lib_ext()
+        "lib/{target_cli_arg}/{target_lib_prefix}{project_name}.{target_lib_ext}"
     )));
     ftw()
         .arg("clean")
@@ -183,12 +183,12 @@ enable-cross-compilation=true
     assert!(project
         .read("rust/Cargo.toml")
         .contains(&project.get_name()));
+    let target_cli_arg = target.to_cli_arg();
+    let target_lib_prefix = target.to_lib_prefix();
+    let project_name = project.get_name();
+    let target_lib_ext = target.to_lib_ext();
     assert!(project.exists(&format!(
-        "lib/{}/{}{}.{}",
-        target.to_cli_arg(),
-        target.to_lib_prefix(),
-        project.get_name(),
-        target.to_lib_ext()
+        "lib/{target_cli_arg}/{target_lib_prefix}{project_name}.{target_lib_ext}"
     )));
     ftw()
         .arg("clean")
@@ -223,12 +223,12 @@ enable-cross-compilation=true
     assert!(project
         .read("rust/Cargo.toml")
         .contains(&project.get_name()));
+    let target_cli_arg = target.to_cli_arg();
+    let target_lib_prefix = target.to_lib_prefix();
+    let project_name = project.get_name();
+    let target_lib_ext = target.to_lib_ext();
     assert!(project.exists(&format!(
-        "lib/{}/{}{}.{}",
-        target.to_cli_arg(),
-        target.to_lib_prefix(),
-        project.get_name(),
-        target.to_lib_ext()
+        "lib/{target_cli_arg}/{target_lib_prefix}{project_name}.{target_lib_ext}"
     )));
     ftw()
         .arg("clean")
