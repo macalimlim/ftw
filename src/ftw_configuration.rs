@@ -3,9 +3,9 @@ use crate::ftw_compiler::FtwCompiler;
 use crate::ftw_target::FtwTarget;
 use ini::{Ini, Properties};
 
-pub const GODOT_EXE: &str = "godot";
-pub const GODOT_HEADLESS_EXE: &str = "godot-headless";
-pub const GODOT_SERVER_EXE: &str = "godot-server";
+pub const GODOT_EXE: &str = "godot3";
+pub const GODOT_HEADLESS_EXE: &str = "godot3-headless";
+pub const GODOT_SERVER_EXE: &str = "godot3-server";
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct FtwConfiguration {

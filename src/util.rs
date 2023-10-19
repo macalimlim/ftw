@@ -84,7 +84,7 @@ mod util_tests {
         let linux_desktop_platforms = vec![FtwTarget::LinuxX86, FtwTarget::LinuxX86_64];
         for p in linux_desktop_platforms {
             let godot_exe = get_godot_exe_for_exporting(p);
-            assert_eq!("godot-headless".to_string(), godot_exe);
+            assert_eq!("godot3-headless".to_string(), godot_exe);
         }
         let other_desktop_platforms = vec![
             FtwTarget::MacOsX86_64,
@@ -95,7 +95,7 @@ mod util_tests {
         ];
         for p in other_desktop_platforms {
             let godot_exe = get_godot_exe_for_exporting(p);
-            assert_eq!("godot".to_string(), godot_exe);
+            assert_eq!("godot3".to_string(), godot_exe);
         }
     }
 
@@ -103,10 +103,10 @@ mod util_tests {
     fn test_get_godot_exe_for_running() {
         let machine_type = FtwMachineType::Desktop;
         let godot_exe = get_godot_exe_for_running(&machine_type);
-        assert_eq!("godot".to_string(), godot_exe);
+        assert_eq!("godot3".to_string(), godot_exe);
         let machine_type = FtwMachineType::Server;
         let godot_exe = get_godot_exe_for_running(&machine_type);
-        assert_eq!("godot-server".to_string(), godot_exe);
+        assert_eq!("godot3-server".to_string(), godot_exe);
     }
 
     #[test]
