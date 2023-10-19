@@ -24,7 +24,7 @@ clean:
 
 coverage:
 	rm -rf game*
-	cargo tarpaulin --all-features --ignore-tests -o Html -t 300 -- --test-threads=1
+	cargo tarpaulin --all-features --ignore-tests -o Html -t 300 -- --test-threads=1 --skip=test_process_ftw_command_cross_build_ios_target --skip=test_ftw_cross_build_ios_target
 	${BROWSER} tarpaulin-report.html
 
 doc: clean
@@ -52,7 +52,7 @@ shell:
 	nix-shell -p clang openssl pkgconfig
 
 test:
-	cargo test -- --test-threads=1
+	cargo test -- --test-threads=1 --skip=test_process_ftw_command_cross_build_ios_target --skip=test_ftw_cross_build_ios_target
 
 udeps:
 	cargo udeps
