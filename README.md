@@ -26,8 +26,10 @@ $ cargo install --force ftw # to upgrade ftw
 $ ftw new my-awesome-game # this creates a new project using the default template
 $ ftw new my-awesome-game default # same as above
 $ ftw new my-awesome-game /path/to/custom/template # creates a new project using a custom template
+$ ftw new my-awesome-game default v1.2.0 # creates a new project with the default template using a specified tag
+
 ```
-> Note: The custom template should have same structure as the [default template](https://github.com/macalimlim/godot-rust-template)
+> Note: The custom template should have same structure as the [default template](https://github.com/macalimlim/godot-rust-template). Using a tag assumes you have created tags in your template repository, just like [here](https://github.com/macalimlim/godot-rust-template/releases)
 
 ### ftw class &lt;class-name&gt; [node-type]
 #### Creates a class
@@ -74,7 +76,7 @@ $ ftw build linux-x86_64 release # builds the library for the `linux-x86_64` pla
 - android-arm
 - android-x86
 - android-x86_64
-- ios-aarch64
+- ios-aarch64 (currently not working)
 - linux-x86
 - linux-x86_64
 - macos-x86_64
