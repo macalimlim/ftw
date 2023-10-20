@@ -1,6 +1,7 @@
 use crate::ftw_build_type::FtwBuildType;
 use crate::ftw_machine_type::FtwMachineType;
 use crate::ftw_node_type::FtwNodeType;
+use crate::ftw_tag::FtwTag;
 use crate::ftw_target::FtwTarget;
 use crate::ftw_template::FtwTemplate;
 use crate::traits::ToMessage;
@@ -12,6 +13,7 @@ pub enum FtwSuccess<'a> {
     New {
         project_name: ProjectName,
         template: &'a FtwTemplate,
+        tag: &'a FtwTag,
     },
     Class {
         class_name: ClassName,
@@ -48,12 +50,13 @@ impl ToMessage for FtwSuccess<'_> {
             FtwSuccess::New {
                 project_name,
                 template,
+                tag,
             } => match template {
                 FtwTemplate::Default { git_url } | FtwTemplate::Custom { git_url } => {
                     let styled_project_name = project_name.blue().bold().italic();
                     let styled_template = template.to_string().blue().bold().italic();
                     let styled_git_url = git_url.underline();
-                    format!("A new project has been created {styled_project_name} using the {styled_template} ({styled_git_url}) template")
+                    format!("A new project has been created {styled_project_name} using the {styled_template} ({styled_git_url} {tag}) template")
                 }
             },
             FtwSuccess::Class {
@@ -104,15 +107,17 @@ mod ftw_success_tests {
         let styled_success = FtwSuccess::get_styled_success();
         let styled_new_game = new_game.blue().bold().italic();
         let styled_default_template = default_template.to_string().blue().bold().italic();
+        let tag = FtwTag::default();
         if let FtwTemplate::Default { git_url } = FtwTemplate::default() {
             let styled_git_url = git_url.underline();
             let ftw_success_new_default_message = FtwSuccess::New {
                 project_name: new_game.clone(),
                 template: &default_template,
+                tag: &tag,
             }
             .to_message();
             assert_eq!(
-                format!("{thumbs_up} {styled_success} A new project has been created {styled_new_game} using the {styled_default_template} ({styled_git_url}) template"),
+                format!("{thumbs_up} {styled_success} A new project has been created {styled_new_game} using the {styled_default_template} ({styled_git_url} {tag}) template"),
                 format!("{ftw_success_new_default_message}")
             );
         }
@@ -224,15 +229,17 @@ mod ftw_success_tests {
         let styled_success = FtwSuccess::get_styled_success();
         let styled_new_game = new_game.blue().bold().italic();
         let styled_custom_template = custom_template.to_string().blue().bold().italic();
+        let tag = FtwTag::default();
         if let FtwTemplate::Custom { ref git_url } = custom_template {
             let ftw_success_new_custom_message = FtwSuccess::New {
                 project_name: new_game.clone(),
                 template: &custom_template,
+                tag: &tag,
             }
             .to_message();
             let styled_git_url = git_url.underline();
             assert_eq!(
-                format!("{thumbs_up} {styled_success} A new project has been created {styled_new_game} using the {styled_custom_template} ({styled_git_url}) template"),
+                format!("{thumbs_up} {styled_success} A new project has been created {styled_new_game} using the {styled_custom_template} ({styled_git_url} {tag}) template"),
                 format!("{ftw_success_new_custom_message}")
             );
         }

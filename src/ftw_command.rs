@@ -381,7 +381,7 @@ impl Processor for FtwCommand {
                 FtwCommand::append_to_gitignore(project_name)?;
                 FtwCommand::delete_items(project_name)?;
                 let project_name = project_name.to_string();
-                Ok(FtwSuccess::New { project_name, template })
+                Ok(FtwSuccess::New { project_name, template, tag })
             }
             FtwCommand::Class { class_name, node_type } => {
                 FtwCommand::is_valid_project()?;
