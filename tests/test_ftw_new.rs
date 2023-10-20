@@ -15,7 +15,7 @@ fn test_ftw_new() {
         .arg("default")
         .assert()
         .success()
-        .stdout(predicates::str::contains("Done!").from_utf8());
+        .stdout(predicates::str::contains("SUCCESS").from_utf8());
     assert!(project.exists(".gitignore"));
     assert!(project.exists("Cargo.toml"));
     assert!(project.exists("Makefile"));
@@ -45,7 +45,7 @@ fn test_ftw_new_no_template() {
         .arg(&project.get_name())
         .assert()
         .success()
-        .stdout(predicates::str::contains("Done!").from_utf8());
+        .stdout(predicates::str::contains("SUCCESS").from_utf8());
     assert!(project.exists(".gitignore"));
     assert!(project.exists("Cargo.toml"));
     assert!(project.exists("Makefile"));

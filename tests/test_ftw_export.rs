@@ -17,7 +17,7 @@ fn test_ftw_export_no_target() {
         .arg(&project.get_name())
         .assert()
         .success()
-        .stdout(predicates::str::contains("Done!").from_utf8());
+        .stdout(predicates::str::contains("SUCCESS").from_utf8());
     ftw()
         .arg("export")
         .current_dir(&project.get_name())
@@ -53,7 +53,7 @@ fn test_ftw_cross_export_linux_target() {
         .arg(&project.get_name())
         .assert()
         .success()
-        .stdout(predicates::str::contains("Done!").from_utf8());
+        .stdout(predicates::str::contains("SUCCESS").from_utf8());
     let contents = r#"[ftw]
 enable-cross-compilation=true
 "#;
@@ -101,7 +101,7 @@ fn test_ftw_cross_export_macos_target() {
         .arg(&project.get_name())
         .assert()
         .success()
-        .stdout(predicates::str::contains("Done!").from_utf8());
+        .stdout(predicates::str::contains("SUCCESS").from_utf8());
     let contents = r#"[ftw]
 enable-cross-compilation=true
 "#;

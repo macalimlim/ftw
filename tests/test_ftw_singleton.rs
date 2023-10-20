@@ -14,7 +14,7 @@ fn test_ftw_singleton() {
         .arg(&project.get_name())
         .assert()
         .success()
-        .stdout(predicates::str::contains("Done!").from_utf8());
+        .stdout(predicates::str::contains("SUCCESS").from_utf8());
     ftw()
         .arg("singleton")
         .arg("MyPlayer")
@@ -50,7 +50,7 @@ fn test_ftw_singleton_no_class_name() {
         .arg(&project.get_name())
         .assert()
         .success()
-        .stdout(predicates::str::contains("Done!").from_utf8());
+        .stdout(predicates::str::contains("SUCCESS").from_utf8());
     ftw()
         .arg("singleton")
         .current_dir(&project.get_name())
@@ -68,7 +68,7 @@ fn test_ftw_singleton_with_subs() {
         .arg(&project.get_name())
         .assert()
         .success()
-        .stdout(predicates::str::contains("Done!").from_utf8());
+        .stdout(predicates::str::contains("SUCCESS").from_utf8());
     ftw()
         .arg("singleton")
         .arg("foo/bar/baz/MyPlayer")

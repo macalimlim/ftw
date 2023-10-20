@@ -17,7 +17,7 @@ fn test_ftw_build_no_target() {
         .arg(&project.get_name())
         .assert()
         .success()
-        .stdout(predicates::str::contains("Done!").from_utf8());
+        .stdout(predicates::str::contains("SUCCESS").from_utf8());
     ftw()
         .arg("build")
         .current_dir(&project.get_name())
@@ -45,7 +45,7 @@ fn test_ftw_cross_build_linux_target() {
         .arg(&project.get_name())
         .assert()
         .success()
-        .stdout(predicates::str::contains("Done!").from_utf8());
+        .stdout(predicates::str::contains("SUCCESS").from_utf8());
     let contents = r#"[ftw]
 enable-cross-compilation=true
 "#;
@@ -85,7 +85,7 @@ fn test_ftw_cross_build_windows_target() {
         .arg(&project.get_name())
         .assert()
         .success()
-        .stdout(predicates::str::contains("Done!").from_utf8());
+        .stdout(predicates::str::contains("SUCCESS").from_utf8());
     let contents = r#"[ftw]
 enable-cross-compilation=true
 "#;
@@ -125,7 +125,7 @@ fn test_ftw_cross_build_macos_target() {
         .arg(&project.get_name())
         .assert()
         .success()
-        .stdout(predicates::str::contains("Done!").from_utf8());
+        .stdout(predicates::str::contains("SUCCESS").from_utf8());
     let contents = r#"[ftw]
 enable-cross-compilation=true
 "#;
@@ -165,7 +165,7 @@ fn test_ftw_cross_build_android_target() {
         .arg(&project.get_name())
         .assert()
         .success()
-        .stdout(predicates::str::contains("Done!").from_utf8());
+        .stdout(predicates::str::contains("SUCCESS").from_utf8());
     let contents = r#"[ftw]
 enable-cross-compilation=true
 "#;
@@ -205,7 +205,7 @@ fn test_ftw_cross_build_ios_target() {
         .arg(&project.get_name())
         .assert()
         .success()
-        .stdout(predicates::str::contains("Done!").from_utf8());
+        .stdout(predicates::str::contains("SUCCESS").from_utf8());
     let contents = r#"[ftw]
 enable-cross-compilation=true
 "#;

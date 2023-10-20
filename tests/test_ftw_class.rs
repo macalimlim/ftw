@@ -14,7 +14,7 @@ fn test_ftw_class() {
         .arg(&project.get_name())
         .assert()
         .success()
-        .stdout(predicates::str::contains("Done!").from_utf8());
+        .stdout(predicates::str::contains("SUCCESS").from_utf8());
     ftw()
         .arg("class")
         .arg("MyPlayer")
@@ -58,7 +58,7 @@ fn test_ftw_tool_class() {
         .arg(&project.get_name())
         .assert()
         .success()
-        .stdout(predicates::str::contains("Done!").from_utf8());
+        .stdout(predicates::str::contains("SUCCESS").from_utf8());
     ftw()
         .arg("class")
         .arg("MyButtonTool")
@@ -104,7 +104,7 @@ fn test_ftw_class_no_node_type() {
         .arg(&project.get_name())
         .assert()
         .success()
-        .stdout(predicates::str::contains("Done!").from_utf8());
+        .stdout(predicates::str::contains("SUCCESS").from_utf8());
     ftw()
         .arg("class")
         .arg("MyPlayer")
@@ -147,7 +147,7 @@ fn test_ftw_class_no_class_name() {
         .arg(&project.get_name())
         .assert()
         .success()
-        .stdout(predicates::str::contains("Done!").from_utf8());
+        .stdout(predicates::str::contains("SUCCESS").from_utf8());
     ftw()
         .arg("class")
         .current_dir(&project.get_name())
@@ -165,7 +165,7 @@ fn test_ftw_class_with_subs() {
         .arg(&project.get_name())
         .assert()
         .success()
-        .stdout(predicates::str::contains("Done!").from_utf8());
+        .stdout(predicates::str::contains("SUCCESS").from_utf8());
     ftw()
         .arg("class")
         .arg("foo/bar/baz/MyPlayer")
