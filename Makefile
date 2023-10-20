@@ -37,7 +37,7 @@ format:
 	cargo fmt --all -- --check
 
 list-node-types:
-	godot-headless --gdnative-generate-json-api api.json
+	godot3-headless --gdnative-generate-json-api api.json
 	cat api.json | jq '.[] | .name' | tr -d '"' | tr -d "_" | sort | uniq
 	rm api.json
 
