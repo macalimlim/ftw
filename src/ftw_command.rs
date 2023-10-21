@@ -497,6 +497,70 @@ mod ftw_command_tests {
     }
 
     #[test]
+    fn test_process_ftw_command_new_with_latest_tag() {
+        let project = Project::new();
+        let cmd = FtwCommand::New {
+            project_name: project.get_name(),
+            template: FtwTemplate::default(),
+            tag: FtwTag::Latest,
+        };
+        let _ = cmd.process();
+        assert!(project.exists(".gitignore"));
+        assert!(project.exists("Cargo.toml"));
+        assert!(project.exists("Makefile"));
+        assert!(project.exists("godot/default_env.tres"));
+        assert!(project.exists("godot/export_presets.cfg"));
+        assert!(project.exists("godot/native/game.gdnlib"));
+        assert!(project.exists("godot/project.godot"));
+        assert!(project.exists("rust/Cargo.toml"));
+        assert!(project.exists("rust/src/lib.rs"));
+        assert!(!project.exists("LICENSE"));
+        assert!(!project.exists(".travis.yml"));
+        assert!(!project.exists("sh"));
+        assert!(project.read(".gitignore").contains(".ftw"));
+        assert!(project.read(".gitignore").contains("bin/*"));
+        assert!(project.read(".gitignore").contains("export_presets.cfg"));
+        assert!(project.read(".gitignore").contains("lib/*"));
+        assert!(project.read(".tag").contains("v1.3.0"));
+        assert!(project
+            .read("rust/Cargo.toml")
+            .contains(&project.get_name()));
+    }
+
+    #[test]
+    fn test_process_ftw_command_new_with_v120_tag() {
+        let project = Project::new();
+        let cmd = FtwCommand::New {
+            project_name: project.get_name(),
+            template: FtwTemplate::default(),
+            tag: FtwTag::Tagged {
+                git_tag: String::from("v1.2.0"),
+            },
+        };
+        let _ = cmd.process();
+        assert!(project.exists(".gitignore"));
+        assert!(project.exists("Cargo.toml"));
+        assert!(project.exists("Makefile"));
+        assert!(project.exists("godot/default_env.tres"));
+        assert!(project.exists("godot/export_presets.cfg"));
+        assert!(project.exists("godot/native/game.gdnlib"));
+        assert!(project.exists("godot/project.godot"));
+        assert!(project.exists("rust/Cargo.toml"));
+        assert!(project.exists("rust/src/lib.rs"));
+        assert!(!project.exists("LICENSE"));
+        assert!(!project.exists(".travis.yml"));
+        assert!(!project.exists("sh"));
+        assert!(!project.exists(".tag"));
+        assert!(project.read(".gitignore").contains(".ftw"));
+        assert!(project.read(".gitignore").contains("bin/*"));
+        assert!(project.read(".gitignore").contains("export_presets.cfg"));
+        assert!(project.read(".gitignore").contains("lib/*"));
+        assert!(project
+            .read("rust/Cargo.toml")
+            .contains(&project.get_name()));
+    }
+
+    #[test]
     fn test_process_ftw_command_class() {
         let project = Project::new();
         let cmd = FtwCommand::New {
