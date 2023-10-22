@@ -178,8 +178,8 @@ mod main_tests {
     fn test_parse_matches_new() {
         let app = get_clap_command();
         let project_name = "my-awesome-game";
-        let arg_vec = vec![crate_name!(), "new", project_name, "default"];
-        let matches = app.get_matches_from(arg_vec);
+        let args = [crate_name!(), "new", project_name, "default"];
+        let matches = app.get_matches_from(args);
         let command = parse_matches(&matches);
         let cmd = FtwCommand::New {
             project_name: project_name.to_string(),
@@ -193,8 +193,8 @@ mod main_tests {
     fn test_parse_matches_new_no_template() {
         let app = get_clap_command();
         let project_name = "my-awesome-game";
-        let arg_vec = vec![crate_name!(), "new", project_name];
-        let matches = app.get_matches_from(arg_vec);
+        let args = [crate_name!(), "new", project_name];
+        let matches = app.get_matches_from(args);
         let command = parse_matches(&matches);
         let cmd = FtwCommand::New {
             project_name: project_name.to_string(),
@@ -209,8 +209,8 @@ mod main_tests {
         let app = get_clap_command();
         let project_name = "my-awesome-game";
         let git_url = "/path/to/custom/template";
-        let arg_vec = vec![crate_name!(), "new", project_name, git_url];
-        let matches = app.get_matches_from(arg_vec);
+        let args = [crate_name!(), "new", project_name, git_url];
+        let matches = app.get_matches_from(args);
         let command = parse_matches(&matches);
         let cmd = FtwCommand::New {
             project_name: project_name.to_string(),
@@ -226,8 +226,8 @@ mod main_tests {
     fn test_parse_matches_class() {
         let app = get_clap_command();
         let class_name = "IronMan";
-        let arg_vec = vec![crate_name!(), "class", class_name, "Area2D"];
-        let matches = app.get_matches_from(arg_vec);
+        let args = [crate_name!(), "class", class_name, "Area2D"];
+        let matches = app.get_matches_from(args);
         let command = parse_matches(&matches);
         let cmd = FtwCommand::Class {
             class_name: class_name.to_string(),
@@ -240,8 +240,8 @@ mod main_tests {
     fn test_parse_matches_class_no_node_type() {
         let app = get_clap_command();
         let class_name = "IronMan";
-        let arg_vec = vec![crate_name!(), "class", class_name];
-        let matches = app.get_matches_from(arg_vec);
+        let args = [crate_name!(), "class", class_name];
+        let matches = app.get_matches_from(args);
         let command = parse_matches(&matches);
         let cmd = FtwCommand::Class {
             class_name: class_name.to_string(),
@@ -254,8 +254,8 @@ mod main_tests {
     fn test_parse_matches_singleton() {
         let app = get_clap_command();
         let class_name = "Network";
-        let arg_vec = vec![crate_name!(), "singleton", class_name];
-        let matches = app.get_matches_from(arg_vec);
+        let args = [crate_name!(), "singleton", class_name];
+        let matches = app.get_matches_from(args);
         let command = parse_matches(&matches);
         let cmd = FtwCommand::Singleton {
             class_name: class_name.to_string(),
@@ -266,8 +266,8 @@ mod main_tests {
     #[test]
     fn test_parse_matches_run_desktop() {
         let app = get_clap_command();
-        let arg_vec = vec![crate_name!(), "run", "desktop"];
-        let matches = app.get_matches_from(arg_vec);
+        let args = [crate_name!(), "run", "desktop"];
+        let matches = app.get_matches_from(args);
         let command = parse_matches(&matches);
         let cmd = FtwCommand::Run {
             machine_type: FtwMachineType::Desktop,
@@ -278,8 +278,8 @@ mod main_tests {
     #[test]
     fn test_parse_matches_run_server() {
         let app = get_clap_command();
-        let arg_vec = vec![crate_name!(), "run", "server"];
-        let matches = app.get_matches_from(arg_vec);
+        let args = [crate_name!(), "run", "server"];
+        let matches = app.get_matches_from(args);
         let command = parse_matches(&matches);
         let cmd = FtwCommand::Run {
             machine_type: FtwMachineType::Server,
@@ -290,8 +290,8 @@ mod main_tests {
     #[test]
     fn test_parse_matches_run_no_machine_type() {
         let app = get_clap_command();
-        let arg_vec = vec![crate_name!(), "run"];
-        let matches = app.get_matches_from(arg_vec);
+        let args = [crate_name!(), "run"];
+        let matches = app.get_matches_from(args);
         let command = parse_matches(&matches);
         let cmd = FtwCommand::Run {
             machine_type: FtwMachineType::Desktop,
@@ -302,8 +302,8 @@ mod main_tests {
     #[test]
     fn test_parse_matches_build() {
         let app = get_clap_command();
-        let arg_vec = vec![crate_name!(), "build", "linux-x86_64", "debug"];
-        let matches = app.get_matches_from(arg_vec);
+        let args = [crate_name!(), "build", "linux-x86_64", "debug"];
+        let matches = app.get_matches_from(args);
         let command = parse_matches(&matches);
         let cmd = FtwCommand::Build {
             target: FtwTarget::LinuxX86_64,
@@ -315,8 +315,8 @@ mod main_tests {
     #[test]
     fn test_parse_matches_build_no_build_type() {
         let app = get_clap_command();
-        let arg_vec = vec![crate_name!(), "build", "linux-x86_64"];
-        let matches = app.get_matches_from(arg_vec);
+        let args = [crate_name!(), "build", "linux-x86_64"];
+        let matches = app.get_matches_from(args);
         let command = parse_matches(&matches);
         let cmd = FtwCommand::Build {
             target: FtwTarget::LinuxX86_64,
@@ -328,9 +328,9 @@ mod main_tests {
     #[test]
     fn test_parse_matches_build_no_target_and_no_build_type() {
         let app = get_clap_command();
-        let arg_vec = vec![crate_name!(), "build"];
+        let args = [crate_name!(), "build"];
         let target = util::get_current_platform().parse().unwrap();
-        let matches = app.get_matches_from(arg_vec);
+        let matches = app.get_matches_from(args);
         let command = parse_matches(&matches);
         let cmd = FtwCommand::Build {
             target,
@@ -342,8 +342,8 @@ mod main_tests {
     #[test]
     fn test_parse_matches_export() {
         let app = get_clap_command();
-        let arg_vec = vec![crate_name!(), "export", "linux-x86_64", "debug"];
-        let matches = app.get_matches_from(arg_vec);
+        let args = [crate_name!(), "export", "linux-x86_64", "debug"];
+        let matches = app.get_matches_from(args);
         let command = parse_matches(&matches);
         let cmd = FtwCommand::Export {
             target: FtwTarget::LinuxX86_64,
@@ -355,8 +355,8 @@ mod main_tests {
     #[test]
     fn test_parse_matches_export_no_build_type() {
         let app = get_clap_command();
-        let arg_vec = vec![crate_name!(), "export", "linux-x86_64"];
-        let matches = app.get_matches_from(arg_vec);
+        let args = [crate_name!(), "export", "linux-x86_64"];
+        let matches = app.get_matches_from(args);
         let command = parse_matches(&matches);
         let cmd = FtwCommand::Export {
             target: FtwTarget::LinuxX86_64,
@@ -368,9 +368,9 @@ mod main_tests {
     #[test]
     fn test_parse_matches_export_no_target_and_no_build_type() {
         let app = get_clap_command();
-        let arg_vec = vec![crate_name!(), "export"];
+        let args = [crate_name!(), "export"];
         let target = util::get_current_platform().parse().unwrap();
-        let matches = app.get_matches_from(arg_vec);
+        let matches = app.get_matches_from(args);
         let command = parse_matches(&matches);
         let cmd = FtwCommand::Export {
             target,
@@ -382,8 +382,8 @@ mod main_tests {
     #[test]
     fn test_clean() {
         let app = get_clap_command();
-        let arg_vec = vec![crate_name!(), "clean"];
-        let matches = app.get_matches_from(arg_vec);
+        let args = [crate_name!(), "clean"];
+        let matches = app.get_matches_from(args);
         let command = parse_matches(&matches);
         let cmd = FtwCommand::Clean {};
         assert_eq!(command, cmd);

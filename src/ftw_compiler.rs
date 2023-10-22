@@ -60,11 +60,11 @@ impl Compiler for FtwCompiler {
                 cmd!(cargo build ("--target") (target_cli_arg) if (build_type.is_release()) { (build_type_cli_arg) }).run()?;
                 let lib = format!("{target_path}/{target_lib_prefix}{crate_name}.{target_lib_ext}");
                 if Path::new(&lib).exists() {
-                    let target_lib_files = vec![lib];
+                    let target_lib_files = [lib];
                     remove_items(&target_lib_files)?;
                 }
                 let options = CopyOptions::new();
-                let source_paths = vec![source_path];
+                let source_paths = [source_path];
                 move_items(&source_paths, target_path, &options)?;
                 Ok(())
             }

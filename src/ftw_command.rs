@@ -100,8 +100,7 @@ impl FtwCommand {
     fn append_to_gitignore(project_name: &str) -> Result<(), FtwError> {
         let gitignore_path: String = format!("{project_name}/.gitignore");
         let mut gitignore_file = OpenOptions::new().append(true).open(gitignore_path)?;
-        let things_to_be_ignored =
-            vec![".ftw", "bin/*", "godot/export_presets.cfg", "lib/*", ".tag"];
+        let things_to_be_ignored = [".ftw", "bin/*", "godot/export_presets.cfg", "lib/*", ".tag"];
         for thing in things_to_be_ignored {
             writeln!(gitignore_file, "{thing}")?;
         }
@@ -109,7 +108,7 @@ impl FtwCommand {
     }
 
     fn delete_items(project_name: &str) -> Result<(), FtwError> {
-        let files_to_be_removed: Vec<String> = vec![".travis.yml", "LICENSE", "sh"]
+        let files_to_be_removed: Vec<String> = [".travis.yml", "LICENSE", "sh"]
             .into_iter()
             .map(|file| format!("{project_name}/{file}"))
             .collect();
@@ -146,7 +145,7 @@ impl FtwCommand {
                 let gitkeep = format!("{target_cli_arg}/.gitkeep");
                 let bin_gitkeep = format!("bin/{gitkeep}");
                 let lib_gitkeep = format!("lib/{gitkeep}");
-                vec![bin_gitkeep, lib_gitkeep]
+                [bin_gitkeep, lib_gitkeep]
             })
             .collect();
         let is_valid_project = project_files.iter().all(|project_file| {
@@ -457,7 +456,7 @@ mod ftw_command_tests {
         };
         let _ = cmd.process();
         let _ = env::set_current_dir(Path::new(&project.get_name()));
-        let _ = remove_items(&vec!["Cargo.toml"]);
+        let _ = remove_items(&["Cargo.toml"]);
         let res = FtwCommand::is_valid_project();
         match res {
             Err(FtwError::InvalidProject) => assert!(true),

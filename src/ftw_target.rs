@@ -178,7 +178,7 @@ mod ftw_target_tests {
 
     #[test]
     fn test_to_cli_arg() {
-        let cli_arg_targets = vec![
+        let cli_arg_targets = [
             ("aarch64-linux-android", FtwTarget::AndroidLinuxAarch64),
             ("armv7-linux-androideabi", FtwTarget::AndroidLinuxArmV7),
             ("i686-linux-android", FtwTarget::AndroidLinuxX86),
@@ -200,7 +200,7 @@ mod ftw_target_tests {
 
     #[test]
     fn test_to_export_name() {
-        let export_name_targets = vec![
+        let export_name_targets = [
             ("Android", FtwTarget::AndroidLinuxAarch64),
             ("Android", FtwTarget::AndroidLinuxArmV7),
             ("Android", FtwTarget::AndroidLinuxX86),
@@ -222,7 +222,7 @@ mod ftw_target_tests {
 
     #[test]
     fn test_to_app_ext() {
-        let app_ext_targets = vec![
+        let app_ext_targets = [
             (".apk", FtwTarget::AndroidLinuxAarch64),
             (".apk", FtwTarget::AndroidLinuxArmV7),
             (".apk", FtwTarget::AndroidLinuxX86),
@@ -244,7 +244,7 @@ mod ftw_target_tests {
 
     #[test]
     fn test_to_lib_ext() {
-        let lib_ext_targets = vec![
+        let lib_ext_targets = [
             ("so", FtwTarget::AndroidLinuxAarch64),
             ("so", FtwTarget::AndroidLinuxArmV7),
             ("so", FtwTarget::AndroidLinuxX86),
@@ -266,7 +266,7 @@ mod ftw_target_tests {
 
     #[test]
     fn test_to_lib_prefix() {
-        let lib_prefix_targets = vec![
+        let lib_prefix_targets = [
             ("lib", FtwTarget::AndroidLinuxAarch64),
             ("lib", FtwTarget::AndroidLinuxArmV7),
             ("lib", FtwTarget::AndroidLinuxX86),
@@ -288,7 +288,7 @@ mod ftw_target_tests {
 
     #[test]
     fn test_from_str() -> Result<(), FtwError> {
-        let from_str_targets = vec![
+        let from_str_targets = [
             ("android-aarch64", FtwTarget::AndroidLinuxAarch64),
             ("android-arm", FtwTarget::AndroidLinuxArmV7),
             ("android-x86", FtwTarget::AndroidLinuxX86),
@@ -313,7 +313,7 @@ mod ftw_target_tests {
 
     #[test]
     fn test_is_linux_x86_64() -> Result<(), FtwError> {
-        let targets = vec![
+        let targets = [
             (FtwTarget::AndroidLinuxAarch64),
             (FtwTarget::AndroidLinuxArmV7),
             (FtwTarget::AndroidLinuxX86),
@@ -346,7 +346,7 @@ mod ftw_target_tests {
 
     #[test]
     fn test_fmt() {
-        let cli_arg_targets = vec![
+        let cli_arg_targets = [
             ("aarch64-linux-android", FtwTarget::AndroidLinuxAarch64),
             ("armv7-linux-androideabi", FtwTarget::AndroidLinuxArmV7),
             ("i686-linux-android", FtwTarget::AndroidLinuxX86),
@@ -374,7 +374,7 @@ mod ftw_target_tests {
     proptest! {
         #[test]
         fn test_from_str_error(target_input in "\\PC*") {
-            let from_strs = vec![
+            let from_strs = [
                 "android-aarch64",
                 "android-arm",
                 "android-x86",

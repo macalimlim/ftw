@@ -22,9 +22,8 @@ pub fn get_class_name_and_directories(class_name: &str) -> (String, Vec<String>)
         Some((class_name, directories)) => (
             (*class_name).to_string(),
             directories
-                .to_vec()
                 .iter()
-                .map(|d| (*d).to_string())
+                .map(|directory| (*directory).to_string())
                 .collect(),
         ),
         _ => unreachable!(),
@@ -81,13 +80,12 @@ mod util_tests {
 
     #[test]
     fn test_get_godot_exe_for_exporting() {
-        let linux_desktop_platforms = vec![FtwTarget::LinuxX86, FtwTarget::LinuxX86_64];
+        let linux_desktop_platforms = [FtwTarget::LinuxX86, FtwTarget::LinuxX86_64];
         for p in linux_desktop_platforms {
             let godot_exe = get_godot_exe_for_exporting(p);
             assert_eq!("godot3-headless".to_string(), godot_exe);
         }
-        let other_desktop_platforms = vec![
-            FtwTarget::MacOsAarch64,
+        let other_desktop_platforms = [
             FtwTarget::MacOsX86_64,
             FtwTarget::WindowsX86Gnu,
             FtwTarget::WindowsX86Msvc,
