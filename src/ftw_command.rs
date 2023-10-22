@@ -100,7 +100,8 @@ impl FtwCommand {
     fn append_to_gitignore(project_name: &str) -> Result<(), FtwError> {
         let gitignore_path: String = format!("{project_name}/.gitignore");
         let mut gitignore_file = OpenOptions::new().append(true).open(gitignore_path)?;
-        let things_to_be_ignored = vec![".ftw", "bin/*", "godot/export_presets.cfg", "lib/*"];
+        let things_to_be_ignored =
+            vec![".ftw", "bin/*", "godot/export_presets.cfg", "lib/*", ".tag"];
         for thing in things_to_be_ignored {
             writeln!(gitignore_file, "{thing}")?;
         }
@@ -491,6 +492,7 @@ mod ftw_command_tests {
         assert!(project.read(".gitignore").contains("bin/*"));
         assert!(project.read(".gitignore").contains("export_presets.cfg"));
         assert!(project.read(".gitignore").contains("lib/*"));
+        assert!(project.read(".gitignore").contains(".tag"));
         assert!(project
             .read("rust/Cargo.toml")
             .contains(&project.get_name()));
@@ -521,6 +523,7 @@ mod ftw_command_tests {
         assert!(project.read(".gitignore").contains("bin/*"));
         assert!(project.read(".gitignore").contains("export_presets.cfg"));
         assert!(project.read(".gitignore").contains("lib/*"));
+        assert!(project.read(".gitignore").contains(".tag"));
         assert!(project.read(".tag").contains("v1.3.0"));
         assert!(project
             .read("rust/Cargo.toml")
@@ -555,6 +558,7 @@ mod ftw_command_tests {
         assert!(project.read(".gitignore").contains("bin/*"));
         assert!(project.read(".gitignore").contains("export_presets.cfg"));
         assert!(project.read(".gitignore").contains("lib/*"));
+        assert!(project.read(".gitignore").contains(".tag"));
         assert!(project
             .read("rust/Cargo.toml")
             .contains(&project.get_name()));
