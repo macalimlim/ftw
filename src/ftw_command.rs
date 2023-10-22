@@ -1036,7 +1036,7 @@ enable-cross-compilation=true
             build_type: FtwBuildType::Debug,
         };
         let _ = cmd.process();
-        let _ = env::set_current_dir(Path::new("../../"));
+        let _ = env::set_current_dir(Path::new("../"));
         assert!(project
             .read("rust/Cargo.toml")
             .contains(&project.get_name()));

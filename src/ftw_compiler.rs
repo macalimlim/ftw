@@ -8,7 +8,6 @@ use crate::util;
 use command_macros::cmd;
 use fs_extra::dir::CopyOptions;
 use fs_extra::{move_items, remove_items};
-use std::env;
 use std::path::Path;
 
 pub enum FtwCompiler {
@@ -36,7 +35,7 @@ impl Compiler for FtwCompiler {
                 target: _,
                 build_type: _,
             } => {
-                let current_dir = env::current_dir()?;
+                let current_dir = Path::new(".").canonicalize()?;
                 let current_dir_display = current_dir.display();
                 let volume_mount = format!("{current_dir_display}:/build");
                 cmd!(docker run ("-v") (volume_mount)
@@ -74,7 +73,7 @@ impl Compiler for FtwCompiler {
                 let build_type_cli_arg = build_type.to_cli_arg();
                 let target_lib_ext = target.to_lib_ext();
                 let cargo_build_cmd = format!("cargo build --target {target_cli_arg} {build_type_cli_arg} ; mv -b ./target/{target_cli_arg}/{build_type}/*.{target_lib_ext} ./lib/{target_cli_arg}");
-                let current_dir = env::current_dir()?;
+                let current_dir = Path::new(".").canonicalize()?;
                 let current_dir_display = current_dir.display();
                 let volume_mount = format!("{current_dir_display}:/build");
                 cmd!(docker run ("-v") (volume_mount)
@@ -100,8 +99,8 @@ impl Compiler for FtwCompiler {
                 let export_path = format!("../bin/{target_cli_arg}/{crate_name}.{build_type}.{target_cli_arg}{target_app_ext}");
                 let current_platform = util::get_current_platform().parse().unwrap_or_default();
                 let godot_executable = util::get_godot_exe_for_exporting(current_platform);
-                env::set_current_dir(Path::new("./godot"))?;
                 cmd!((godot_executable.as_str())(build_type_export_arg)(export_name)(export_path))
+                    .current_dir("./godot")
                     .run()
             }
             FtwCompiler::Cross { target, build_type } => {
@@ -114,7 +113,7 @@ impl Compiler for FtwCompiler {
                 let export_path = format!("../bin/{target_cli_arg}/{crate_name}.{build_type}.{target_cli_arg}{target_app_ext}");
                 let godot_export_cmd =
                     format!("cd godot/ ; godot_headless --export '{export_name}' {export_path}");
-                let current_dir = env::current_dir()?;
+                let current_dir = Path::new(".").canonicalize()?;
                 let current_dir_display = current_dir.display();
                 let volume_mount = format!("{current_dir_display}:/build");
                 cmd!(docker run ("-v") (volume_mount)
