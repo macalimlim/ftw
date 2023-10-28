@@ -87,6 +87,7 @@ mod util_tests {
             assert_eq!("godot3-headless".to_string(), godot_exe);
         }
         let other_desktop_platforms = vec![
+            FtwTarget::MacOsAarch64,
             FtwTarget::MacOsX86_64,
             FtwTarget::WindowsX86Gnu,
             FtwTarget::WindowsX86Msvc,
