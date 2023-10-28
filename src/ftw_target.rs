@@ -16,6 +16,7 @@ pub enum FtwTarget {
     LinuxX86,
     LinuxX86_64,
     MacOsX86_64,
+    MacOsAarch64,
     WindowsX86Gnu,
     WindowsX86Msvc,
     WindowsX86_64Gnu,
@@ -61,7 +62,7 @@ impl FtwTarget {
     }
 
     fn is_macos(self) -> bool {
-        matches!(self, FtwTarget::MacOsX86_64)
+        matches!(self, FtwTarget::MacOsX86_64 | FtwTarget::MacOsAarch64)
     }
 }
 
@@ -76,6 +77,7 @@ impl ToCliArg for FtwTarget {
             FtwTarget::LinuxX86 => "i686-unknown-linux-gnu",
             FtwTarget::LinuxX86_64 => "x86_64-unknown-linux-gnu",
             FtwTarget::MacOsX86_64 => "x86_64-apple-darwin",
+            FtwTarget::MacOsAarch64 => "aarch64-apple-darwin",
             FtwTarget::WindowsX86Gnu => "i686-pc-windows-gnu",
             FtwTarget::WindowsX86Msvc => "i686-pc-windows-msvc",
             FtwTarget::WindowsX86_64Gnu => "x86_64-pc-windows-gnu",
@@ -152,6 +154,7 @@ impl FromStr for FtwTarget {
             "linux-x86" => Ok(FtwTarget::LinuxX86),
             "linux-x86_64" => Ok(FtwTarget::LinuxX86_64),
             "macos-x86_64" => Ok(FtwTarget::MacOsX86_64),
+            "macos-aarch64" => Ok(FtwTarget::MacOsAarch64),
             "windows-x86-gnu" => Ok(FtwTarget::WindowsX86Gnu),
             "windows-x86" | "windows-x86-msvc" => Ok(FtwTarget::WindowsX86Msvc),
             "windows-x86_64-gnu" => Ok(FtwTarget::WindowsX86_64Gnu),
@@ -184,6 +187,7 @@ mod ftw_target_tests {
             ("i686-unknown-linux-gnu", FtwTarget::LinuxX86),
             ("x86_64-unknown-linux-gnu", FtwTarget::LinuxX86_64),
             ("x86_64-apple-darwin", FtwTarget::MacOsX86_64),
+            ("aarch64-apple-darwin", FtwTarget::MacOsAarch64),
             ("i686-pc-windows-gnu", FtwTarget::WindowsX86Gnu),
             ("i686-pc-windows-msvc", FtwTarget::WindowsX86Msvc),
             ("x86_64-pc-windows-gnu", FtwTarget::WindowsX86_64Gnu),
@@ -205,6 +209,7 @@ mod ftw_target_tests {
             ("Linux/X11", FtwTarget::LinuxX86),
             ("Linux/X11", FtwTarget::LinuxX86_64),
             ("Mac OSX", FtwTarget::MacOsX86_64),
+            ("Mac OSX", FtwTarget::MacOsAarch64),
             ("Windows Desktop", FtwTarget::WindowsX86Gnu),
             ("Windows Desktop", FtwTarget::WindowsX86Msvc),
             ("Windows Desktop", FtwTarget::WindowsX86_64Gnu),
@@ -226,6 +231,7 @@ mod ftw_target_tests {
             ("", FtwTarget::LinuxX86),
             (".x86_64", FtwTarget::LinuxX86_64),
             (".zip", FtwTarget::MacOsX86_64),
+            (".zip", FtwTarget::MacOsAarch64),
             (".exe", FtwTarget::WindowsX86Gnu),
             (".exe", FtwTarget::WindowsX86Msvc),
             (".exe", FtwTarget::WindowsX86_64Gnu),
@@ -247,6 +253,7 @@ mod ftw_target_tests {
             ("so", FtwTarget::LinuxX86),
             ("so", FtwTarget::LinuxX86_64),
             ("dylib", FtwTarget::MacOsX86_64),
+            ("dylib", FtwTarget::MacOsAarch64),
             ("dll", FtwTarget::WindowsX86Gnu),
             ("dll", FtwTarget::WindowsX86Msvc),
             ("dll", FtwTarget::WindowsX86_64Gnu),
@@ -268,6 +275,7 @@ mod ftw_target_tests {
             ("lib", FtwTarget::LinuxX86),
             ("lib", FtwTarget::LinuxX86_64),
             ("lib", FtwTarget::MacOsX86_64),
+            ("lib", FtwTarget::MacOsAarch64),
             ("", FtwTarget::WindowsX86Gnu),
             ("", FtwTarget::WindowsX86Msvc),
             ("", FtwTarget::WindowsX86_64Gnu),
@@ -289,6 +297,7 @@ mod ftw_target_tests {
             ("linux-x86", FtwTarget::LinuxX86),
             ("linux-x86_64", FtwTarget::LinuxX86_64),
             ("macos-x86_64", FtwTarget::MacOsX86_64),
+            ("macos-aarch64", FtwTarget::MacOsAarch64),
             ("windows-x86-gnu", FtwTarget::WindowsX86Gnu),
             ("windows-x86", FtwTarget::WindowsX86Msvc),
             ("windows-x86-msvc", FtwTarget::WindowsX86Msvc),
@@ -313,6 +322,7 @@ mod ftw_target_tests {
             (FtwTarget::LinuxX86),
             (FtwTarget::LinuxX86_64),
             (FtwTarget::MacOsX86_64),
+            (FtwTarget::MacOsAarch64),
             (FtwTarget::WindowsX86Gnu),
             (FtwTarget::WindowsX86Msvc),
             (FtwTarget::WindowsX86Msvc),
@@ -345,6 +355,7 @@ mod ftw_target_tests {
             ("i686-unknown-linux-gnu", FtwTarget::LinuxX86),
             ("x86_64-unknown-linux-gnu", FtwTarget::LinuxX86_64),
             ("x86_64-apple-darwin", FtwTarget::MacOsX86_64),
+            ("aarch64-apple-darwin", FtwTarget::MacOsAarch64),
             ("i686-pc-windows-gnu", FtwTarget::WindowsX86Gnu),
             ("i686-pc-windows-msvc", FtwTarget::WindowsX86Msvc),
             ("x86_64-pc-windows-gnu", FtwTarget::WindowsX86_64Gnu),
