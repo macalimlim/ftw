@@ -80,6 +80,7 @@ $ ftw build linux-x86_64 release # builds the library for the `linux-x86_64` pla
 - linux-x86
 - linux-x86_64
 - macos-x86_64
+- macos-aarch64
 - windows-x86-gnu
 - windows-x86-msvc
 - windows-x86
