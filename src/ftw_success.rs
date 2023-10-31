@@ -26,11 +26,11 @@ pub enum FtwSuccess<'a> {
         machine_type: &'a FtwMachineType,
     },
     Build {
-        target: &'a FtwTarget,
+        targets: &'a Vec<FtwTarget>,
         build_type: &'a FtwBuildType,
     },
     Export {
-        target: &'a FtwTarget,
+        targets: &'a Vec<FtwTarget>,
         build_type: &'a FtwBuildType,
     },
     Clean,
@@ -75,17 +75,31 @@ impl ToMessage for FtwSuccess<'_> {
                 let styled_machine_type = machine_type.to_string().blue().bold().italic();
                 format!("The game was run as a {styled_machine_type} application")
             }
-            FtwSuccess::Build { target, build_type } => {
-                let styled_target = target.to_string().blue().bold().italic();
-                let styled_build_type = build_type.to_string().blue().bold().italic();
-                format!("A library was created at lib/{styled_target} with a {styled_build_type} profile")
-            }
-            FtwSuccess::Export { target, build_type } => {
-                let styled_target = target.to_string().blue().bold().italic();
+            FtwSuccess::Build {
+                targets,
+                build_type,
+            } => {
+                let targets: Vec<String> = targets
+                    .iter()
+                    .map(|target| format!("lib/{target}"))
+                    .collect();
+                let styled_targets = targets.join(",").blue().bold().italic();
                 let styled_build_type = build_type.to_string().blue().bold().italic();
                 format!(
-                    "A game was created at bin/{styled_target} with a {styled_build_type} profile"
+                    "A library was created at {styled_targets} with a {styled_build_type} profile"
                 )
+            }
+            FtwSuccess::Export {
+                targets,
+                build_type,
+            } => {
+                let targets: Vec<String> = targets
+                    .iter()
+                    .map(|target| format!("bin/{target}"))
+                    .collect();
+                let styled_target = targets.join(",").blue().bold().italic();
+                let styled_build_type = build_type.to_string().blue().bold().italic();
+                format!("A game was created at {styled_target} with a {styled_build_type} profile")
             }
             FtwSuccess::Clean => "The project is now clean from excess artifacts".to_string(),
         };
@@ -167,48 +181,52 @@ mod ftw_success_tests {
         );
         //
         let target = FtwTarget::LinuxX86_64;
+        let targets = vec![target];
         let debug = FtwBuildType::Debug;
         let ftw_success_build_debug_message = FtwSuccess::Build {
-            target: &target,
+            targets: &targets,
             build_type: &debug,
         }
         .to_message();
-        let styled_target = target.to_string().blue().bold().italic();
+        let styled_target = format!("lib/{target}").blue().bold().italic();
         let styled_debug = debug.to_string().blue().bold().italic();
         assert_eq!(
-            format!("{thumbs_up} {styled_success} A library was created at lib/{styled_target} with a {styled_debug} profile"),
+            format!("{thumbs_up} {styled_success} A library was created at {styled_target} with a {styled_debug} profile"),
             format!("{ftw_success_build_debug_message}")
         );
         //
         let release = FtwBuildType::Release;
         let ftw_success_build_release_message = FtwSuccess::Build {
-            target: &target,
+            targets: &targets,
             build_type: &release,
         }
         .to_message();
         let styled_release = release.to_string().blue().bold().italic();
         assert_eq!(
-            format!("{thumbs_up} {styled_success} A library was created at lib/{styled_target} with a {styled_release} profile"),
+            format!("{thumbs_up} {styled_success} A library was created at {styled_target} with a {styled_release} profile"),
             format!("{ftw_success_build_release_message}")
         );
         //
+        let target = FtwTarget::LinuxX86_64;
+        let targets = vec![target];
         let ftw_success_export_debug_message = FtwSuccess::Export {
-            target: &target,
+            targets: &targets,
             build_type: &debug,
         }
         .to_message();
+        let styled_target = format!("bin/{target}").blue().bold().italic();
         assert_eq!(
-            format!("{thumbs_up} {styled_success} A game was created at bin/{styled_target} with a {styled_debug} profile"),
+            format!("{thumbs_up} {styled_success} A game was created at {styled_target} with a {styled_debug} profile"),
             format!("{ftw_success_export_debug_message}")
         );
         //
         let ftw_success_export_release_message = FtwSuccess::Export {
-            target: &target,
+            targets: &targets,
             build_type: &release,
         }
         .to_message();
         assert_eq!(
-            format!("{thumbs_up} {styled_success} A game was created at bin/{styled_target} with a {styled_release} profile"),
+            format!("{thumbs_up} {styled_success} A game was created at {styled_target} with a {styled_release} profile"),
             format!("{ftw_success_export_release_message}")
         );
         //

@@ -20,6 +20,7 @@ colored = "2.0.4"
 command-macros = "0.2.9"
 fs_extra = "1.3.0"
 kstring = "2.0.0"
+itertools = "0.11.0"
 liquid = { version = "0.26.4", default-features = false, features = [ "stdlib" ] }
 liquid-core = { version = "0.26.4", default-features = false }
 nanoid = "0.4.0"

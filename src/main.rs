@@ -18,10 +18,10 @@ mod util;
 use crate::ftw_command::FtwCommand;
 use crate::ftw_tag::FtwTag;
 use crate::traits::{Processor, ToMessage};
-
 use clap::{
     arg, command, crate_authors, crate_description, crate_name, crate_version, ArgMatches, Command,
 };
+use itertools::Itertools;
 use std::env;
 
 #[cfg(not(tarpaulin_include))]
@@ -65,13 +65,13 @@ fn get_clap_command() -> Command {
         .subcommand(
             Command::new("build")
                 .about("build the library for a particular platform")
-                .arg(arg!([target] "target platform to build"))
+                .arg(arg!([targets] "target platforms to build, separated by ','"))
                 .arg(arg!([build_type] "either a debug or release")),
         )
         .subcommand(
             Command::new("export")
                 .about("export the game for a particular platform")
-                .arg(arg!([target] "target platform to export"))
+                .arg(arg!([targets] "target platform to export"))
                 .arg(arg!([build_type] "either a debug or release")),
         )
         .subcommand(Command::new("clean").about("cleans the project from excess artifacts"))
@@ -132,31 +132,43 @@ fn parse_matches(matches: &ArgMatches) -> FtwCommand {
         }
         Some(("build", args)) => {
             let current_platform = util::get_current_platform();
-            let target = args
-                .get_one::<String>("target")
+            let targets = args
+                .get_one("targets")
                 .unwrap_or(&current_platform)
-                .parse()
-                .unwrap_or_default();
+                .split(',')
+                .map(|t| t.parse().unwrap_or_default())
+                .sorted()
+                .dedup()
+                .collect();
             let build_type = args
                 .get_one::<String>("build_type")
                 .unwrap_or(&String::from("debug"))
                 .parse()
                 .unwrap_or_default();
-            FtwCommand::Build { target, build_type }
+            FtwCommand::Build {
+                targets,
+                build_type,
+            }
         }
         Some(("export", args)) => {
             let current_platform = util::get_current_platform();
-            let target = args
-                .get_one::<String>("target")
+            let targets = args
+                .get_one("targets")
                 .unwrap_or(&current_platform)
-                .parse()
-                .unwrap_or_default();
+                .split(',')
+                .map(|t| t.parse().unwrap_or_default())
+                .sorted()
+                .dedup()
+                .collect();
             let build_type = args
                 .get_one::<String>("build_type")
                 .unwrap_or(&String::from("debug"))
                 .parse()
                 .unwrap_or_default();
-            FtwCommand::Export { target, build_type }
+            FtwCommand::Export {
+                targets,
+                build_type,
+            }
         }
         Some(("clean", _args)) => FtwCommand::Clean,
         _ => unreachable!(),
@@ -306,7 +318,98 @@ mod main_tests {
         let matches = app.get_matches_from(args);
         let command = parse_matches(&matches);
         let cmd = FtwCommand::Build {
-            target: FtwTarget::LinuxX86_64,
+            targets: vec![FtwTarget::LinuxX86_64],
+            build_type: FtwBuildType::Debug,
+        };
+        assert_eq!(command, cmd);
+    }
+
+    #[test]
+    fn test_parse_matches_multi_build() {
+        let app = get_clap_command();
+        let args = [
+            crate_name!(),
+            "build",
+            "linux-x86_64,windows-x86_64,macos-x86_64,android-x86_64",
+            "debug",
+        ];
+        let matches = app.get_matches_from(args);
+        let command = parse_matches(&matches);
+        let cmd = FtwCommand::Build {
+            targets: vec![
+                FtwTarget::AndroidLinuxX86_64,
+                FtwTarget::LinuxX86_64,
+                FtwTarget::MacOsX86_64,
+                FtwTarget::WindowsX86_64Msvc,
+            ],
+            build_type: FtwBuildType::Debug,
+        };
+        assert_eq!(command, cmd);
+    }
+
+    #[test]
+    fn test_parse_matches_multi_build_with_blank() {
+        let app = get_clap_command();
+        let args = [
+            crate_name!(),
+            "build",
+            ",windows-x86_64,macos-x86_64,android-x86_64",
+            "debug",
+        ];
+        let matches = app.get_matches_from(args);
+        let command = parse_matches(&matches);
+        let cmd = FtwCommand::Build {
+            targets: vec![
+                FtwTarget::AndroidLinuxX86_64,
+                FtwTarget::MacOsX86_64,
+                FtwTarget::WindowsX86_64Msvc,
+            ],
+            build_type: FtwBuildType::Debug,
+        };
+        assert_eq!(command, cmd);
+    }
+
+    #[test]
+    fn test_parse_matches_multi_build_with_blankv2() {
+        let app = get_clap_command();
+        let args = [
+            crate_name!(),
+            "build",
+            "linux-x86_64,windows-x86_64,macos-x86_64,,android-x86_64",
+            "debug",
+        ];
+        let matches = app.get_matches_from(args);
+        let command = parse_matches(&matches);
+        let cmd = FtwCommand::Build {
+            targets: vec![
+                FtwTarget::AndroidLinuxX86_64,
+                FtwTarget::LinuxX86_64,
+                FtwTarget::MacOsX86_64,
+                FtwTarget::WindowsX86_64Msvc,
+            ],
+            build_type: FtwBuildType::Debug,
+        };
+        assert_eq!(command, cmd);
+    }
+
+    #[test]
+    fn test_parse_matches_multi_build_with_blankv3() {
+        let app = get_clap_command();
+        let args = [
+            crate_name!(),
+            "build",
+            "linux-x86_64,windows-x86_64,macos-x86_64,android-x86_64,",
+            "debug",
+        ];
+        let matches = app.get_matches_from(args);
+        let command = parse_matches(&matches);
+        let cmd = FtwCommand::Build {
+            targets: vec![
+                FtwTarget::AndroidLinuxX86_64,
+                FtwTarget::LinuxX86_64,
+                FtwTarget::MacOsX86_64,
+                FtwTarget::WindowsX86_64Msvc,
+            ],
             build_type: FtwBuildType::Debug,
         };
         assert_eq!(command, cmd);
@@ -319,7 +422,7 @@ mod main_tests {
         let matches = app.get_matches_from(args);
         let command = parse_matches(&matches);
         let cmd = FtwCommand::Build {
-            target: FtwTarget::LinuxX86_64,
+            targets: vec![FtwTarget::LinuxX86_64],
             build_type: FtwBuildType::Debug,
         };
         assert_eq!(command, cmd);
@@ -329,11 +432,10 @@ mod main_tests {
     fn test_parse_matches_build_no_target_and_no_build_type() {
         let app = get_clap_command();
         let args = [crate_name!(), "build"];
-        let target = util::get_current_platform().parse().unwrap();
         let matches = app.get_matches_from(args);
         let command = parse_matches(&matches);
         let cmd = FtwCommand::Build {
-            target,
+            targets: vec![util::get_current_platform().parse().unwrap()],
             build_type: FtwBuildType::Debug,
         };
         assert_eq!(command, cmd);
@@ -346,7 +448,98 @@ mod main_tests {
         let matches = app.get_matches_from(args);
         let command = parse_matches(&matches);
         let cmd = FtwCommand::Export {
-            target: FtwTarget::LinuxX86_64,
+            targets: vec![FtwTarget::LinuxX86_64],
+            build_type: FtwBuildType::Debug,
+        };
+        assert_eq!(command, cmd);
+    }
+
+    #[test]
+    fn test_parse_matches_multi_export() {
+        let app = get_clap_command();
+        let args = [
+            crate_name!(),
+            "export",
+            "linux-x86_64,windows-x86_64,macos-x86_64,android-x86_64",
+            "debug",
+        ];
+        let matches = app.get_matches_from(args);
+        let command = parse_matches(&matches);
+        let cmd = FtwCommand::Export {
+            targets: vec![
+                FtwTarget::AndroidLinuxX86_64,
+                FtwTarget::LinuxX86_64,
+                FtwTarget::MacOsX86_64,
+                FtwTarget::WindowsX86_64Msvc,
+            ],
+            build_type: FtwBuildType::Debug,
+        };
+        assert_eq!(command, cmd);
+    }
+
+    #[test]
+    fn test_parse_matches_multi_export_with_blank() {
+        let app = get_clap_command();
+        let args = [
+            crate_name!(),
+            "export",
+            ",windows-x86_64,macos-x86_64,android-x86_64",
+            "debug",
+        ];
+        let matches = app.get_matches_from(args);
+        let command = parse_matches(&matches);
+        let cmd = FtwCommand::Export {
+            targets: vec![
+                FtwTarget::AndroidLinuxX86_64,
+                FtwTarget::MacOsX86_64,
+                FtwTarget::WindowsX86_64Msvc,
+            ],
+            build_type: FtwBuildType::Debug,
+        };
+        assert_eq!(command, cmd);
+    }
+
+    #[test]
+    fn test_parse_matches_multi_export_with_blankv2() {
+        let app = get_clap_command();
+        let args = [
+            crate_name!(),
+            "export",
+            "linux-x86_64,windows-x86_64,macos-x86_64,,android-x86_64",
+            "debug",
+        ];
+        let matches = app.get_matches_from(args);
+        let command = parse_matches(&matches);
+        let cmd = FtwCommand::Export {
+            targets: vec![
+                FtwTarget::AndroidLinuxX86_64,
+                FtwTarget::LinuxX86_64,
+                FtwTarget::MacOsX86_64,
+                FtwTarget::WindowsX86_64Msvc,
+            ],
+            build_type: FtwBuildType::Debug,
+        };
+        assert_eq!(command, cmd);
+    }
+
+    #[test]
+    fn test_parse_matches_multi_export_with_blankv3() {
+        let app = get_clap_command();
+        let args = [
+            crate_name!(),
+            "export",
+            "linux-x86_64,windows-x86_64,macos-x86_64,android-x86_64,",
+            "debug",
+        ];
+        let matches = app.get_matches_from(args);
+        let command = parse_matches(&matches);
+        let cmd = FtwCommand::Export {
+            targets: vec![
+                FtwTarget::AndroidLinuxX86_64,
+                FtwTarget::LinuxX86_64,
+                FtwTarget::MacOsX86_64,
+                FtwTarget::WindowsX86_64Msvc,
+            ],
             build_type: FtwBuildType::Debug,
         };
         assert_eq!(command, cmd);
@@ -359,7 +552,7 @@ mod main_tests {
         let matches = app.get_matches_from(args);
         let command = parse_matches(&matches);
         let cmd = FtwCommand::Export {
-            target: FtwTarget::LinuxX86_64,
+            targets: vec![FtwTarget::LinuxX86_64],
             build_type: FtwBuildType::Debug,
         };
         assert_eq!(command, cmd);
@@ -373,7 +566,7 @@ mod main_tests {
         let matches = app.get_matches_from(args);
         let command = parse_matches(&matches);
         let cmd = FtwCommand::Export {
-            target,
+            targets: vec![target],
             build_type: FtwBuildType::Debug,
         };
         assert_eq!(command, cmd);
