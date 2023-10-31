@@ -16,7 +16,6 @@ mod type_alias;
 mod util;
 
 use crate::ftw_command::FtwCommand;
-use crate::ftw_tag::FtwTag;
 use crate::traits::{Processor, ToMessage};
 use clap::{
     arg, command, crate_authors, crate_description, crate_name, crate_version, ArgMatches, Command,
@@ -81,18 +80,18 @@ fn parse_matches(matches: &ArgMatches) -> FtwCommand {
     match matches.subcommand() {
         Some(("new", args)) => {
             let project_name = args
-                .get_one::<String>("project_name")
+                .get_one("project_name")
                 .unwrap_or(&String::from("my-awesome-game"))
                 .to_string();
             let template = args
-                .get_one::<String>("template")
+                .get_one("template")
                 .unwrap_or(&String::from("default"))
                 .parse()
                 .unwrap_or_default();
             let tag = args
-                .get_one::<String>("tag")
+                .get_one("tag")
                 .unwrap_or(&String::from("latest"))
-                .parse::<FtwTag>()
+                .parse()
                 .unwrap_or_default();
             FtwCommand::New {
                 project_name,
@@ -102,11 +101,11 @@ fn parse_matches(matches: &ArgMatches) -> FtwCommand {
         }
         Some(("class", args)) => {
             let class_name = args
-                .get_one::<String>("class_name")
+                .get_one("class_name")
                 .unwrap_or(&String::from("MyClass"))
                 .to_string();
             let node_type = args
-                .get_one::<String>("node_type")
+                .get_one("node_type")
                 .unwrap_or(&String::from("Node"))
                 .parse()
                 .unwrap_or_default();
@@ -117,14 +116,14 @@ fn parse_matches(matches: &ArgMatches) -> FtwCommand {
         }
         Some(("singleton", args)) => {
             let class_name = args
-                .get_one::<String>("class_name")
+                .get_one("class_name")
                 .unwrap_or(&String::from("MySingleton"))
                 .to_string();
             FtwCommand::Singleton { class_name }
         }
         Some(("run", args)) => {
             let machine_type = args
-                .get_one::<String>("machine_type")
+                .get_one("machine_type")
                 .unwrap_or(&String::from("desktop"))
                 .parse()
                 .unwrap_or_default();
@@ -141,7 +140,7 @@ fn parse_matches(matches: &ArgMatches) -> FtwCommand {
                 .dedup()
                 .collect();
             let build_type = args
-                .get_one::<String>("build_type")
+                .get_one("build_type")
                 .unwrap_or(&String::from("debug"))
                 .parse()
                 .unwrap_or_default();
@@ -161,7 +160,7 @@ fn parse_matches(matches: &ArgMatches) -> FtwCommand {
                 .dedup()
                 .collect();
             let build_type = args
-                .get_one::<String>("build_type")
+                .get_one("build_type")
                 .unwrap_or(&String::from("debug"))
                 .parse()
                 .unwrap_or_default();
@@ -182,6 +181,7 @@ mod main_tests {
     use crate::ftw_command::FtwCommand;
     use crate::ftw_machine_type::FtwMachineType;
     use crate::ftw_node_type::FtwNodeType;
+    use crate::ftw_tag::FtwTag;
     use crate::ftw_target::FtwTarget;
     use crate::ftw_template::FtwTemplate;
     use crate::util;
