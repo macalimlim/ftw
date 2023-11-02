@@ -69,7 +69,7 @@ mod ftw_tag_tests {
 
     #[test]
     fn test_to_git_tag() {
-        assert_eq!(FtwTag::Latest.to_git_tag(), "v1.3.0");
+        assert_eq!(FtwTag::Latest.to_git_tag(), "v1.4.0");
         assert_eq!(
             FtwTag::Tagged {
                 git_tag: String::from("v1.1.0")
@@ -84,7 +84,7 @@ mod ftw_tag_tests {
         let latest = FtwTag::Latest;
         let git_tag = String::from("v1.1.0");
         let tagged = FtwTag::Tagged { git_tag };
-        assert_eq!(format!("{latest}"), "v1.3.0");
+        assert_eq!(format!("{latest}"), "v1.4.0");
         assert_eq!(format!("{tagged}"), "v1.1.0");
     }
 
