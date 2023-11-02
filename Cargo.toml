@@ -25,12 +25,12 @@ liquid = { version = "0.26.4", default-features = false, features = [ "stdlib" ]
 liquid-core = { version = "0.26.4", default-features = false }
 nanoid = "0.4.0"
 regex = { version = "1.9.6", default-features = false }
-rust-ini = { version = "0.19.0", default-features = false }
-serde = "1.0.189"
+rust-ini = { version = "0.20.0", default-features = false }
+serde = "1.0.190"
 strum = "0.25.0"
 strum_macros = "0.25.3"
 thiserror = "1.0.50"
-toml = "0.8.2"
+toml = "0.8.6"
 voca_rs = "1.15.2"
 walkdir = "2.3.3"
 
