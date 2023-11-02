@@ -25,6 +25,7 @@ const DOCKER_IMAGE: &str = "macalimlim/godot-rust-cross-compiler:0.6.0";
 const MACOSX_CROSS_COMPILER_PATH: &str = "/opt/macosx-build-tools/cross-compiler";
 const MIN_MACOSX_SDK_VERSION: &str = "11.3";
 const MIN_OSXCROSS_TARGET_VERSION: &str = "20.4";
+const SHELL: &str = "/bin/bash";
 
 #[rustfmt::skip::macros(cmd, format)]
 impl Compiler for FtwCompiler {
@@ -42,7 +43,7 @@ impl Compiler for FtwCompiler {
                 let current_dir_display = current_dir.display();
                 let volume_mount = format!("{current_dir_display}:/build");
                 cmd!(docker run ("-v") (volume_mount)
-                     (DOCKER_IMAGE) ("/bin/bash") ("-c")
+                     (DOCKER_IMAGE) (SHELL) ("-c")
                      ("cargo clean ; rm -rf godot/.import"))
                 .run()
             }
@@ -85,7 +86,7 @@ impl Compiler for FtwCompiler {
                     .unwrap_or(String::from(MIN_MACOSX_SDK_VERSION));
                 let macosx_sdk_version = macosx_sdk_version.trim();
                 let macosx_c_include_path = format!("C_INCLUDE_PATH={MACOSX_CROSS_COMPILER_PATH}/SDK/MacOSX{macosx_sdk_version}.sdk/usr/include");
-                let osxcross_target_output = cmd!(docker run (DOCKER_IMAGE) ("/bin/bash") ("-c") ("{MACOSX_CROSS_COMPILER_PATH}/bin/osxcross-conf | grep OSXCROSS_TARGET= | sed 's/export OSXCROSS_TARGET=darwin//g'"))
+                let osxcross_target_output = cmd!(docker run (DOCKER_IMAGE) (SHELL) ("-c") ("{MACOSX_CROSS_COMPILER_PATH}/bin/osxcross-conf | grep OSXCROSS_TARGET= | sed 's/export OSXCROSS_TARGET=darwin//g'"))
                     .output()?;
                 let osxcross_target_version = String::from_utf8(osxcross_target_output.stdout)
                     .unwrap_or(String::from(MIN_OSXCROSS_TARGET_VERSION));
@@ -93,7 +94,7 @@ impl Compiler for FtwCompiler {
                 cmd!(docker run ("-v") (volume_mount)
                      if (target == &FtwTarget::WindowsX86_64Gnu || target == &FtwTarget::WindowsX86_64Msvc) {("-e") ("C_INCLUDE_PATH=/usr/x86_64-w64-mingw32/include")}
                      if (target == &FtwTarget::MacOsAarch64 || target == &FtwTarget::MacOsX86_64) {("-e") (macosx_cc) ("-e") (macosx_c_include_path)}
-                     (DOCKER_IMAGE) ("/bin/bash") ("-c")
+                     (DOCKER_IMAGE) (SHELL) ("-c")
                      (cargo_build_cmd)).run()
             }
         }
@@ -130,7 +131,7 @@ impl Compiler for FtwCompiler {
                 let current_dir_display = current_dir.display();
                 let volume_mount = format!("{current_dir_display}:/build");
                 cmd!(docker run ("-v") (volume_mount)
-                    (DOCKER_IMAGE) ("/bin/bash") ("-c")
+                    (DOCKER_IMAGE) (SHELL) ("-c")
                     (godot_export_cmd))
                 .run()
             }
