@@ -49,7 +49,7 @@ publish: clean format check test
 	cargo publish
 
 shell:
-	nix-shell -p libclang openssl pkg-config
+	nix-shell -p clang openssl pkg-config
 
 test:
 	cargo test -- --test-threads=1 --skip=test_process_ftw_command_cross_build_ios_target --skip=test_ftw_cross_build_ios_target
