@@ -383,6 +383,7 @@ mod ftw_target_tests {
                 "linux-x86",
                 "linux-x86_64",
                 "macos-x86_64",
+                "macos-aarch64",
                 "windows-x86-gnu",
                 "windows-x86",
                 "windows-x86-msvc",

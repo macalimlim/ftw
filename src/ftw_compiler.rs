@@ -21,7 +21,7 @@ pub enum FtwCompiler {
     },
 }
 
-const DOCKER_IMAGE: &str = "macalimlim/godot-rust-cross-compiler:0.5.0";
+const DOCKER_IMAGE: &str = "macalimlim/godot-rust-cross-compiler:0.6.0";
 
 #[rustfmt::skip::macros(cmd, format)]
 impl Compiler for FtwCompiler {
@@ -78,8 +78,8 @@ impl Compiler for FtwCompiler {
                 let volume_mount = format!("{current_dir_display}:/build");
                 cmd!(docker run ("-v") (volume_mount)
                      if (target == &FtwTarget::WindowsX86_64Gnu || target == &FtwTarget::WindowsX86_64Msvc) {("-e") ("C_INCLUDE_PATH=/usr/x86_64-w64-mingw32/include")}
-                     if (target == &FtwTarget::MacOsX86_64) {("-e") ("CC=/opt/macosx-build-tools/cross-compiler/bin/x86_64-apple-darwin14-cc") ("-e") ("C_INCLUDE_PATH=/opt/macosx-build-tools/cross-compiler/SDK/MacOSX10.10.sdk/usr/include")}
-                     if (target == &FtwTarget::MacOsAarch64) {("-e") ("CC=/opt/macosx-build-tools/cross-compiler/bin/aarch64-apple-darwin14-cc") ("-e") ("C_INCLUDE_PATH=/opt/macosx-build-tools/cross-compiler/SDK/MacOSX10.10.sdk/usr/include")}
+                     if (target == &FtwTarget::MacOsX86_64) {("-e") ("CC=/opt/macosx-build-tools/cross-compiler/bin/x86_64-apple-darwin20.4-cc") ("-e") ("C_INCLUDE_PATH=/opt/macosx-build-tools/cross-compiler/SDK/MacOSX11.3.sdk/usr/include")}
+                     if (target == &FtwTarget::MacOsAarch64) {("-e") ("CC=/opt/macosx-build-tools/cross-compiler/bin/aarch64-apple-darwin20.4-cc") ("-e") ("C_INCLUDE_PATH=/opt/macosx-build-tools/cross-compiler/SDK/MacOSX11.3.sdk/usr/include")}
                      (DOCKER_IMAGE) ("/bin/bash") ("-c")
                      (cargo_build_cmd)).run()
             }
