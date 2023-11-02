@@ -15,7 +15,7 @@ categories = ["command-line-utilities", "game-development"]
 [dependencies]
 anyhow = { version = "1.0.75", default-features = false }
 cargo-generate = { version = "0.18.4", default-features = false, features = [ "vendored-openssl" ] }
-clap = { version = "4.3.24", default-features = false, features = [ "cargo", "color", "std", "usage" ] }
+clap = { version = "4.3.24", default-features = false, features = [ "cargo", "color", "help", "std", "usage" ] }
 colored = "2.0.4"
 command-macros = "0.2.9"
 fs_extra = "1.3.0"

@@ -17,9 +17,7 @@ mod util;
 
 use crate::ftw_command::FtwCommand;
 use crate::traits::{Processor, ToMessage};
-use clap::{
-    arg, command, crate_authors, crate_description, crate_name, crate_version, ArgMatches, Command,
-};
+use clap::{arg, command, crate_name, ArgMatches, Command};
 use itertools::Itertools;
 use std::env;
 
@@ -35,9 +33,13 @@ fn main() -> Result<(), ()> {
 
 fn get_clap_command() -> Command {
     command!(crate_name!())
-        .version(crate_version!())
-        .author(crate_authors!("\n"))
-        .about(crate_description!())
+        .help_template(
+            r#"{before-help}{name} {version}
+{about-with-newline}{author-with-newline}
+{usage-heading} {usage}
+
+{all-args}{after-help}"#,
+        )
         .subcommand(
             Command::new("new")
                 .about("create a new godot-rust project directory")
