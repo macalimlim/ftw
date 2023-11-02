@@ -11,7 +11,7 @@ pub enum FtwTag {
     Tagged { git_tag: GitTag },
 }
 
-const DEFAULT_TEMPLATE_TAG: &str = "v1.3.0";
+const DEFAULT_TEMPLATE_TAG: &str = "v1.4.0";
 
 impl FromStr for FtwTag {
     type Err = ();
