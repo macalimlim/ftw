@@ -418,7 +418,6 @@ impl Processor for FtwCommand {
             }
             FtwCommand::Build { targets, build_type } => {
                 FtwCommand::is_valid_project()?;
-                FtwCommand::clean()?;
                 for target in targets {
                     FtwCommand::build_lib(*target, *build_type)?;
                     thread::sleep(time::Duration::from_millis(100));
@@ -427,7 +426,6 @@ impl Processor for FtwCommand {
             }
             FtwCommand::Export { targets, build_type } => {
                 FtwCommand::is_valid_project()?;
-                FtwCommand::clean()?;
                 for target in targets {
                     FtwCommand::build_lib(*target, *build_type)?;
                     FtwCommand::export_game(*target, *build_type)?;
