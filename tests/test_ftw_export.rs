@@ -176,6 +176,52 @@ enable-cross-compilation=true
 }
 
 #[test]
+fn test_ftw_cross_export_ios_target() {
+    let project = Project::new();
+    let project_name = project.get_name();
+    ftw()
+        .arg("new")
+        .arg(&project_name)
+        .assert()
+        .success()
+        .stdout(predicates::str::contains("SUCCESS").from_utf8());
+    let contents = r#"[ftw]
+enable-cross-compilation=true
+"#;
+    let _ = project.create(".ftw", contents);
+    assert!(project
+        .read(".ftw")
+        .contains("enable-cross-compilation=true"));
+    let target = FtwTarget::IosAarch64;
+    ftw()
+        .arg("export")
+        .arg("ios-aarch64")
+        .current_dir(&project_name)
+        .assert()
+        .success();
+    ftw()
+        .arg("clean")
+        .current_dir(&project_name)
+        .assert()
+        .success();
+    let crate_name = get_crate_name_from_path(&format!("{project_name}/rust/")).unwrap();
+    assert!(project.read("rust/Cargo.toml").contains(&project_name));
+    let target_cli_arg = target.to_cli_arg();
+    assert!(project.exists(&format!(
+        "bin/{target_cli_arg}/{crate_name}.debug.{target_cli_arg}.pck"
+    )));
+    assert!(project.exists(&format!(
+        "bin/{target_cli_arg}/{crate_name}.debug.{target_cli_arg}.xcframework"
+    )));
+    assert!(project.exists(&format!(
+        "bin/{target_cli_arg}/{crate_name}.debug.{target_cli_arg}.xcodeproj"
+    )));
+    assert!(project.exists(&format!(
+        "bin/{target_cli_arg}/{crate_name}.debug.{target_cli_arg}"
+    )));
+}
+
+#[test]
 fn test_ftw_cross_export_multi_target() {
     let project = Project::new();
     ftw()
@@ -193,7 +239,7 @@ enable-cross-compilation=true
         .contains("enable-cross-compilation=true"));
     ftw()
         .arg("export")
-        .arg("macos-aarch64,linux-x86_64,macos-x86_64")
+        .arg("macos-aarch64,linux-x86_64,macos-x86_64,ios-aarch64")
         .current_dir(&project.get_name())
         .assert()
         .success();
@@ -211,6 +257,7 @@ enable-cross-compilation=true
         FtwTarget::MacOsAarch64,
         FtwTarget::LinuxX86_64,
         FtwTarget::MacOsX86_64,
+        FtwTarget::IosAarch64,
     ];
     for target in targets {
         let target_cli_arg = target.to_cli_arg();
@@ -225,8 +272,24 @@ enable-cross-compilation=true
                 "bin/{target_cli_arg}/{crate_name}.debug.{target_cli_arg}.pck"
             )));
         }
-        assert!(project.exists(&format!(
-            "bin/{target_cli_arg}/{crate_name}.debug.{target_cli_arg}{target_app_ext}"
-        )));
+        if target == FtwTarget::IosAarch64 {
+            assert!(project.exists(&format!(
+                "bin/{target_cli_arg}/{crate_name}.debug.{target_cli_arg}.pck"
+            )));
+            assert!(project.exists(&format!(
+                "bin/{target_cli_arg}/{crate_name}.debug.{target_cli_arg}.xcframework"
+            )));
+            assert!(project.exists(&format!(
+                "bin/{target_cli_arg}/{crate_name}.debug.{target_cli_arg}.xcodeproj"
+            )));
+            assert!(project.exists(&format!(
+                "bin/{target_cli_arg}/{crate_name}.debug.{target_cli_arg}"
+            )));
+        }
+        if target != FtwTarget::IosAarch64 {
+            assert!(project.exists(&format!(
+                "bin/{target_cli_arg}/{crate_name}.debug.{target_cli_arg}{target_app_ext}"
+            )));
+        }
     }
 }

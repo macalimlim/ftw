@@ -21,10 +21,12 @@ pub enum FtwCompiler {
     },
 }
 
-const DOCKER_IMAGE: &str = "macalimlim/godot-rust-cross-compiler:0.6.0";
+const DOCKER_IMAGE: &str = "macalimlim/godot-rust-cross-compiler:0.7.0";
 const MACOSX_CROSS_COMPILER_PATH: &str = "/opt/macosx-build-tools/cross-compiler";
 const MIN_MACOSX_SDK_VERSION: &str = "11.3";
 const MIN_OSXCROSS_TARGET_VERSION: &str = "20.4";
+const IOS_CROSS_COMPILER_PATH: &str = "/opt/ios-build-tools/cross-compiler";
+const MIN_IOS_SDK_VERSION: &str = "14.5";
 const SHELL: &str = "/bin/bash";
 
 #[rustfmt::skip::macros(cmd, format)]
@@ -91,9 +93,18 @@ impl Compiler for FtwCompiler {
                 let osxcross_target_version = String::from_utf8(osxcross_target_output.stdout)
                     .unwrap_or(String::from(MIN_OSXCROSS_TARGET_VERSION));
                 let macosx_cc = format!("CC={MACOSX_CROSS_COMPILER_PATH}/bin/{target_cli_arg}{osxcross_target_version}-cc");
+                let ios_sdk_version_output =
+                    cmd!(docker run (DOCKER_IMAGE) ("/bin/bash") ("-c") ("echo $IOS_SDK_VERSION"))
+                        .output()?;
+                let ios_sdk_version = String::from_utf8(ios_sdk_version_output.stdout)
+                    .unwrap_or(String::from(MIN_IOS_SDK_VERSION));
+                let ios_sdk_version = ios_sdk_version.trim();
+                let ios_c_include_path = format!("C_INCLUDE_PATH={IOS_CROSS_COMPILER_PATH}/SDK/iPhoneOS{ios_sdk_version}.sdk/usr/include");
+                let ios_ld_library_path = format!("LD_LIBRARY_PATH={IOS_CROSS_COMPILER_PATH}/lib");
                 cmd!(docker run ("-v") (volume_mount)
                      if (target == &FtwTarget::WindowsX86_64Gnu || target == &FtwTarget::WindowsX86_64Msvc) {("-e") ("C_INCLUDE_PATH=/usr/x86_64-w64-mingw32/include")}
                      if (target == &FtwTarget::MacOsAarch64 || target == &FtwTarget::MacOsX86_64) {("-e") (macosx_cc) ("-e") (macosx_c_include_path)}
+                     if (target == &FtwTarget::IosAarch64) {("-e") (ios_c_include_path) ("-e") (ios_ld_library_path)}
                      (DOCKER_IMAGE) (SHELL) ("-c")
                      (cargo_build_cmd)).run()
             }

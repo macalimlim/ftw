@@ -911,6 +911,7 @@ enable-cross-compilation=true
             FtwTarget::LinuxX86_64,
             FtwTarget::WindowsX86_64Gnu,
             FtwTarget::MacOsAarch64,
+            FtwTarget::IosAarch64,
         ];
         let cmd = FtwCommand::Build {
             targets: targets.clone(),
@@ -1276,6 +1277,52 @@ enable-cross-compilation=true
     }
 
     #[test]
+    fn test_process_ftw_command_cross_export_ios_target() {
+        let project = Project::new();
+        let cmd = FtwCommand::New {
+            project_name: project.get_name(),
+            template: FtwTemplate::default(),
+            tag: FtwTag::default(),
+        };
+        let _ = cmd.process();
+        let contents = r#"[ftw]
+enable-cross-compilation=true
+"#;
+        let _ = project.create(".ftw", contents);
+        assert!(project
+            .read(".ftw")
+            .contains("enable-cross-compilation=true"));
+        let _ = env::set_current_dir(Path::new(&project.get_name()));
+        let target = FtwTarget::IosAarch64;
+        let targets = vec![target];
+        let cmd = FtwCommand::Export {
+            targets: targets.clone(),
+            build_type: FtwBuildType::Debug,
+        };
+        let _ = cmd.process();
+        let cmd = FtwCommand::Clean;
+        let _ = cmd.process();
+        let _ = env::set_current_dir(Path::new("../"));
+        assert!(project
+            .read("rust/Cargo.toml")
+            .contains(&project.get_name()));
+        let target_cli_arg = target.to_cli_arg();
+        let project_name = project.get_name();
+        assert!(project.exists(&format!(
+            "bin/{target_cli_arg}/{project_name}.debug.{target_cli_arg}.pck"
+        )));
+        assert!(project.exists(&format!(
+            "bin/{target_cli_arg}/{project_name}.debug.{target_cli_arg}.xcframework"
+        )));
+        assert!(project.exists(&format!(
+            "bin/{target_cli_arg}/{project_name}.debug.{target_cli_arg}.xcodeproj"
+        )));
+        assert!(project.exists(&format!(
+            "bin/{target_cli_arg}/{project_name}.debug.{target_cli_arg}"
+        )));
+    }
+
+    #[test]
     fn test_process_ftw_command_cross_export_multi_target() {
         let project = Project::new();
         let cmd = FtwCommand::New {
@@ -1297,6 +1344,7 @@ enable-cross-compilation=true
             FtwTarget::MacOsX86_64,
             FtwTarget::WindowsX86_64Gnu,
             FtwTarget::MacOsAarch64,
+            FtwTarget::IosAarch64,
         ];
         let cmd = FtwCommand::Export {
             targets: targets.clone(),
@@ -1323,9 +1371,25 @@ enable-cross-compilation=true
                     "bin/{target_cli_arg}/{project_name}.debug.{target_cli_arg}.pck"
                 )));
             }
-            assert!(project.exists(&format!(
-                "bin/{target_cli_arg}/{project_name}.debug.{target_cli_arg}{target_app_ext}"
-            )));
+            if target == FtwTarget::IosAarch64 {
+                assert!(project.exists(&format!(
+                    "bin/{target_cli_arg}/{project_name}.debug.{target_cli_arg}.pck"
+                )));
+                assert!(project.exists(&format!(
+                    "bin/{target_cli_arg}/{project_name}.debug.{target_cli_arg}.xcframework"
+                )));
+                assert!(project.exists(&format!(
+                    "bin/{target_cli_arg}/{project_name}.debug.{target_cli_arg}.xcodeproj"
+                )));
+                assert!(project.exists(&format!(
+                    "bin/{target_cli_arg}/{project_name}.debug.{target_cli_arg}"
+                )));
+            }
+            if target != FtwTarget::IosAarch64 {
+                assert!(project.exists(&format!(
+                    "bin/{target_cli_arg}/{project_name}.debug.{target_cli_arg}{target_app_ext}"
+                )));
+            }
         }
     }
 

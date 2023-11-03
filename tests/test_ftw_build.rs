@@ -295,7 +295,7 @@ enable-cross-compilation=true
         .contains("enable-cross-compilation=true"));
     ftw()
         .arg("build")
-        .arg("macos-aarch64,windows-x86_64-gnu,linux-x86_64,macos-x86_64,android-aarch64")
+        .arg("macos-aarch64,windows-x86_64-gnu,linux-x86_64,macos-x86_64,android-aarch64,ios-aarch64")
         .current_dir(&project.get_name())
         .assert()
         .success();
@@ -303,9 +303,12 @@ enable-cross-compilation=true
         .read("rust/Cargo.toml")
         .contains(&project.get_name()));
     let targets = vec![
+        FtwTarget::AndroidLinuxAarch64,
         FtwTarget::MacOsAarch64,
         FtwTarget::LinuxX86_64,
         FtwTarget::MacOsX86_64,
+        FtwTarget::WindowsX86_64Gnu,
+        FtwTarget::IosAarch64,
     ];
     for target in targets {
         let target_cli_arg = target.to_cli_arg();
