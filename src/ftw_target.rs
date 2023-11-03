@@ -41,27 +41,31 @@ impl FtwTarget {
         }
     }
 
-    fn is_android(self) -> bool {
+    pub fn is_android(self) -> bool {
         matches!(self, FtwTarget::AndroidLinuxAarch64 | FtwTarget::AndroidLinuxArmV7 | FtwTarget::AndroidLinuxX86 | FtwTarget::AndroidLinuxX86_64)
     }
 
-    fn is_windows(self) -> bool {
+    pub fn is_windows(self) -> bool {
         matches!(self, FtwTarget::WindowsX86Gnu | FtwTarget::WindowsX86Msvc | FtwTarget::WindowsX86_64Gnu | FtwTarget::WindowsX86_64Msvc)
     }
 
-    fn is_ios(self) -> bool {
+    pub fn is_ios(self) -> bool {
         matches!(self, FtwTarget::IosAarch64)
     }
 
-    fn is_linux(self) -> bool {
+    pub fn is_linux(self) -> bool {
+        matches!(self, FtwTarget::LinuxX86 | FtwTarget::LinuxX86_64)
+    }
+
+    pub fn is_linux_x86(self) -> bool {
         matches!(self, FtwTarget::LinuxX86)
     }
 
-    fn is_linux_x86_64(self) -> bool {
+    pub fn is_linux_x86_64(self) -> bool {
         matches!(self, FtwTarget::LinuxX86_64)
     }
 
-    fn is_macos(self) -> bool {
+    pub fn is_macos(self) -> bool {
         matches!(self, FtwTarget::MacOsX86_64 | FtwTarget::MacOsAarch64)
     }
 }
@@ -93,7 +97,7 @@ impl ToExportName for FtwTarget {
         match s {
             s if s.is_android() => "Android",
             s if s.is_ios() => "iOS",
-            s if s.is_linux() | s.is_linux_x86_64() => "Linux/X11",
+            s if s.is_linux() => "Linux/X11",
             s if s.is_macos() => "Mac OSX",
             s if s.is_windows() => "Windows Desktop",
             _ => unreachable!(),
@@ -106,7 +110,7 @@ impl ToAppExt for FtwTarget {
     fn to_app_ext(&self) -> AppExt {
         let s = self;
         match s {
-            s if s.is_linux() => "",
+            s if s.is_linux_x86() => ".x86",
             s if s.is_linux_x86_64() => ".x86_64",
             s if s.is_android() => ".apk",
             s if s.is_macos() | s.is_ios() => ".zip",
@@ -121,7 +125,7 @@ impl ToLibExt for FtwTarget {
     fn to_lib_ext(&self) -> LibExt {
         let s = self;
         match s {
-            s if s.is_android() | s.is_linux() | s.is_linux_x86_64() => "so",
+            s if s.is_android() | s.is_linux() => "so",
             s if s.is_windows() => "dll",
             s if s.is_ios() => "a",
             s if s.is_macos() => "dylib",
@@ -228,7 +232,7 @@ mod ftw_target_tests {
             (".apk", FtwTarget::AndroidLinuxX86),
             (".apk", FtwTarget::AndroidLinuxX86_64),
             (".zip", FtwTarget::IosAarch64),
-            ("", FtwTarget::LinuxX86),
+            (".x86", FtwTarget::LinuxX86),
             (".x86_64", FtwTarget::LinuxX86_64),
             (".zip", FtwTarget::MacOsX86_64),
             (".zip", FtwTarget::MacOsAarch64),
