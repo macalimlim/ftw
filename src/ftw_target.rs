@@ -1,6 +1,6 @@
 use crate::ftw_error::FtwError;
-use crate::traits::{ToAppExt, ToCliArg, ToExportName, ToLibExt, ToLibPrefix};
-use crate::type_alias::{AppExt, CliArg, ExportName, LibExt, LibPrefix};
+use crate::traits::{ToAppExt, ToCliArg, ToExportName, ToLibExt, ToLibPrefix, ToStrTarget};
+use crate::type_alias::{AppExt, CliArg, ExportName, LibExt, LibPrefix, StrTarget};
 use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
@@ -168,6 +168,27 @@ impl FromStr for FtwTarget {
     }
 }
 
+impl ToStrTarget for FtwTarget {
+    fn to_str_target(&self) -> StrTarget {
+        match self {
+            FtwTarget::AndroidLinuxAarch64 => "android-aarch64",
+            FtwTarget::AndroidLinuxArmV7 => "android-arm",
+            FtwTarget::AndroidLinuxX86 => "android-x86",
+            FtwTarget::AndroidLinuxX86_64 => "android-x86_64",
+            FtwTarget::IosAarch64 => "ios-aarch64",
+            FtwTarget::LinuxX86 => "linux-x86",
+            FtwTarget::LinuxX86_64 => "linux-x86_64",
+            FtwTarget::MacOsX86_64 => "macos-x86_64",
+            FtwTarget::MacOsAarch64 => "macos-aarch64",
+            FtwTarget::WindowsX86Gnu => "windows-x86-gnu",
+            FtwTarget::WindowsX86Msvc => "windows-x86-msvc",
+            FtwTarget::WindowsX86_64Gnu => "windows-x86_64-gnu",
+            FtwTarget::WindowsX86_64Msvc => "windows-x86_64-msvc",
+        }
+        .to_string()
+    }
+}
+
 impl Display for FtwTarget {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         let cli_arg = self.to_cli_arg();
@@ -288,6 +309,30 @@ mod ftw_target_tests {
         for (lib_prefix, target) in lib_prefix_targets {
             assert_eq!(lib_prefix, target.to_lib_prefix());
         }
+    }
+
+    #[test]
+    fn test_to_str_target() -> Result<(), FtwError> {
+        let from_str_targets = [
+            ("android-aarch64"),
+            ("android-arm"),
+            ("android-x86"),
+            ("android-x86_64"),
+            ("ios-aarch64"),
+            ("linux-x86"),
+            ("linux-x86_64"),
+            ("macos-x86_64"),
+            ("macos-aarch64"),
+            ("windows-x86-gnu"),
+            ("windows-x86-msvc"),
+            ("windows-x86_64-gnu"),
+            ("windows-x86_64-msvc"),
+        ];
+        for from_str in from_str_targets {
+            let target: FtwTarget = from_str.parse()?;
+            assert_eq!(from_str, target.to_str_target());
+        }
+        Ok(())
     }
 
     #[test]

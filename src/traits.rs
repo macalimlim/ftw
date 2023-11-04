@@ -1,6 +1,7 @@
 use crate::ftw_error::FtwError;
 use crate::type_alias::{
     AppExt, CliArg, ExportArg, ExportName, FtwResult, GitTag, GitUrl, LibExt, LibPrefix, Message,
+    StrTarget,
 };
 
 pub trait Processor {
@@ -66,4 +67,8 @@ pub trait ToLibPrefix {
 
 pub trait ToMessage {
     fn to_message(&self) -> Message;
+}
+
+pub trait ToStrTarget {
+    fn to_str_target(&self) -> StrTarget;
 }

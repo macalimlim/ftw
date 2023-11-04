@@ -12,4 +12,5 @@ pub type LibExt = String;
 pub type AppExt = String;
 pub type LibPrefix = String;
 pub type Message = String;
+pub type StrTarget = String;
 pub type FtwResult<'a> = Result<FtwSuccess<'a>, FtwError>;
