@@ -848,45 +848,6 @@ mod ftw_command_tests {
     }
 
     #[test]
-    fn test_process_ftw_command_cross_build_linux_target() {
-        let project = Project::new();
-        let cmd = FtwCommand::New {
-            project_name: project.get_name(),
-            template: FtwTemplate::default(),
-            tag: FtwTag::default(),
-        };
-        let _ = cmd.process();
-        let contents = r#"[ftw]
-enable-cross-compilation=true
-"#;
-        let _ = project.create(".ftw", contents);
-        assert!(project
-            .read(".ftw")
-            .contains("enable-cross-compilation=true"));
-        let _ = env::set_current_dir(Path::new(&project.get_name()));
-        let target = FtwTarget::LinuxX86_64;
-        let targets = vec![target];
-        let cmd = FtwCommand::Build {
-            targets,
-            build_type: FtwBuildType::Debug,
-        };
-        let _ = cmd.process();
-        let cmd = FtwCommand::Clean;
-        let _ = cmd.process();
-        let _ = env::set_current_dir(Path::new("../"));
-        assert!(project
-            .read("rust/Cargo.toml")
-            .contains(&project.get_name()));
-        let target_cli_arg = target.to_cli_arg();
-        let target_lib_prefix = target.to_lib_prefix();
-        let project_name = project.get_name();
-        let target_lib_ext = target.to_lib_ext();
-        assert!(project.exists(&format!(
-            "lib/{target_cli_arg}/{target_lib_prefix}{project_name}.{target_lib_ext}"
-        )));
-    }
-
-    #[test]
     fn test_process_ftw_command_cross_build_multi_target() {
         let project = Project::new();
         let cmd = FtwCommand::New {
@@ -931,201 +892,6 @@ enable-cross-compilation=true
                 "lib/{target_cli_arg}/{target_lib_prefix}{project_name}.{target_lib_ext}"
             )));
         }
-    }
-
-    #[test]
-    fn test_process_ftw_command_cross_build_windows_target() {
-        let project = Project::new();
-        let cmd = FtwCommand::New {
-            project_name: project.get_name(),
-            template: FtwTemplate::default(),
-            tag: FtwTag::default(),
-        };
-        let _ = cmd.process();
-        let contents = r#"[ftw]
-enable-cross-compilation=true
-"#;
-        let _ = project.create(".ftw", contents);
-        assert!(project
-            .read(".ftw")
-            .contains("enable-cross-compilation=true"));
-        let _ = env::set_current_dir(Path::new(&project.get_name()));
-        let target = FtwTarget::WindowsX86_64Gnu;
-        let targets = vec![target];
-        let cmd = FtwCommand::Build {
-            targets,
-            build_type: FtwBuildType::Debug,
-        };
-        let _ = cmd.process();
-        let cmd = FtwCommand::Clean;
-        let _ = cmd.process();
-        let _ = env::set_current_dir(Path::new("../"));
-        assert!(project
-            .read("rust/Cargo.toml")
-            .contains(&project.get_name()));
-        let target_cli_arg = target.to_cli_arg();
-        let target_lib_prefix = target.to_lib_prefix();
-        let project_name = project.get_name();
-        let target_lib_ext = target.to_lib_ext();
-        assert!(project.exists(&format!(
-            "lib/{target_cli_arg}/{target_lib_prefix}{project_name}.{target_lib_ext}"
-        )));
-    }
-
-    #[test]
-    fn test_process_ftw_command_cross_build_macos_target() {
-        let project = Project::new();
-        let cmd = FtwCommand::New {
-            project_name: project.get_name(),
-            template: FtwTemplate::default(),
-            tag: FtwTag::default(),
-        };
-        let _ = cmd.process();
-        let contents = r#"[ftw]
-enable-cross-compilation=true
-"#;
-        let _ = project.create(".ftw", contents);
-        assert!(project
-            .read(".ftw")
-            .contains("enable-cross-compilation=true"));
-        let _ = env::set_current_dir(Path::new(&project.get_name()));
-        let target = FtwTarget::MacOsX86_64;
-        let targets = vec![target];
-        let cmd = FtwCommand::Build {
-            targets,
-            build_type: FtwBuildType::Debug,
-        };
-        let _ = cmd.process();
-        let cmd = FtwCommand::Clean;
-        let _ = cmd.process();
-        let _ = env::set_current_dir(Path::new("../"));
-        assert!(project
-            .read("rust/Cargo.toml")
-            .contains(&project.get_name()));
-        let target_cli_arg = target.to_cli_arg();
-        let target_lib_prefix = target.to_lib_prefix();
-        let project_name = project.get_name();
-        let target_lib_ext = target.to_lib_ext();
-        assert!(project.exists(&format!(
-            "lib/{target_cli_arg}/{target_lib_prefix}{project_name}.{target_lib_ext}"
-        )));
-    }
-
-    #[test]
-    fn test_process_ftw_command_cross_build_macos_arm_target() {
-        let project = Project::new();
-        let cmd = FtwCommand::New {
-            project_name: project.get_name(),
-            template: FtwTemplate::default(),
-            tag: FtwTag::default(),
-        };
-        let _ = cmd.process();
-        let contents = r#"[ftw]
-enable-cross-compilation=true
-"#;
-        let _ = project.create(".ftw", contents);
-        assert!(project
-            .read(".ftw")
-            .contains("enable-cross-compilation=true"));
-        let _ = env::set_current_dir(Path::new(&project.get_name()));
-        let target = FtwTarget::MacOsAarch64;
-        let targets = vec![target];
-        let cmd = FtwCommand::Build {
-            targets,
-            build_type: FtwBuildType::Debug,
-        };
-        let _ = cmd.process();
-        let cmd = FtwCommand::Clean;
-        let _ = cmd.process();
-        let _ = env::set_current_dir(Path::new("../"));
-        assert!(project
-            .read("rust/Cargo.toml")
-            .contains(&project.get_name()));
-        let target_cli_arg = target.to_cli_arg();
-        let target_lib_prefix = target.to_lib_prefix();
-        let project_name = project.get_name();
-        let target_lib_ext = target.to_lib_ext();
-        assert!(project.exists(&format!(
-            "lib/{target_cli_arg}/{target_lib_prefix}{project_name}.{target_lib_ext}"
-        )));
-    }
-
-    #[test]
-    fn test_process_ftw_command_cross_build_android_target() {
-        let project = Project::new();
-        let cmd = FtwCommand::New {
-            project_name: project.get_name(),
-            template: FtwTemplate::default(),
-            tag: FtwTag::default(),
-        };
-        let _ = cmd.process();
-        let contents = r#"[ftw]
-enable-cross-compilation=true
-"#;
-        let _ = project.create(".ftw", contents);
-        assert!(project
-            .read(".ftw")
-            .contains("enable-cross-compilation=true"));
-        let _ = env::set_current_dir(Path::new(&project.get_name()));
-        let target = FtwTarget::AndroidLinuxAarch64;
-        let targets = vec![target];
-        let cmd = FtwCommand::Build {
-            targets,
-            build_type: FtwBuildType::Debug,
-        };
-        let _ = cmd.process();
-        let cmd = FtwCommand::Clean;
-        let _ = cmd.process();
-        let _ = env::set_current_dir(Path::new("../"));
-        assert!(project
-            .read("rust/Cargo.toml")
-            .contains(&project.get_name()));
-        let target_cli_arg = target.to_cli_arg();
-        let target_lib_prefix = target.to_lib_prefix();
-        let project_name = project.get_name();
-        let target_lib_ext = target.to_lib_ext();
-        assert!(project.exists(&format!(
-            "lib/{target_cli_arg}/{target_lib_prefix}{project_name}.{target_lib_ext}"
-        )));
-    }
-
-    #[test]
-    fn test_process_ftw_command_cross_build_ios_target() {
-        let project = Project::new();
-        let cmd = FtwCommand::New {
-            project_name: project.get_name(),
-            template: FtwTemplate::default(),
-            tag: FtwTag::default(),
-        };
-        let _ = cmd.process();
-        let contents = r#"[ftw]
-enable-cross-compilation=true
-"#;
-        let _ = project.create(".ftw", contents);
-        assert!(project
-            .read(".ftw")
-            .contains("enable-cross-compilation=true"));
-        let _ = env::set_current_dir(Path::new(&project.get_name()));
-        let target = FtwTarget::IosAarch64;
-        let targets = vec![target];
-        let cmd = FtwCommand::Build {
-            targets,
-            build_type: FtwBuildType::Debug,
-        };
-        let _ = cmd.process();
-        let cmd = FtwCommand::Clean;
-        let _ = cmd.process();
-        let _ = env::set_current_dir(Path::new("../"));
-        assert!(project
-            .read("rust/Cargo.toml")
-            .contains(&project.get_name()));
-        let target_cli_arg = target.to_cli_arg();
-        let target_lib_prefix = target.to_lib_prefix();
-        let project_name = project.get_name();
-        let target_lib_ext = target.to_lib_ext();
-        assert!(project.exists(&format!(
-            "lib/{target_cli_arg}/{target_lib_prefix}{project_name}.{target_lib_ext}"
-        )));
     }
 
     #[test]
@@ -1215,7 +981,7 @@ enable-cross-compilation=true
         let project_name = project.get_name();
         let target_lib_ext = target.to_lib_ext();
         let target_app_ext = target.to_app_ext();
-        if target == FtwTarget::LinuxX86_64 {
+        if target.is_linux() {
             assert!(project.exists(&format!(
                 "bin/{target_cli_arg}/{target_lib_prefix}{project_name}.{target_lib_ext}"
             )));
@@ -1225,98 +991,6 @@ enable-cross-compilation=true
         }
         assert!(project.exists(&format!(
             "bin/{target_cli_arg}/{project_name}.debug.{target_cli_arg}{target_app_ext}"
-        )));
-    }
-
-    #[test]
-    fn test_process_ftw_command_cross_export_linux_target() {
-        let project = Project::new();
-        let cmd = FtwCommand::New {
-            project_name: project.get_name(),
-            template: FtwTemplate::default(),
-            tag: FtwTag::default(),
-        };
-        let _ = cmd.process();
-        let contents = r#"[ftw]
-enable-cross-compilation=true
-"#;
-        let _ = project.create(".ftw", contents);
-        assert!(project
-            .read(".ftw")
-            .contains("enable-cross-compilation=true"));
-        let _ = env::set_current_dir(Path::new(&project.get_name()));
-        let target = FtwTarget::LinuxX86_64;
-        let targets = vec![target];
-        let cmd = FtwCommand::Export {
-            targets,
-            build_type: FtwBuildType::Debug,
-        };
-        let _ = cmd.process();
-        let cmd = FtwCommand::Clean;
-        let _ = cmd.process();
-        let _ = env::set_current_dir(Path::new("../"));
-        assert!(project
-            .read("rust/Cargo.toml")
-            .contains(&project.get_name()));
-        let target_cli_arg = target.to_cli_arg();
-        let target_lib_prefix = target.to_lib_prefix();
-        let project_name = project.get_name();
-        let target_lib_ext = target.to_lib_ext();
-        let target_app_ext = target.to_app_ext();
-        assert!(project.exists(&format!(
-            "bin/{target_cli_arg}/{target_lib_prefix}{project_name}.{target_lib_ext}"
-        )));
-        assert!(project.exists(&format!(
-            "bin/{target_cli_arg}/{project_name}.debug.{target_cli_arg}.pck"
-        )));
-        assert!(project.exists(&format!(
-            "bin/{target_cli_arg}/{project_name}.debug.{target_cli_arg}{target_app_ext}"
-        )));
-    }
-
-    #[test]
-    fn test_process_ftw_command_cross_export_ios_target() {
-        let project = Project::new();
-        let cmd = FtwCommand::New {
-            project_name: project.get_name(),
-            template: FtwTemplate::default(),
-            tag: FtwTag::default(),
-        };
-        let _ = cmd.process();
-        let contents = r#"[ftw]
-enable-cross-compilation=true
-"#;
-        let _ = project.create(".ftw", contents);
-        assert!(project
-            .read(".ftw")
-            .contains("enable-cross-compilation=true"));
-        let _ = env::set_current_dir(Path::new(&project.get_name()));
-        let target = FtwTarget::IosAarch64;
-        let targets = vec![target];
-        let cmd = FtwCommand::Export {
-            targets: targets.clone(),
-            build_type: FtwBuildType::Debug,
-        };
-        let _ = cmd.process();
-        let cmd = FtwCommand::Clean;
-        let _ = cmd.process();
-        let _ = env::set_current_dir(Path::new("../"));
-        assert!(project
-            .read("rust/Cargo.toml")
-            .contains(&project.get_name()));
-        let target_cli_arg = target.to_cli_arg();
-        let project_name = project.get_name();
-        assert!(project.exists(&format!(
-            "bin/{target_cli_arg}/{project_name}.debug.{target_cli_arg}.pck"
-        )));
-        assert!(project.exists(&format!(
-            "bin/{target_cli_arg}/{project_name}.debug.{target_cli_arg}.xcframework"
-        )));
-        assert!(project.exists(&format!(
-            "bin/{target_cli_arg}/{project_name}.debug.{target_cli_arg}.xcodeproj"
-        )));
-        assert!(project.exists(&format!(
-            "bin/{target_cli_arg}/{project_name}.debug.{target_cli_arg}"
         )));
     }
 
@@ -1361,7 +1035,10 @@ enable-cross-compilation=true
             let project_name = project.get_name();
             let target_lib_ext = target.to_lib_ext();
             let target_app_ext = target.to_app_ext();
-            if target == FtwTarget::LinuxX86_64 {
+            assert!(project.exists(&format!(
+                "lib/{target_cli_arg}/{target_lib_prefix}{project_name}.{target_lib_ext}"
+            )));
+            if target.is_linux() {
                 assert!(project.exists(&format!(
                     "bin/{target_cli_arg}/{target_lib_prefix}{project_name}.{target_lib_ext}"
                 )));
@@ -1369,7 +1046,7 @@ enable-cross-compilation=true
                     "bin/{target_cli_arg}/{project_name}.debug.{target_cli_arg}.pck"
                 )));
             }
-            if target == FtwTarget::IosAarch64 {
+            if target.is_ios() {
                 assert!(project.exists(&format!(
                     "bin/{target_cli_arg}/{project_name}.debug.{target_cli_arg}.pck"
                 )));
@@ -1383,87 +1060,11 @@ enable-cross-compilation=true
                     "bin/{target_cli_arg}/{project_name}.debug.{target_cli_arg}"
                 )));
             }
-            if target != FtwTarget::IosAarch64 {
+            if !target.is_ios() {
                 assert!(project.exists(&format!(
                     "bin/{target_cli_arg}/{project_name}.debug.{target_cli_arg}{target_app_ext}"
                 )));
             }
         }
-    }
-
-    #[test]
-    fn test_process_ftw_command_cross_export_macos_target() {
-        let project = Project::new();
-        let cmd = FtwCommand::New {
-            project_name: project.get_name(),
-            template: FtwTemplate::default(),
-            tag: FtwTag::default(),
-        };
-        let _ = cmd.process();
-        let contents = r#"[ftw]
-enable-cross-compilation=true
-"#;
-        let _ = project.create(".ftw", contents);
-        assert!(project
-            .read(".ftw")
-            .contains("enable-cross-compilation=true"));
-        let _ = env::set_current_dir(Path::new(&project.get_name()));
-        let target = FtwTarget::MacOsX86_64;
-        let targets = vec![target];
-        let cmd = FtwCommand::Export {
-            targets,
-            build_type: FtwBuildType::Debug,
-        };
-        let _ = cmd.process();
-        let cmd = FtwCommand::Clean;
-        let _ = cmd.process();
-        let _ = env::set_current_dir(Path::new("../"));
-        assert!(project
-            .read("rust/Cargo.toml")
-            .contains(&project.get_name()));
-        let target_cli_arg = target.to_cli_arg();
-        let project_name = project.get_name();
-        let target_app_ext = target.to_app_ext();
-        assert!(project.exists(&format!(
-            "bin/{target_cli_arg}/{project_name}.debug.{target_cli_arg}{target_app_ext}"
-        )));
-    }
-
-    #[test]
-    fn test_process_ftw_command_cross_export_macos_arm_target() {
-        let project = Project::new();
-        let cmd = FtwCommand::New {
-            project_name: project.get_name(),
-            template: FtwTemplate::default(),
-            tag: FtwTag::default(),
-        };
-        let _ = cmd.process();
-        let contents = r#"[ftw]
-enable-cross-compilation=true
-"#;
-        let _ = project.create(".ftw", contents);
-        assert!(project
-            .read(".ftw")
-            .contains("enable-cross-compilation=true"));
-        let _ = env::set_current_dir(Path::new(&project.get_name()));
-        let target = FtwTarget::MacOsAarch64;
-        let targets = vec![target];
-        let cmd = FtwCommand::Export {
-            targets,
-            build_type: FtwBuildType::Debug,
-        };
-        let _ = cmd.process();
-        let cmd = FtwCommand::Clean;
-        let _ = cmd.process();
-        let _ = env::set_current_dir(Path::new("../"));
-        assert!(project
-            .read("rust/Cargo.toml")
-            .contains(&project.get_name()));
-        let target_cli_arg = target.to_cli_arg();
-        let project_name = project.get_name();
-        let target_app_ext = target.to_app_ext();
-        assert!(project.exists(&format!(
-            "bin/{target_cli_arg}/{project_name}.debug.{target_cli_arg}{target_app_ext}"
-        )));
     }
 }
