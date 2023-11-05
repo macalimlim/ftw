@@ -9,6 +9,7 @@ use ftw::type_alias::StrTarget;
 use ftw::util::get_current_platform;
 use predicates;
 use predicates::prelude::*;
+use std::process::Command;
 
 #[test]
 fn test_ftw_export_no_target() {
@@ -45,6 +46,9 @@ fn test_ftw_export_no_target() {
     }
     if target.is_windows() {
         assert!(project.exists(&format!(
+            "bin/{target_cli_arg}/{target_lib_prefix}{project_name}.{target_lib_ext}"
+        )));
+        assert!(project.exists(&format!(
             "bin/{target_cli_arg}/{project_name}.debug.{target_cli_arg}.pck"
         )));
     }
@@ -70,6 +74,12 @@ enable-cross-compilation=true
     assert!(project
         .read(".ftw")
         .contains("enable-cross-compilation=true"));
+    Command::new("cargo")
+        .arg("make")
+        .arg("switch-gdnlib-msvc-to-gnu-entry")
+        .current_dir(&project_name)
+        .assert()
+        .success();
     let targets = vec![
         FtwTarget::MacOsAarch64,
         FtwTarget::LinuxX86_64,
@@ -106,6 +116,9 @@ enable-cross-compilation=true
             )));
         }
         if target.is_windows() {
+            assert!(project.exists(&format!(
+                "bin/{target_cli_arg}/{target_lib_prefix}{project_name}.{target_lib_ext}"
+            )));
             assert!(project.exists(&format!(
                 "bin/{target_cli_arg}/{project_name}.debug.{target_cli_arg}.pck"
             )));

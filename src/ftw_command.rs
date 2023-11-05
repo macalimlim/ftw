@@ -443,12 +443,13 @@ impl Processor for FtwCommand {
 #[cfg(test)]
 mod ftw_command_tests {
     use super::*;
-
     use crate::{
         test_util::Project,
         traits::{ToAppExt, ToLibExt, ToLibPrefix},
     };
+    use assert_cmd::prelude::*;
     use std::env;
+    use std::process::Command;
 
     #[test]
     fn test_is_valid_project_no_cargo_toml() {
@@ -1030,6 +1031,14 @@ enable-cross-compilation=true
                 "bin/{target_cli_arg}/{project_name}.debug.{target_cli_arg}.pck"
             )));
         }
+        if target.is_windows() {
+            assert!(project.exists(&format!(
+                "bin/{target_cli_arg}/{target_lib_prefix}{project_name}.{target_lib_ext}"
+            )));
+            assert!(project.exists(&format!(
+                "bin/{target_cli_arg}/{project_name}.debug.{target_cli_arg}.pck"
+            )));
+        }
         assert!(project.exists(&format!(
             "bin/{target_cli_arg}/{project_name}.debug.{target_cli_arg}{target_app_ext}"
         )));
@@ -1038,8 +1047,9 @@ enable-cross-compilation=true
     #[test]
     fn test_process_ftw_command_cross_export_multi_target() {
         let project = Project::new();
+        let project_name = project.get_name();
         let cmd = FtwCommand::New {
-            project_name: project.get_name(),
+            project_name: project_name.clone(),
             template: FtwTemplate::default(),
             tag: FtwTag::default(),
         };
@@ -1051,7 +1061,12 @@ enable-cross-compilation=true
         assert!(project
             .read(".ftw")
             .contains("enable-cross-compilation=true"));
-        let _ = env::set_current_dir(Path::new(&project.get_name()));
+        let _ = env::set_current_dir(Path::new(&project_name.clone()));
+        Command::new("cargo")
+            .arg("make")
+            .arg("switch-gdnlib-msvc-to-gnu-entry")
+            .assert()
+            .success();
         let targets = vec![
             FtwTarget::LinuxX86_64,
             FtwTarget::MacOsX86_64,
@@ -1067,9 +1082,7 @@ enable-cross-compilation=true
         let cmd = FtwCommand::Clean;
         let _ = cmd.process();
         let _ = env::set_current_dir(Path::new("../"));
-        assert!(project
-            .read("rust/Cargo.toml")
-            .contains(&project.get_name()));
+        assert!(project.read("rust/Cargo.toml").contains(&project_name));
         for target in targets {
             let target_cli_arg = target.to_cli_arg();
             let target_lib_prefix = target.to_lib_prefix();
@@ -1088,6 +1101,9 @@ enable-cross-compilation=true
                 )));
             }
             if target.is_windows() {
+                assert!(project.exists(&format!(
+                    "bin/{target_cli_arg}/{target_lib_prefix}{project_name}.{target_lib_ext}"
+                )));
                 assert!(project.exists(&format!(
                     "bin/{target_cli_arg}/{project_name}.debug.{target_cli_arg}.pck"
                 )));
