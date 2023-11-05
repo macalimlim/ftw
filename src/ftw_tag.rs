@@ -11,7 +11,7 @@ pub enum FtwTag {
     Tagged { git_tag: GitTag },
 }
 
-const DEFAULT_TEMPLATE_TAG: &str = "v1.4.0";
+const DEFAULT_TEMPLATE_TAG: &str = "v1.5.0";
 
 impl FromStr for FtwTag {
     type Err = ();
@@ -69,7 +69,7 @@ mod ftw_tag_tests {
 
     #[test]
     fn test_to_git_tag() {
-        assert_eq!(FtwTag::Latest.to_git_tag(), "v1.4.0");
+        assert_eq!(FtwTag::Latest.to_git_tag(), "v1.5.0");
         assert_eq!(
             FtwTag::Tagged {
                 git_tag: String::from("v1.1.0")
@@ -84,7 +84,7 @@ mod ftw_tag_tests {
         let latest = FtwTag::Latest;
         let git_tag = String::from("v1.1.0");
         let tagged = FtwTag::Tagged { git_tag };
-        assert_eq!(format!("{latest}"), "v1.4.0");
+        assert_eq!(format!("{latest}"), "v1.5.0");
         assert_eq!(format!("{tagged}"), "v1.1.0");
     }
 

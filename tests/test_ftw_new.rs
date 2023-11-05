@@ -19,6 +19,7 @@ fn test_ftw_new() {
     assert!(project.exists(".gitignore"));
     assert!(project.exists("Cargo.toml"));
     assert!(project.exists("Makefile"));
+    assert!(project.exists("Makefile.toml"));
     assert!(project.exists("godot/default_env.tres"));
     assert!(project.exists("godot/export_presets.cfg"));
     assert!(project.exists("godot/native/game.gdnlib"));
@@ -32,7 +33,7 @@ fn test_ftw_new() {
     assert!(project.read(".gitignore").contains("bin/*"));
     assert!(project.read(".gitignore").contains("export_presets.cfg"));
     assert!(project.read(".gitignore").contains("lib/*"));
-    assert!(project.read(".tag").contains("v1.4.0"));
+    assert!(project.read(".tag").contains("v1.5.0"));
     assert!(project
         .read("rust/Cargo.toml")
         .contains(&project.get_name()));
@@ -52,6 +53,7 @@ fn test_ftw_new_with_latest_tag() {
     assert!(project.exists(".gitignore"));
     assert!(project.exists("Cargo.toml"));
     assert!(project.exists("Makefile"));
+    assert!(project.exists("Makefile.toml"));
     assert!(project.exists("godot/default_env.tres"));
     assert!(project.exists("godot/export_presets.cfg"));
     assert!(project.exists("godot/native/game.gdnlib"));
@@ -65,7 +67,41 @@ fn test_ftw_new_with_latest_tag() {
     assert!(project.read(".gitignore").contains("bin/*"));
     assert!(project.read(".gitignore").contains("export_presets.cfg"));
     assert!(project.read(".gitignore").contains("lib/*"));
-    assert!(project.read(".tag").contains("v1.4.0"));
+    assert!(project.read(".tag").contains("v1.5.0"));
+    assert!(project
+        .read("rust/Cargo.toml")
+        .contains(&project.get_name()));
+}
+
+#[test]
+fn test_ftw_new_with_v150_tag() {
+    let project = Project::new();
+    ftw()
+        .arg("new")
+        .arg(&project.get_name())
+        .arg("default")
+        .arg("v1.5.0")
+        .assert()
+        .success()
+        .stdout(predicates::str::contains("SUCCESS").from_utf8());
+    assert!(project.exists(".gitignore"));
+    assert!(project.exists("Cargo.toml"));
+    assert!(project.exists("Makefile"));
+    assert!(project.exists("Makefile.toml"));
+    assert!(project.exists("godot/default_env.tres"));
+    assert!(project.exists("godot/export_presets.cfg"));
+    assert!(project.exists("godot/native/game.gdnlib"));
+    assert!(project.exists("godot/project.godot"));
+    assert!(project.exists("rust/Cargo.toml"));
+    assert!(project.exists("rust/src/lib.rs"));
+    assert!(!project.exists("LICENSE"));
+    assert!(!project.exists(".travis.yml"));
+    assert!(!project.exists("sh"));
+    assert!(project.read(".gitignore").contains(".ftw"));
+    assert!(project.read(".gitignore").contains("bin/*"));
+    assert!(project.read(".gitignore").contains("export_presets.cfg"));
+    assert!(project.read(".gitignore").contains("lib/*"));
+    assert!(project.read(".tag").contains("v1.5.0"));
     assert!(project
         .read("rust/Cargo.toml")
         .contains(&project.get_name()));
@@ -85,6 +121,7 @@ fn test_ftw_new_with_v140_tag() {
     assert!(project.exists(".gitignore"));
     assert!(project.exists("Cargo.toml"));
     assert!(project.exists("Makefile"));
+    assert!(project.exists("Makefile.toml"));
     assert!(project.exists("godot/default_env.tres"));
     assert!(project.exists("godot/export_presets.cfg"));
     assert!(project.exists("godot/native/game.gdnlib"));
@@ -118,6 +155,7 @@ fn test_ftw_new_with_v130_tag() {
     assert!(project.exists(".gitignore"));
     assert!(project.exists("Cargo.toml"));
     assert!(project.exists("Makefile"));
+    assert!(project.exists("Makefile.toml"));
     assert!(project.exists("godot/default_env.tres"));
     assert!(project.exists("godot/export_presets.cfg"));
     assert!(project.exists("godot/native/game.gdnlib"));
@@ -151,6 +189,7 @@ fn test_ftw_new_with_v120_tag() {
     assert!(project.exists(".gitignore"));
     assert!(project.exists("Cargo.toml"));
     assert!(project.exists("Makefile"));
+    assert!(project.exists("Makefile.toml"));
     assert!(project.exists("godot/default_env.tres"));
     assert!(project.exists("godot/export_presets.cfg"));
     assert!(project.exists("godot/native/game.gdnlib"));
@@ -182,6 +221,7 @@ fn test_ftw_new_no_template() {
     assert!(project.exists(".gitignore"));
     assert!(project.exists("Cargo.toml"));
     assert!(project.exists("Makefile"));
+    assert!(project.exists("Makefile.toml"));
     assert!(project.exists("godot/default_env.tres"));
     assert!(project.exists("godot/export_presets.cfg"));
     assert!(project.exists("godot/native/game.gdnlib"));
