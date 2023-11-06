@@ -80,7 +80,22 @@ enable-cross-compilation=true
         .current_dir(&project_name)
         .assert()
         .success();
+    Command::new("cargo")
+        .arg("make")
+        .arg("create-debug-keystore")
+        .current_dir(&project_name)
+        .assert()
+        .success();
+    Command::new("cargo")
+        .arg("make")
+        .arg("create-release-keystore")
+        .arg(&project_name)
+        .current_dir(&project_name)
+        .assert()
+        .success();
     let targets = vec![
+        FtwTarget::AndroidLinuxAarch64,
+        FtwTarget::AndroidLinuxArmV7,
         FtwTarget::MacOsAarch64,
         FtwTarget::LinuxX86_64,
         FtwTarget::MacOsX86_64,
@@ -135,6 +150,11 @@ enable-cross-compilation=true
             )));
             assert!(project.exists(&format!(
                 "bin/{target_cli_arg}/{project_name}.debug.{target_cli_arg}"
+            )));
+        }
+        if target.is_android() {
+            assert!(project.exists(&format!(
+                "bin/{target_cli_arg}/{project_name}.debug.{target_cli_arg}{target_app_ext}.idsig"
             )));
         }
         if !target.is_ios() {
