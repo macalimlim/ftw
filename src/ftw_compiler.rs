@@ -21,7 +21,7 @@ pub enum FtwCompiler {
     },
 }
 
-const DOCKER_IMAGE: &str = "macalimlim/godot-rust-cross-compiler:0.7.0";
+const DOCKER_IMAGE: &str = "macalimlim/godot-rust-cross-compiler:0.8.0";
 const MACOSX_CROSS_COMPILER_PATH: &str = "/opt/macosx-build-tools/cross-compiler";
 const MIN_MACOSX_SDK_VERSION: &str = "11.3";
 const MIN_OSXCROSS_TARGET_VERSION: &str = "20.4";
