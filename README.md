@@ -77,7 +77,7 @@ $ ftw build linux-x86_64,macos-x86_64,macos-aarch64,windows-x86_64-gnu # this as
 - android-arm
 - android-x86
 - android-x86_64
-- ios-aarch64 (currently not working for cross compilation)
+- ios-aarch64
 - linux-x86
 - linux-x86_64
 - macos-x86_64
@@ -101,7 +101,7 @@ $ ftw export linux-x86_64 release # exports the game for the `linux-x86_64` plat
 $ ftw export linux-x86_64,macos-x86_64,macos-aarch64,windows-x86_64-gnu # this assumes cross compilation is enabled (see below)
 ```
 
-> Note: The exported games can be found inside the `bin/` folder
+> Note: The exported games can be found inside the `bin/` folder. Before exporting an Android game, create the keystores first (if you have not created them and configured your editor/export settings) with 'cargo make create-debug-keystore' and/or 'cargo make create-release-keystore'. Before exporting Windows games, execute 'cargo make switch-gdnlib-msvc-to-gnu-entry' if you plan to export gnu targets, and execute 'cargo make switch-gdnlib-gnu-to-msvc-entry' if you plan to export msvc targets
 
 ### ftw run [machine-type]
 #### Builds the library using `debug` then runs your game
